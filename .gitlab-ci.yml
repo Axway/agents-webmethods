@@ -1,0 +1,85 @@
+image: dockerhub.artifactory-phx.ecd.axway.int/library/docker:20.10.6
+
+variables:
+  # PACKAGE_NAME: discovery_agent
+  # DOCKER_NAME: azure-discovery-agent
+  # GIT_REPO_NAME: azure_discovery_agent
+
+  # # Irius risk
+  # IRIUS_PROJECT: "amplify-apic_azure_discovery_agent"
+  # IRIUSRISK_COMPONENT_NAME: "azure_discovery-agent"
+
+  # # Traceability Project ID
+  # TRACEABILITY_PROJECT_ID: 8659
+
+  # # Fortify
+  # FORTIFY_PROJECT: "10623"
+  # FORTIFY_BUILD_ID: "azure_discovery_agent"
+
+  # # Whitesource
+  # WS_PROJECT_ID: "Azure-Discovery-Agent"
+
+  # # WeblivNext metadata that is specific to this agent
+  # WEBLIV_NEXT_TITLE: "Amplify Azure Discovery Agent"
+  # WEBLIV_NEXT_EXTRA_ELEMENT: "azure-da"
+
+  # # flag to signal that a trigger traceability agent job is wanted (see agentjob.xml)
+  # TRIGGER_TRACE_AGENT_JOB: "true"
+
+  # just to be sure we don't do vendoring
+  GOFLAGS: "-mod=mod"
+
+stages:
+  - test
+  - sonar
+  - build
+  - dependency
+  # - security-scans
+  # - security-review
+  - push-image
+  - release
+  - qa-test
+  - update-dep
+
+############################################################
+# Section for included yaml files
+############################################################
+include:
+  - project: "apigov/beano_cicd"
+    ref: master
+    # the order of these include files is important
+    file:
+      - "/gitlabci/variables.yml"
+      - "/gitlabci/restrictions.yml"
+      - "/gitlabci/jobs.yml"
+      - "/gitlabci/agentjobs.yml"
+  # - project: "scurity/gitlabci"
+  #   ref: master
+  #   file:
+  #     - "/.gitlab-ci-prepcsr.yml"
+  #     - "/.gitlab-ci-fortify.yml"
+  #     - "/.gitlab-ci-iriusrisk.yml"
+  #     - "/.gitlab-ci-whitesource.yml"
+  #     - "/.gitlab-ci-twistlock.yml"
+  #     - "/.gitlab-ci-csr.yml"
+  # - project: "apigov/beano_cicd"
+  #   ref: master
+  #   # this one MUST be after the scurity jobs in order for overrides to work correctly!
+  #   file:
+  #     - "/gitlabci/csrjobs.yml"
+
+hadolint:
+  extends: .only-never
+
+test:
+  extends: .only-never
+
+build-feature:
+  extends: .only-never
+  only:
+    refs:
+      - never
+
+push-feature:
+  extends: .only-never
+

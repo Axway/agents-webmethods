@@ -1,0 +1,23 @@
+{
+    "project": "V7 Discovery Agent",
+    "repo_url": "https://git.ecd.axway.org/apigov/v7_discovery_agent",
+      "security_guide": "https://docs.axway.com/bundle/amplify-central/page/docs/connect_manage_environ/connect_api_manager/agent-security-api-manager/index.html",
+    "requirements": {
+      "dependency-check": false,
+      "fortify": false,
+      "irius-risk": false,
+      "npm-audit": false,
+      "pentest": false,
+      "retirejs": false,
+      "twistlock": false,
+      "zap": false,
+      "yarn": false,
+      "gosec": false,
+      "whitesource": false,
+      "appspider": false,
+      "insightvm": false
+    },
+    "suppressions": [
+    ]
+  }
+  
