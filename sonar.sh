@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sonar-scanner -X \
-    -Dsonar.host.url=http://quality1.ecd.axway.int \
+    -Dsonar.host.url=${SONAR_HOST} \
     -Dsonar.language=go \
     -Dsonar.projectName=WebMethods_Agenta \
     -Dsonar.projectVersion=1.0 \
