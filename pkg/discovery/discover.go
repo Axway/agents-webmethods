@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Axway/agent-sdk/pkg/apic"
@@ -20,7 +21,7 @@ type discovery struct {
 	apiChan           chan *ServiceDetail
 	cache             cache.Cache
 	centralClient     apic.Client
-	client            webmethods.ListAPIClient
+	client            webmethods.Client
 	discoveryPageSize int
 	pollInterval      time.Duration
 	stopDiscovery     chan bool
@@ -65,11 +66,43 @@ func (d *discovery) discoverAPIs() {
 	}
 
 	for _, api := range apis {
-		go func(api webmethods.API) {
-			svcDetail := d.serviceHandler.ToServiceDetail(&api)
+		go func(api webmethods.WebmethodsApi) {
+			apiResponse, err := d.client.GetApiDetails(api.Id)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to decompress : %s", err))
+			}
+
+			var specification []byte
+			if api.ApiType == "REST" {
+				specification, err = d.client.GetApiSpec(api.Id)
+			} else if api.ApiType == "SOAP" {
+				specification, err = d.client.GetWsdl(apiResponse.GatewayEndPoints[0])
+			}
+			if err != nil {
+				panic(fmt.Sprintf("Unable to decompress : %s", err))
+			}
+			authPolicy := handleAuthPolicy()
+
+			amplifyApi := webmethods.AmplifyAPI{
+				ID:          api.Id,
+				Name:        api.ApiName,
+				Description: api.ApiDescription,
+				Version:     api.ApiVersion,
+				// append endpoint url
+				Url:           apiResponse.GatewayEndPoints[0],
+				Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
+				ApiSpec:       specification,
+				AuthPolicy:    authPolicy,
+			}
+			svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
 			if svcDetail != nil {
 				d.apiChan <- svcDetail
 			}
 		}(api)
 	}
+}
+
+func handleAuthPolicy() string {
+	authPolicy := "api-key" // Default auth i.e api key authentication
+	return authPolicy
 }

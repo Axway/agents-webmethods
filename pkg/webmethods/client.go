@@ -1,18 +1,17 @@
 package webmethods
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 
+	coreapi "github.com/Axway/agent-sdk/pkg/api"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
-	"github.com/Axway/agent-sdk/pkg/util/log"
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 )
 
-const HealthCheckEndpoint = "webmethods"
+const HealthCheckEndpoint = "health"
 
 // Page describes the page query parameter
 type Page struct {
@@ -22,91 +21,145 @@ type Page struct {
 
 // Client interface to gateway
 type Client interface {
-	GetAPI(id string) (*API, error)
-	ListAPIs() ([]API, error)
+	createAuthToken() string
+	ListAPIs() ([]WebmethodsApi, error)
+	GetApiDetails(id string) (*ApiResponse, error)
+	GetApiSpec(id string) ([]byte, error)
+	GetWsdl(gatewayEndpoint string) ([]byte, error)
 	OnConfigChange(webMethodConfig *config.WebMethodConfig)
-}
-
-type ListAPIClient interface {
-	ListAPIs() ([]API, error)
 }
 
 // WebMethodClient is the client for interacting with Webmethods APIM.
 type WebMethodClient struct {
-	specPath string
+	url        string
+	username   string
+	password   string
+	httpClient coreapi.Client
 }
 
 // NewClient creates a new client for interacting with Webmethods APIM.
 func NewClient(webMethodConfig *config.WebMethodConfig) *WebMethodClient {
 	client := &WebMethodClient{}
-
 	client.OnConfigChange(webMethodConfig)
-
 	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.healthcheck)
-
 	return client
 }
 
 func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig) {
-	c.specPath = ""
+	c.url = webMethodConfig.WebmethodsApimUrl
+	c.username = webMethodConfig.Username
+	c.password = webMethodConfig.Password
 }
 
 func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {
 	status = &hc.Status{
 		Result: hc.OK,
 	}
-
 	return status
 }
 
-func (c *WebMethodClient) listSpecFiles() []string {
-	var files []string
-	filepath.Walk(c.specPath, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			files = append(files, path)
-		}
-		return nil
-	})
-	return files
-}
-
-// ListAPIs lists the API.
-func (c *WebMethodClient) ListAPIs() ([]API, error) {
-	specFiles := c.listSpecFiles()
-	apis := make([]API, 0)
-	for _, specFile := range specFiles {
-		apiName, apiSpec, err := c.getSpec(specFile)
-		if err != nil {
-			log.Infof("Failed to load sample API specification from %s: %s ", c.specPath, err.Error())
-		}
-		api := API{
-			ID:            apiName,
-			Name:          apiName,
-			Description:   specFile,
-			Version:       "1.0.0",
-			Url:           "",
-			Documentation: []byte(specFile),
-			ApiSpec:       apiSpec,
-		}
-		apis = append(apis, api)
+// ListAPIs lists webmethods  APIM apis.
+func (c *WebMethodClient) ListAPIs() ([]WebmethodsApi, error) {
+	webmethodsApis := make([]WebmethodsApi, 0)
+	url := fmt.Sprintf("%s/rest/apigateway/apis", c.url)
+	query := map[string]string{
+		"isActive": "true",
+	}
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+	}
+	request := coreapi.Request{
+		Method:      coreapi.GET,
+		URL:         url,
+		Headers:     headers,
+		QueryParams: query,
 	}
 
-	return apis, nil
-}
-
-func (a *WebMethodClient) getSpec(specFile string) (string, []byte, error) {
-	fileName := filepath.Base(specFile)
-	fileName = strings.TrimSuffix(fileName, filepath.Ext(fileName))
-
-	bytes, err := ioutil.ReadFile(specFile)
+	response, err := c.httpClient.Send(request)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
-	return fileName, bytes, nil
+
+	err = json.Unmarshal(response.Body, webmethodsApis)
+	if err != nil {
+		return nil, err
+	}
+	return webmethodsApis, nil
+}
+
+// ListAPIs lists webmethods  APIM apis.
+func (c *WebMethodClient) GetApiDetails(id string) (*ApiResponse, error) {
+	apiResponse := &ApiResponse{}
+	url := fmt.Sprintf("%s/rest/apigateway/apis/%s", c.url, id)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+	}
+	request := coreapi.Request{
+		Method:  coreapi.GET,
+		URL:     url,
+		Headers: headers,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, apiResponse)
+	if err != nil {
+		return nil, err
+	}
+	return apiResponse, nil
 }
 
 // GetAPI gets a single api by id
-func (c *WebMethodClient) GetAPI(id string) (*API, error) {
+func (c *WebMethodClient) GetApiSpec(id string) ([]byte, error) {
 
-	return nil, nil
+	url := fmt.Sprintf("%s/rest/apigateway/apis/%s", c.url, id)
+	query := map[string]string{
+		"format": "openapi",
+	}
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+	}
+	request := coreapi.Request{
+		Method:      coreapi.GET,
+		URL:         url,
+		Headers:     headers,
+		QueryParams: query,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Body, nil
+
+}
+
+func (c *WebMethodClient) GetWsdl(gatewayEndpoint string) ([]byte, error) {
+
+	url := gatewayEndpoint + "?wsdl"
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+	}
+	request := coreapi.Request{
+		Method:  coreapi.GET,
+		URL:     url,
+		Headers: headers,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Body, nil
+
+}
+
+func (c *WebMethodClient) createAuthToken() string {
+	credential := c.username + ":" + c.password
+	return base64.StdEncoding.EncodeToString([]byte(credential))
 }

@@ -23,7 +23,7 @@ const (
 
 // ServiceHandler converts a webmethods APIM to an array of ServiceDetails
 type ServiceHandler interface {
-	ToServiceDetail(api *webmethods.API) *ServiceDetail
+	ToServiceDetail(api *webmethods.AmplifyAPI) *ServiceDetail
 	OnConfigChange(cfg *config.WebMethodConfig)
 }
 
@@ -37,7 +37,7 @@ func (s *serviceHandler) OnConfigChange(cfg *config.WebMethodConfig) {
 }
 
 // ToServiceDetails gathers the ServiceDetail for a Webmethods APIM.
-func (s *serviceHandler) ToServiceDetail(api *webmethods.API) *ServiceDetail {
+func (s *serviceHandler) ToServiceDetail(api *webmethods.AmplifyAPI) *ServiceDetail {
 	logger := logrus.WithFields(logrus.Fields{
 		"name": api.Name,
 		"id":   api.ID,
@@ -51,7 +51,7 @@ func (s *serviceHandler) ToServiceDetail(api *webmethods.API) *ServiceDetail {
 }
 
 // getServiceDetail gets the ServiceDetail for the API asset.
-func (s *serviceHandler) getServiceDetail(api *webmethods.API) (*ServiceDetail, error) {
+func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceDetail, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"name": api.Name,
 		"id":   api.ID,
@@ -126,7 +126,7 @@ func makeChecksum(val interface{}) string {
 }
 
 // isPublished checks if an api is published with the latest changes. Returns true if it is, and false if it is not.
-func isPublished(api *webmethods.API, c cache.Cache) (bool, string) {
+func isPublished(api *webmethods.AmplifyAPI, c cache.Cache) (bool, string) {
 	// Change detection (asset + policies)
 	checksum := makeChecksum(api)
 	item, err := c.Get(checksum)

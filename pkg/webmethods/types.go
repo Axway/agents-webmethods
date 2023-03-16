@@ -1,7 +1,7 @@
 package webmethods
 
 // API -
-type API struct {
+type AmplifyAPI struct {
 	ApiSpec       []byte
 	ID            string
 	Name          string
@@ -9,15 +9,34 @@ type API struct {
 	Version       string
 	Url           string
 	Documentation []byte
+	AuthPolicy    string
 }
 
-type WebmthodsApi struct {
-	apiName          string
-	apiVersion       string
-	isActive         bool
-	apiType          string `type`
-	tracingEnabled   bool
-	publishedPortals []string
-	systemVersion    int
-	id               string
+type WebmethodsApi struct {
+	ApiName          string
+	ApiVersion       string
+	ApiDescription   string
+	IsActive         bool
+	ApiType          string `type`
+	TracingEnabled   bool
+	PublishedPortals []string
+	SystemVersion    int
+	Id               string
+}
+
+type ApiResponse struct {
+	Api              Api
+	GatewayEndPoints []string
+}
+
+type Api struct {
+	ApiDefinition ApiDefinition
+}
+type ApiDefinition struct {
+	Info Info
+}
+type Info struct {
+	Description string
+	Version     string
+	Title       string
 }
