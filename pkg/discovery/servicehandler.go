@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/boomi"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
+	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
 
@@ -21,23 +21,23 @@ const (
 	catalog     = "unified-catalog"
 )
 
-// ServiceHandler converts a boomi API to an array of ServiceDetails
+// ServiceHandler converts a webmethods APIM to an array of ServiceDetails
 type ServiceHandler interface {
-	ToServiceDetail(api *boomi.API) *ServiceDetail
-	OnConfigChange(cfg *config.BoomiConfig)
+	ToServiceDetail(api *webmethods.API) *ServiceDetail
+	OnConfigChange(cfg *config.WebMethodConfig)
 }
 
 type serviceHandler struct {
-	client boomi.Client
+	client webmethods.Client
 	cache  cache.Cache
 	mode   string
 }
 
-func (s *serviceHandler) OnConfigChange(cfg *config.BoomiConfig) {
+func (s *serviceHandler) OnConfigChange(cfg *config.WebMethodConfig) {
 }
 
-// ToServiceDetails gathers the ServiceDetail for a Boomi API.
-func (s *serviceHandler) ToServiceDetail(api *boomi.API) *ServiceDetail {
+// ToServiceDetails gathers the ServiceDetail for a Webmethods APIM.
+func (s *serviceHandler) ToServiceDetail(api *webmethods.API) *ServiceDetail {
 	logger := logrus.WithFields(logrus.Fields{
 		"name": api.Name,
 		"id":   api.ID,
@@ -51,7 +51,7 @@ func (s *serviceHandler) ToServiceDetail(api *boomi.API) *ServiceDetail {
 }
 
 // getServiceDetail gets the ServiceDetail for the API asset.
-func (s *serviceHandler) getServiceDetail(api *boomi.API) (*ServiceDetail, error) {
+func (s *serviceHandler) getServiceDetail(api *webmethods.API) (*ServiceDetail, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"name": api.Name,
 		"id":   api.ID,
@@ -126,7 +126,7 @@ func makeChecksum(val interface{}) string {
 }
 
 // isPublished checks if an api is published with the latest changes. Returns true if it is, and false if it is not.
-func isPublished(api *boomi.API, c cache.Cache) (bool, string) {
+func isPublished(api *webmethods.API, c cache.Cache) (bool, string) {
 	// Change detection (asset + policies)
 	checksum := makeChecksum(api)
 	item, err := c.Get(checksum)

@@ -3,20 +3,20 @@ package subscription
 import (
 	"fmt"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/boomi"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
+	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	prov "github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/util"
 	"github.com/sirupsen/logrus"
 )
 
 type provisioner struct {
-	client boomi.Client
+	client webmethods.Client
 	log    logrus.FieldLogger
 }
 
 // NewProvisioner creates a type to implement the SDK Provisioning methods for handling subscriptions
-func NewProvisioner(client boomi.Client, log logrus.FieldLogger) prov.Provisioning {
+func NewProvisioner(client webmethods.Client, log logrus.FieldLogger) prov.Provisioning {
 	return &provisioner{
 		client: client,
 		log:    log.WithField("component", "mp-provisioner"),

@@ -1,4 +1,4 @@
-# Amplify Boomi Traceability Agent
+# Amplify Webmethods APIM Traceability Agent
 
 ## Prerequisites
 
@@ -9,10 +9,10 @@ Install the agent and provision Amplify Central access as described in [https://
 - Service account client id: the service account client ID used by the agent to communicate with Amplify platform.
 - Public/Private key pem files: the public and private key associated to the service account the agent is using to communicate with Amplify platform.
 
-As well as access to Amplify Central it is assumed you have access to the Boomi API Gateway. You need:
+As well as access to Amplify Central it is assumed you have access to the Webmethods APIM. You need:
 
 - Credentials with access to the organization the agents will attach to.
-- Details of access for Boomi API gateway 
+- Details of access for Webmethods API gateway 
 
 ## Configuring the Traceability Agent
 
@@ -22,10 +22,10 @@ The agents read their configuration from a YAML files or optionally from an envi
 
 ```shell
 # starting the agent by providing the path of the configuration file
-./boomi_traceability_agent --pathConfig <path to boomi_traceability_agent.yaml>
+./webmethods_traceability_agent --pathConfig <path to webmethods_traceability_agent.yaml>
 
 # If binary and yaml files are in the same folder, you can start the agent using:
-./boomi_traceability_agent
+./webmethods_traceability_agent
 ```
 
 ## Configuration Variables
@@ -70,7 +70,7 @@ The agents read their configuration from a YAML files or optionally from an envi
 | TRACEABILITY_REDACTION_RESPONSEHEADER_SHOW| output.traceability.redaction.response.show               |The redaction environment variable to set a Regex expression to show Response headers                                                                                                                                                                                                                    | Internally, this value defaults to empty                             |
 | TRACEABILITY_REDACTION_RESPONSEHEADER_SANITIZE| output.traceability.redaction.responseheader.sanitize |The redaction environment variable to set a Regex expression to sanitize Response headers                                                                                                                                                                                                                | Internally, this value defaults to empty                             |
 
-TODO: Add config details for boomi traceability agent
+TODO: Add config details for Webmethods traceability agent
 
 For the redaction based environment variables, please refer to [Setting up Redaction](https://axway-open-docs.netlify.app/docs/central/connected_agent_common_reference/trace_redaction/)
 
@@ -85,5 +85,5 @@ The list of default cipher suites is: ECDHE-ECDSA-AES-256-GCM-SHA384, ECDHE-RSA-
 ## Build Docker images
 
 ```bash
-docker build -t boomi-traceability -f Dockerfile.traceability .
+docker build -t webmethods-traceability -f Dockerfile.traceability .
 ```

@@ -1,4 +1,4 @@
-# Amplify Boomi Discovery Agent
+# Amplify Webmethods APIM Discovery Agent
 
 ## Prerequisites
 
@@ -9,10 +9,10 @@ Install the agent and provision Amplify Central access as described in [https://
 - Service account client id: the service account client ID used by the agent to communicate with Amplify platform.
 - Public/Private key pem files: the public and private key associated to the service account the agent is using to communicate with Amplify platform.
 
-As well as access to Amplify Central it is assumed you have access to the Boomi API Gateway. You need:
+As well as access to Amplify Central it is assumed you have access to the Webmethods APIM Gateway. You need:
 
 - Credentials with access to the organization the agents will attach to.
-- Details of access for Boomi API gateway 
+- Details of access for Webmethods API gateway 
 
 ## Configuring the Discovery Agent
 
@@ -22,10 +22,10 @@ The agents read their configuration from a YAML files or optionally from an envi
 
 ```shell
 # starting the agent by providing the path of the configuration file
-./boomi_discovery_agent --pathConfig <path to boomi_discovery_agent.yaml>
+./webmethods_discovery_agent --pathConfig <path to webmethods_discovery_agent.yaml>
 
 # If binary and yaml files are in the same folder, you can start the agent using:
-./boomi_discovery_agent
+./webmethods_discovery_agent
 ```
 
 ## Configuration Variables
@@ -91,7 +91,7 @@ The agents read their configuration from a YAML files or optionally from an envi
 | STATUS_HEALTHCHECKPERIOD                                           | status.healthCheckPeriod                                            | Time in minutes allotted for services to be ready before exiting the agent. Allowed values are from 1 to 5 minutes.                                                                                                                                                                                      | _3m_                                                                 |
 | STATUS_PORT                                                        | status.port                                                         | The port that the healthcheck endpoint will listen on                                                                                                                                                                                                                                                    | _8989_                                                               |
 
-TODO: Add config details for boomi discovery agent
+TODO: Add config details for Webmethods discovery agent
 
 
 ### Supported Cipher Suites
@@ -105,6 +105,6 @@ The list of default cipher suites is: ECDHE-ECDSA-AES-256-GCM-SHA384, ECDHE-RSA-
 ## Build Docker images
 
 ```bash
-docker build -t boomi-discovery -f Dockerfile.discovery .
+docker build -t webmethods-discovery -f Dockerfile.discovery .
 ```
 

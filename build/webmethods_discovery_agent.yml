@@ -9,8 +9,8 @@ log:
   output: stdout
   path: logs
 
-boomi:
-  # TODO: Add config for boomi API Gateway here
+webmethods:
+  # TODO: Add config for webmethods API Gateway here
   specPath: ./apis
   pollInterval: 30s
   config_key_1: "value-1"

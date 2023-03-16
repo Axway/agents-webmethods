@@ -48,7 +48,7 @@ type AgentConfig struct {
 	WebMethodConfig *WebMethodConfig      `config:"webmethod"`
 }
 
-// WebMethodConfig - represents the config for the Boomi gateway
+// WebMethodConfig - represents the config for the Webmethods APIM
 type WebMethodConfig struct {
 	corecfg.IConfigValidator
 	AgentType         corecfg.AgentType
@@ -67,40 +67,40 @@ type WebMethodConfig struct {
 // ValidateCfg - Validates the gateway config
 func (c *WebMethodConfig) ValidateCfg() (err error) {
 	if c.WebmethodsApimUrl == "" {
-		return fmt.Errorf("invalid boomi configuration: atomSphereUrl is not configured")
+		return fmt.Errorf("invalid Webmothds configuration: webbmethodsApimUrl is not configured")
 	} else {
 		_, err := url.ParseRequestURI(c.WebmethodsApimUrl)
 		if err != nil {
-			return fmt.Errorf("invalid boomi Platform URL: %s", c.WebmethodsApimUrl)
+			return fmt.Errorf("invalid Webmothods APIM URL: %s", c.WebmethodsApimUrl)
 		}
 	}
 
 	if c.Username == "" {
-		return fmt.Errorf("invalid boomi configuration: username is not configured")
+		return fmt.Errorf("invalid Webmethods APIM configuration: username is not configured")
 	}
 
 	if c.Password == "" {
-		return fmt.Errorf("invalid boomi configuration: password is not configured")
+		return fmt.Errorf("invalid  Webmethods APIM configuration: password is not configured")
 	}
 
 	if c.PollInterval == 0 {
-		return errors.New("invalid boomi configuration: pollInterval is invalid")
+		return errors.New("invalid  Webmethods APIM configuration: pollInterval is invalid")
 	}
 
 	if _, err := os.Stat(c.CachePath); os.IsNotExist(err) {
-		return fmt.Errorf("invalid boomi cache path: path does not exist: %s", c.CachePath)
+		return fmt.Errorf("invalid  Webmethods APIM cache path: path does not exist: %s", c.CachePath)
 	}
 	c.CachePath = filepath.Clean(c.CachePath)
 
 	if c.AgentType == corecfg.TraceabilityAgent && c.LogFile != "" {
 		if _, err := os.Stat(c.LogFile); os.IsNotExist(err) {
-			return fmt.Errorf("invalid boomi log path: path does not exist: %s", c.LogFile)
+			return fmt.Errorf("invalid  Webmethods APIM log path: path does not exist: %s", c.LogFile)
 		}
 	}
 	return
 }
 
-// AddConfigProperties - Adds the command properties needed for Boomi agent
+// AddConfigProperties - Adds the command properties needed for Webmethods agent
 func AddConfigProperties(props properties.Properties) {
 	props.AddDurationProperty(pathPollInterval, 30*time.Second, "Poll interval for read spec discovery/traffic log")
 	props.AddStringProperty(pathLogFile, "./logs/traffic.log", "Sample log file with traffic event from gateway")
@@ -117,8 +117,8 @@ func AddConfigProperties(props properties.Properties) {
 	props.AddStringProperty(pathSSLMaxVersion, "0", "Maximum acceptable SSL/TLS protocol version.")
 }
 
-// NewBoomiConfig - parse the props and create an Boomi Configuration structure
-func NewBoomiConfig(props properties.Properties, agentType corecfg.AgentType) *WebMethodConfig {
+// NewWebmothodsConfig - parse the props and create an Webmethods Configuration structure
+func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentType) *WebMethodConfig {
 	return &WebMethodConfig{
 		AgentType:         agentType,
 		PollInterval:      props.DurationPropertyValue(pathPollInterval),

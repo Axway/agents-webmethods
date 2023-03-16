@@ -5,28 +5,28 @@ import (
 	"os/signal"
 	"syscall"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/boomi"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
+	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	coreAgent "github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/cache"
 )
 
 type Repeater interface {
 	Loop()
-	OnConfigChange(cfg *config.BoomiConfig)
+	OnConfigChange(cfg *config.WebMethodConfig)
 	Stop()
 }
 
 // Agent -
 type Agent struct {
-	client    boomi.Client
+	client    webmethods.Client
 	stopAgent chan bool
 	discovery Repeater
 	publisher Repeater
 }
 
 // NewAgent creates a new agent
-func NewAgent(cfg *config.AgentConfig, client boomi.Client) (agent *Agent) {
+func NewAgent(cfg *config.AgentConfig, client webmethods.Client) (agent *Agent) {
 	buffer := 5
 	apiChan := make(chan *ServiceDetail, buffer)
 
@@ -51,7 +51,7 @@ func NewAgent(cfg *config.AgentConfig, client boomi.Client) (agent *Agent) {
 		client:            client,
 		centralClient:     coreAgent.GetCentralClient(),
 		discoveryPageSize: 50,
-		pollInterval:      cfg.BoomiConfig.PollInterval,
+		pollInterval:      cfg.WebMethodConfig.PollInterval,
 		stopDiscovery:     make(chan bool),
 		serviceHandler:    svcHandler,
 	}
@@ -60,7 +60,7 @@ func NewAgent(cfg *config.AgentConfig, client boomi.Client) (agent *Agent) {
 }
 
 func newAgent(
-	client boomi.Client,
+	client webmethods.Client,
 	discovery Repeater,
 	publisher Repeater,
 ) *Agent {
@@ -80,8 +80,8 @@ func (a *Agent) onConfigChange() {
 	a.discovery.Stop()
 	a.publisher.Stop()
 
-	a.client.OnConfigChange(cfg.BoomiConfig)
-	a.discovery.OnConfigChange(cfg.BoomiConfig)
+	a.client.OnConfigChange(cfg.WebMethodConfig)
+	a.discovery.OnConfigChange(cfg.WebMethodConfig)
 
 	// Restart Discovery & Publish
 	go a.discovery.Loop()

@@ -1,5 +1,5 @@
 ################### Beat Configuration #########################
-boomi_traceability_agent:
+webmethods_traceability_agent:
   # Settings for connecting to Amplify Central
   central:
     url: ${CENTRAL_URL:https://apicentral.axway.com}
@@ -40,8 +40,8 @@ boomi_traceability_agent:
     proxyUrl: ${CENTRAL_PROXYURL:""}
     clientTimeout: ${CENTRAL_CLIENTTIMEOUT:60s}
   # Settings for connecting to API Gateway
-  boomi:
-    # TODO: Add config for boomi API Gateway here
+  webmethods:
+    # TODO: Add config for webmethods API Gateway here
     logFile: ./logs/traffic.log
     pollInterval: 30s
     config_key_1: "value-1"

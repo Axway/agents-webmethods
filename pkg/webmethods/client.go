@@ -24,31 +24,31 @@ type Page struct {
 type Client interface {
 	GetAPI(id string) (*API, error)
 	ListAPIs() ([]API, error)
-	OnConfigChange(boomiConfig *config.BoomiConfig)
+	OnConfigChange(webMethodConfig *config.WebMethodConfig)
 }
 
 type ListAPIClient interface {
 	ListAPIs() ([]API, error)
 }
 
-// WebMethodClient is the client for interacting with Boomi.
+// WebMethodClient is the client for interacting with Webmethods APIM.
 type WebMethodClient struct {
 	specPath string
 }
 
-// NewClient creates a new client for interacting with Boomi.
-func NewClient(boomiConfig *config.BoomiConfig) *WebMethodClient {
+// NewClient creates a new client for interacting with Webmethods APIM.
+func NewClient(webMethodConfig *config.WebMethodConfig) *WebMethodClient {
 	client := &WebMethodClient{}
 
-	client.OnConfigChange(boomiConfig)
+	client.OnConfigChange(webMethodConfig)
 
-	hc.RegisterHealthcheck("Boomi API Gateway", HealthCheckEndpoint, client.healthcheck)
+	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.healthcheck)
 
 	return client
 }
 
-func (c *WebMethodClient) OnConfigChange(boomiConfig *config.BoomiConfig) {
-	c.specPath = boomiConfig.SpecPath
+func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig) {
+	c.specPath = ""
 }
 
 func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {

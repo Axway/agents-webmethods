@@ -19,7 +19,7 @@ func (p *publisher) Stop() {
 	p.stopPublish <- true
 }
 
-func (p *publisher) OnConfigChange(_ *config.BoomiConfig) {
+func (p *publisher) OnConfigChange(_ *config.WebMethodConfig) {
 	// noop
 }
 

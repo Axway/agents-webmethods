@@ -4,8 +4,8 @@ import (
 	"github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/sirupsen/logrus"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/boomi"
 	subs "git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
+	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
@@ -24,11 +24,11 @@ func init() {
 	// Create new root command with callbacks to initialize the agent config and command execution.
 	// The first parameter identifies the name of the yaml file that agent will look for to load the config
 	RootCmd = corecmd.NewRootCmd(
-		"boomi_discovery_agent", // Name of the yaml file
-		"Boomi Discovery Agent", // Agent description
-		initConfig,              // Callback for initializing the agent config
-		run,                     // Callback for executing the agent
-		corecfg.DiscoveryAgent,  // Agent Type (Discovery or Traceability)
+		"webmethods_discovery_agent", // Name of the yaml file
+		"Webmethods Discovery Agent", // Agent description
+		initConfig,                   // Callback for initializing the agent config
+		run,                          // Callback for executing the agent
+		corecfg.DiscoveryAgent,       // Agent Type (Discovery or Traceability)
 	)
 	config.AddConfigProperties(RootCmd.GetProperties())
 
@@ -45,8 +45,8 @@ func run() error {
 // and passed to the callback allowing the agent code to access the central config
 func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	conf := &config.AgentConfig{
-		CentralConfig: centralConfig,
-		BoomiConfig:   config.NewBoomiConfig(RootCmd.GetProperties()),
+		CentralConfig:   centralConfig,
+		WebMethodConfig: config.NewWebmothodsConfig(RootCmd.GetProperties(), centralConfig.GetAgentType()),
 	}
 
 	config.SetConfig(conf)
@@ -55,7 +55,7 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 		"component": "agent",
 	})
 
-	gatewayClient := boomi.NewClient(conf.BoomiConfig)
+	gatewayClient := webmethods.NewClient(conf.WebMethodConfig)
 	if centralConfig.IsMarketplaceSubsEnabled() {
 		agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
 		agent.NewAPIKeyAccessRequestBuilder().Register()

@@ -16,7 +16,7 @@ var RootCmd corecmd.AgentRootCmd
 var beatCmd *libcmd.BeatsRootCmd
 
 func init() {
-	name := "boomi_traceability_agent"
+	name := "webmethods_traceability_agent"
 	settings := instance.Settings{
 		Name:            name,
 		HasDashboards:   true,
@@ -31,7 +31,7 @@ func init() {
 	RootCmd = corecmd.NewCmd(
 		&cmd,
 		name, // Name of the agent and yaml config file
-		"Boomi Traceability Agent",
+		"Webmethods Traceability Agent",
 		initConfig,
 		run,
 		corecfg.TraceabilityAgent,
@@ -49,8 +49,8 @@ func run() error {
 // and passed to the callback allowing the agent code to access the central config
 func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	agentConfig := &config.AgentConfig{
-		CentralConfig: centralConfig,
-		BoomiConfig:   config.NewBoomiConfig(RootCmd.GetProperties()),
+		CentralConfig:   centralConfig,
+		WebMethodConfig: config.NewWebmothodsConfig(RootCmd.GetProperties()),
 	}
 	config.SetConfig(agentConfig)
 	return agentConfig, nil

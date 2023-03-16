@@ -1,42 +1,49 @@
-.PHONY: all clean build
+.PHONY: clean dep-check dep update-sdk dep-version dep-sdk test test-sonar sonar build docker
 
 WORKSPACE ?= $$(pwd)
+GO_PKG_LIST := $(shell go list ./...)
+export GOFLAGS := -mod=mod
+export GOPRIVATE := git.ecd.axway.org
 
-GO_PKG_LIST := $(shell go list ./... | grep -v *mock*.go)
-SDK_VERSION := $(shell go list -m github.com/Axway/agent-sdk | cut -d ' ' -f 2 | cut -c 2-)
-
-download:
-	@go mod tidy && go mod download
-
-verify:
-	@go mod verify
-
-all: clean build
+all: clean dep test build docker
+	@echo "Done"
 
 clean:
-	@rm -rf dist
+	@rm -rf ./bin/
+	@mkdir -p ./bin
+	@echo "Clean complete"
 
-format:
-	@gofmt -w .
-	@goimports -w .
+dep-check:
+	@go mod verify
 
 dep:
 	@echo "Resolving go package dependencies"
 	@go mod tidy
 	@echo "Package dependencies completed"
 
-dep-version:
-	@export version=$(sdk) && make update-sdk && make dep
+update-sdk:
+	@echo "Updating SDK dependencies"
+	@export GOFLAGS="" && go mod edit -require "github.com/Axway/agent-sdk@${version}"
 
 dep-branch:
 	@make sdk=`git branch --show-current` dep-version
 
-dep-sdk:
+dep-version:
+	@export version=$(sdk) && make update-sdk && make dep
+
+dep-sdk: 
 	@make sdk=main dep-version
 
-update-sdk:
-	@echo "Updating SDK dependencies"
-	@export GOFLAGS="" && go mod edit -require "github.com/Axway/agent-sdk@${version}"
+test: dep
+	@go vet ${GO_PKG_LIST}
+	@go test -race -short -coverprofile=${WORKSPACE}/gocoverage.out -count=1 ${GO_PKG_LIST}
+
+test-sonar: dep
+	@go vet ${GO_PKG_LIST}
+	@go test -short -coverpkg=./... -coverprofile=${WORKSPACE}/gocoverage.out -count=1 ${GO_PKG_LIST} -json > ${WORKSPACE}/goreport.json
+
+sonar: test-sonar
+	./sonar.sh $(sonarHost)
 
 sdk-version:
 	@echo $(SDK_VERSION)
@@ -56,7 +63,7 @@ build-discovery:
 			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildVersion=${VERSION}' \
 			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildCommitSha=${COMMIT_ID}' \
 			-X 'github.com/Axway/agent-sdk/pkg/cmd.SDKBuildVersion=${SDK_VERSION}' \
-			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=BoomiDiscoveryAgent'" \
+			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=WebmethodsDiscoveryAgent'" \
 		-o bin/discovery ./cmd/discovery/main.go
 	@echo "discovery agent binary placed at bin/discovery"
 
@@ -69,7 +76,7 @@ build-trace:
 			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildVersion=${VERSION}' \
 			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildCommitSha=${COMMIT_ID}' \
 			-X 'github.com/Axway/agent-sdk/pkg/cmd.SDKBuildVersion=${SDK_VERSION}' \
-			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=BoomiTraceabilityAgent'" \
+			-X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=WebmethodsTraceabilityAgent'" \
 		-o bin/traceability ./cmd/traceability/main.go
 	@echo "traceability agent binary placed at bin/traceability"
 
@@ -81,16 +88,9 @@ test:
 	@go test -race -short -count=1 -coverprofile=coverage/coverage.cov ${GO_PKG_LIST}
 
 docker-build-disc:
-	@docker build -t boomi_discovery_agent:latest -f ${WORKSPACE}/build/discovery.Dockerfile .
+	@docker build -t webmethods_discovery_agent:latest -f ${WORKSPACE}/build/discovery.Dockerfile .
 	@echo "Docker build complete"
 
 docker-build-trace:
-	@docker build -t boomi_traceability_agent:latest -f ${WORKSPACE}/build/traceability.Dockerfile .
+	@docker build -t webmethods_traceability_agent:latest -f ${WORKSPACE}/build/traceability.Dockerfile .
 	@echo "Docker build complete"
-
-test-sonar:
-	@go vet ${GO_PKG_LIST}
-	@go test -v -short -coverpkg=./... -coverprofile=./gocoverage.out -count=1 ${GO_PKG_LIST} -json > ./goreport.json
-
-sonar: test-sonar
-	./sonar.sh $(sonarHost)

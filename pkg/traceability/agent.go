@@ -14,16 +14,16 @@ import (
 	"github.com/elastic/beats/v7/libbeat/common"
 )
 
-// Agent - boomi Beater configuration. Implements the beat.Beater interface.
+// Agent - Webmethods Beater configuration. Implements the beat.Beater interface.
 type Agent struct {
 	client         beat.Client
 	doneCh         chan struct{}
 	eventChannel   chan string
 	eventProcessor Processor
-	boomi          Emitter
+	webmethods     Emitter
 }
 
-// NewBeater creates an instance of boomi_traceability_agent.
+// NewBeater creates an instance of webmethods_traceability_agent.
 func NewBeater(_ *beat.Beat, _ *common.Config) (beat.Beater, error) {
 	eventChannel := make(chan string)
 	agentConfig := config.GetConfig()
@@ -31,7 +31,7 @@ func NewBeater(_ *beat.Beat, _ *common.Config) (beat.Beater, error) {
 	generator := transaction.NewEventGenerator()
 	mapper := &EventMapper{}
 	processor := NewEventProcessor(agentConfig, generator, mapper)
-	emitter := NewBoomiEventEmitter(agentConfig.BoomiConfig.LogFile, eventChannel)
+	emitter := NewWebmethodsEventEmitter(agentConfig.WebMethodConfig.LogFile, eventChannel)
 
 	return newAgent(processor, emitter, eventChannel)
 }
@@ -45,7 +45,7 @@ func newAgent(
 		doneCh:         make(chan struct{}),
 		eventChannel:   eventChannel,
 		eventProcessor: processor,
-		boomi:          emitter,
+		webmethods:     emitter,
 	}
 
 	// Validate that all necessary services are up and running. If not, return error
@@ -56,7 +56,7 @@ func newAgent(
 	return a, nil
 }
 
-// Run starts the Boomi traceability agent.
+// Run starts the webmethods traceability agent.
 func (a *Agent) Run(b *beat.Beat) error {
 	coreagent.OnConfigChange(a.onConfigChange)
 
@@ -67,7 +67,7 @@ func (a *Agent) Run(b *beat.Beat) error {
 		return err
 	}
 
-	go a.boomi.Start()
+	go a.webmethods.Start()
 
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, os.Interrupt)
