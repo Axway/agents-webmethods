@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
@@ -22,7 +23,7 @@ type Page struct {
 // Client interface to gateway
 type Client interface {
 	createAuthToken() string
-	ListAPIs() ([]WebmethodsApi, error)
+	ListAPIs() ([]ListApiResponse, error)
 	GetApiDetails(id string) (*ApiResponse, error)
 	GetApiSpec(id string) ([]byte, error)
 	GetWsdl(gatewayEndpoint string) ([]byte, error)
@@ -40,6 +41,7 @@ type WebMethodClient struct {
 // NewClient creates a new client for interacting with Webmethods APIM.
 func NewClient(webMethodConfig *config.WebMethodConfig) *WebMethodClient {
 	client := &WebMethodClient{}
+	client.httpClient = coreapi.NewClient(webMethodConfig.TLS, webMethodConfig.ProxyURL)
 	client.OnConfigChange(webMethodConfig)
 	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.healthcheck)
 	return client
@@ -52,21 +54,46 @@ func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig
 }
 
 func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {
+	url := c.url + "/rest/apigateway/health"
+	fmt.Println(url)
 	status = &hc.Status{
 		Result: hc.OK,
 	}
+
+	request := coreapi.Request{
+		Method: coreapi.GET,
+		URL:    url,
+	}
+	response, err := c.httpClient.Send(request)
+
+	if err != nil {
+		status = &hc.Status{
+			Result:  hc.FAIL,
+			Details: fmt.Sprintf("%s Failed. Unable to connect to Boomi, check Boomi configuration. %s", name, err.Error()),
+		}
+	}
+
+	if response.Code != http.StatusOK {
+		status = &hc.Status{
+			Result:  hc.FAIL,
+			Details: fmt.Sprintf("%s Failed. Unable to connect to Boomi, check Boomi configuration.", name),
+		}
+	}
+
 	return status
+
 }
 
 // ListAPIs lists webmethods  APIM apis.
-func (c *WebMethodClient) ListAPIs() ([]WebmethodsApi, error) {
-	webmethodsApis := make([]WebmethodsApi, 0)
+func (c *WebMethodClient) ListAPIs() ([]ListApiResponse, error) {
+	//webmethodsApis := make([]WebmethodsApi, 0)
 	url := fmt.Sprintf("%s/rest/apigateway/apis", c.url)
 	query := map[string]string{
 		"isActive": "true",
 	}
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
+		"Accept":        "application/json",
 	}
 	request := coreapi.Request{
 		Method:      coreapi.GET,
@@ -79,20 +106,21 @@ func (c *WebMethodClient) ListAPIs() ([]WebmethodsApi, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	err = json.Unmarshal(response.Body, webmethodsApis)
+	listApi := &ListApi{}
+	err = json.Unmarshal(response.Body, &listApi)
 	if err != nil {
 		return nil, err
 	}
-	return webmethodsApis, nil
+	return listApi.ListApiResponse, nil
 }
 
 // ListAPIs lists webmethods  APIM apis.
 func (c *WebMethodClient) GetApiDetails(id string) (*ApiResponse, error) {
-	apiResponse := &ApiResponse{}
+	getApiDetails := &GetApiDetails{}
 	url := fmt.Sprintf("%s/rest/apigateway/apis/%s", c.url, id)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
+		"Accept":        "application/json",
 	}
 	request := coreapi.Request{
 		Method:  coreapi.GET,
@@ -105,11 +133,11 @@ func (c *WebMethodClient) GetApiDetails(id string) (*ApiResponse, error) {
 		return nil, err
 	}
 
-	err = json.Unmarshal(response.Body, apiResponse)
+	err = json.Unmarshal(response.Body, getApiDetails)
 	if err != nil {
 		return nil, err
 	}
-	return apiResponse, nil
+	return &getApiDetails.ApiResponse, nil
 }
 
 // GetAPI gets a single api by id
@@ -128,7 +156,6 @@ func (c *WebMethodClient) GetApiSpec(id string) ([]byte, error) {
 		Headers:     headers,
 		QueryParams: query,
 	}
-
 	response, err := c.httpClient.Send(request)
 	if err != nil {
 		return nil, err
@@ -161,5 +188,5 @@ func (c *WebMethodClient) GetWsdl(gatewayEndpoint string) ([]byte, error) {
 
 func (c *WebMethodClient) createAuthToken() string {
 	credential := c.username + ":" + c.password
-	return base64.StdEncoding.EncodeToString([]byte(credential))
+	return "Basic :" + base64.StdEncoding.EncodeToString([]byte(credential))
 }

@@ -64,18 +64,21 @@ func (d *discovery) discoverAPIs() {
 	if err != nil {
 		log.Error(err)
 	}
+	fmt.Println("**********")
+	fmt.Println(apis)
+	fmt.Println("**********")
 
 	for _, api := range apis {
-		go func(api webmethods.WebmethodsApi) {
-			apiResponse, err := d.client.GetApiDetails(api.Id)
+		go func(api webmethods.ListApiResponse) {
+			apiResponse, err := d.client.GetApiDetails(api.WebmethodsApi.Id)
 			if err != nil {
 				panic(fmt.Sprintf("Unable to decompress : %s", err))
 			}
 
 			var specification []byte
-			if api.ApiType == "REST" {
-				specification, err = d.client.GetApiSpec(api.Id)
-			} else if api.ApiType == "SOAP" {
+			if api.WebmethodsApi.ApiType == "REST" {
+				specification, err = d.client.GetApiSpec(api.WebmethodsApi.Id)
+			} else if api.WebmethodsApi.ApiType == "SOAP" {
 				specification, err = d.client.GetWsdl(apiResponse.GatewayEndPoints[0])
 			}
 			if err != nil {
@@ -84,15 +87,16 @@ func (d *discovery) discoverAPIs() {
 			authPolicy := handleAuthPolicy()
 
 			amplifyApi := webmethods.AmplifyAPI{
-				ID:          api.Id,
-				Name:        api.ApiName,
-				Description: api.ApiDescription,
-				Version:     api.ApiVersion,
+				ID:          api.WebmethodsApi.Id,
+				Name:        api.WebmethodsApi.ApiName,
+				Description: api.WebmethodsApi.ApiDescription,
+				Version:     api.WebmethodsApi.ApiVersion,
 				// append endpoint url
 				Url:           apiResponse.GatewayEndPoints[0],
 				Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
 				ApiSpec:       specification,
 				AuthPolicy:    authPolicy,
+				ApiType:       api.WebmethodsApi.ApiType,
 			}
 			svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
 			if svcDetail != nil {

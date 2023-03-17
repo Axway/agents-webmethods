@@ -10,6 +10,15 @@ type AmplifyAPI struct {
 	Url           string
 	Documentation []byte
 	AuthPolicy    string
+	ApiType       string
+}
+
+type ListApi struct {
+	ListApiResponse []ListApiResponse `json:"apiResponse"`
+}
+
+type ListApiResponse struct {
+	WebmethodsApi WebmethodsApi `json:"api"`
 }
 
 type WebmethodsApi struct {
@@ -17,16 +26,20 @@ type WebmethodsApi struct {
 	ApiVersion       string
 	ApiDescription   string
 	IsActive         bool
-	ApiType          string `type`
+	ApiType          string `json:"type"`
 	TracingEnabled   bool
 	PublishedPortals []string
 	SystemVersion    int
 	Id               string
 }
 
+type GetApiDetails struct {
+	ApiResponse ApiResponse `json:"apiResponse"`
+}
+
 type ApiResponse struct {
-	Api              Api
-	GatewayEndPoints []string
+	Api              Api      `json:"api"`
+	GatewayEndPoints []string `json:"gatewayEndPoints"`
 }
 
 type Api struct {

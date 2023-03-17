@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
@@ -72,10 +71,7 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 	ard := provisioning.APIKeyARD
 	crds := []string{provisioning.APIKey}
 
-	specType, err := getSpecType(api.ApiSpec)
-	if err != nil {
-		return nil, err
-	}
+	specType := getSpecType(api.ApiType)
 
 	if specType == "" {
 		return nil, fmt.Errorf("unknown spec type")
@@ -86,7 +82,7 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		CRDs:                    crds,
 		APIName:                 api.Name,
 		APISpec:                 api.ApiSpec,
-		AuthPolicy:              "api-key",
+		AuthPolicy:              api.AuthPolicy,
 		Description:             api.Description,
 		// Use the Asset ID for the externalAPIID so that apis linked to the asset are created as a revision
 		ID:                api.ID,
@@ -103,20 +99,14 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 }
 
 // getSpecType determines the correct resource type for the asset.
-func getSpecType(specContent []byte) (string, error) {
-	if specContent != nil {
-		jsonMap := make(map[string]interface{})
-		err := json.Unmarshal(specContent, &jsonMap)
-		if err != nil {
-			return "", err
-		}
-		if _, isSwagger := jsonMap["swagger"]; isSwagger {
-			return apic.Oas2, nil
-		} else if _, isOpenAPI := jsonMap["openapi"]; isOpenAPI {
-			return apic.Oas3, nil
-		}
+func getSpecType(apiType string) string {
+
+	if apiType == "REST" {
+		return apic.Oas3
+	} else if apiType == "SOAP" {
+		return apic.Wsdl
 	}
-	return "", nil
+	return ""
 }
 
 // makeChecksum generates a makeChecksum for the api for change detection
