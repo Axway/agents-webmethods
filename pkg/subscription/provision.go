@@ -54,6 +54,37 @@ func (p provisioner) AccessRequestProvision(req prov.AccessRequest) (prov.Reques
 		return p.failed(rs, notFound(common.AttrAPIID)), nil
 	}
 
+	webmethodsApplicationId := req.GetApplicationDetailsValue("webmethodsApplicationId")
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID)), nil
+	}
+
+	webmethodsApplication, err := p.client.GetApplication(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Webmethods Application not found")), nil
+	}
+	apiIds := []string{apiID}
+	webmethodsApplication.NewApisForAssociation = apiIds
+
+	updatedWebmethodsApplication, err := p.client.UpdateApplication(webmethodsApplication)
+	if err != nil {
+		return p.failed(rs, notFound("Error assocating API to Webmethods Application")), nil
+	}
+
+	var matchAPI bool
+
+	for _, value := range updatedWebmethodsApplication.ConsumingAPIs {
+		if value == apiID {
+			p.log.Info("Successfully updated application %s with apikey  %s", updatedWebmethodsApplication.Name, apiID)
+			matchAPI = true
+			break
+		}
+	}
+
+	if !matchAPI {
+		return p.failed(rs, notFound("Error assocating API to Webmethods Application")), nil
+	}
+
 	// process access request create
 
 	p.log.
@@ -91,6 +122,16 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 
 	// process application create
 
+	var application webmethods.Application
+	application.Name = appName
+	application.Version = "1.0"
+	application.Description = appName
+
+	createdApplication, err := p.client.CreateApplication(&application)
+	if err != nil {
+		return p.failed(rs, notFound("Error creating application"))
+	}
+	rs.AddProperty("webmethodsApplicationId", createdApplication.Id)
 	p.log.
 		WithField("appName", req.GetManagedApplicationName()).
 		Info("created application")
@@ -120,8 +161,15 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 		return p.failed(rs, notFound("appName")), nil
 	}
 
-	cr := prov.NewCredentialBuilder().SetAPIKey(appName)
-
+	appID := req.GetApplicationDetailsValue(common.AppID)
+	if appName == "" {
+		return p.failed(rs, notFound("appID")), nil
+	}
+	application, err := p.client.GetApplication(appID)
+	if err != nil {
+		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+	}
+	cr := prov.NewCredentialBuilder().SetAPIKey(application.AccessTokens.ApiAccessKey.APIAccessKey)
 	p.log.Info("created credentials")
 
 	return rs.Success(), cr

@@ -82,8 +82,8 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		CRDs:                    crds,
 		APIName:                 api.Name,
 		APISpec:                 api.ApiSpec,
-		AuthPolicy:              api.AuthPolicy,
-		Description:             api.Description,
+		//AuthPolicy:              api.AuthPolicy,
+		Description: api.Description,
 		// Use the Asset ID for the externalAPIID so that apis linked to the asset are created as a revision
 		ID:                api.ID,
 		ResourceType:      specType,

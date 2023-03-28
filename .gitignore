@@ -14,4 +14,4 @@ whitesource.config @dfeldick
 Makefile @dfeldick @jcollins @vchauhan
 sonar.sh @dfeldick @jcollins @vchauhan
 build/scripts/ @dfeldick @jcollins @vchauhan
-bin/discovery
+bin/*

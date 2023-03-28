@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
+	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
@@ -27,12 +28,18 @@ type Client interface {
 	GetApiDetails(id string) (*ApiResponse, error)
 	GetApiSpec(id string) ([]byte, error)
 	GetWsdl(gatewayEndpoint string) ([]byte, error)
+	CreateApplication(application *Application) (*Application, error)
+	UpdateApplication(application *Application) (*Application, error)
+
+	GetApplication(applicationId string) (*Application, error)
+	RotateApplicationApikey(applicationId string) error
 	OnConfigChange(webMethodConfig *config.WebMethodConfig)
 }
 
 // WebMethodClient is the client for interacting with Webmethods APIM.
 type WebMethodClient struct {
-	url        string
+	url string
+
 	username   string
 	password   string
 	httpClient coreapi.Client
@@ -184,6 +191,105 @@ func (c *WebMethodClient) GetWsdl(gatewayEndpoint string) ([]byte, error) {
 
 	return response.Body, nil
 
+}
+
+func (c *WebMethodClient) GetApplication(applicationId string) (*Application, error) {
+	application := &Application{}
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Accept":        "application/json",
+	}
+	request := coreapi.Request{
+		Method:  coreapi.GET,
+		URL:     url,
+		Headers: headers,
+	}
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, application)
+	if err != nil {
+		return nil, err
+	}
+	return application, nil
+}
+
+func (c *WebMethodClient) CreateApplication(application *Application) (*Application, error) {
+	responseApplication := &Application{}
+	url := fmt.Sprintf("%s/rest/apigateway/applications", c.url)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	buffer, err := json.Marshal(application)
+	if err != nil {
+		return nil, agenterrors.Newf(2000, err.Error())
+	}
+	request := coreapi.Request{
+		Method:  coreapi.POST,
+		URL:     url,
+		Headers: headers,
+		Body:    buffer,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, responseApplication)
+	return responseApplication, nil
+}
+
+func (c *WebMethodClient) UpdateApplication(application *Application) (*Application, error) {
+	responseApplication := &Application{}
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, application.Id)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	buffer, err := json.Marshal(application)
+	if err != nil {
+		return nil, agenterrors.Newf(2000, err.Error())
+	}
+	request := coreapi.Request{
+		Method:  coreapi.PUT,
+		URL:     url,
+		Headers: headers,
+		Body:    buffer,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, responseApplication)
+	return responseApplication, nil
+}
+
+func (c *WebMethodClient) RotateApplicationApikey(applicationId string) error {
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	var jsonBody = []byte(`{ "type": "apiAccessKeyCredentials"}`)
+	request := coreapi.Request{
+		Method:  coreapi.POST,
+		URL:     url,
+		Headers: headers,
+		Body:    jsonBody,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil && response.Code != 201 {
+		return err
+	}
+	return nil
 }
 
 func (c *WebMethodClient) createAuthToken() string {

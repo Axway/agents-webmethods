@@ -53,3 +53,55 @@ type Info struct {
 	Version     string
 	Title       string
 }
+
+// application
+
+type AccessTokens struct {
+	ApiAccessKey ApiAccessKey `json:"apiAccessKey"`
+	Oauth2Token  Oauth2Token  `json:"oauth2Token"`
+}
+
+type Oauth2Token struct {
+	Type               string   `json:"type"`
+	ClientID           string   `json:"clientId"`
+	ClientSecret       string   `json:"clientSecret"`
+	ClientName         string   `json:"clientName"`
+	Scopes             []string `json:"scopes"`
+	ExpirationInterval string   `json:"expirationInterval"`
+	RefreshCount       string   `json:"refreshCount"`
+	RedirectUris       []string `json:"redirectUris"`
+}
+
+type ApiAccessKey struct {
+	APIAccessKey       string `json:"apiAccessKey"`
+	ExpirationInterval string `json:"expirationInterval"`
+	ExpirationDate     string `json:"expirationDate"`
+}
+
+type Application struct {
+	Id            string `json:"id"`
+	ApplicationID string `json:"applicationID"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Owner         string `json:"owner"`
+	Identifiers   []struct {
+		ID    string   `json:"id"`
+		Key   string   `json:"key"`
+		Name  string   `json:"name"`
+		Value []string `json:"value"`
+	} `json:"identifiers"`
+	ContactEmails         []string     `json:"contactEmails"`
+	IconbyteArray         string       `json:"iconbyteArray"`
+	AccessTokens          AccessTokens `json:"accessTokens"`
+	CreationDate          string       `json:"creationDate"`
+	LastModified          string       `json:"lastModified"`
+	LastUpdated           string       `json:"lastUpdated"`
+	SiteURLs              []string     `json:"siteURLs"`
+	JsOrigins             []string     `json:"jsOrigins"`
+	Version               string       `json:"version"`
+	IsSuspended           string       `json:"isSuspended"`
+	AuthStrategyIds       []string     `json:"authStrategyIds"`
+	Subscription          bool         `json:"subscription"`
+	ConsumingAPIs         []string     `json:"consumingAPIs"`
+	NewApisForAssociation []string     `json:"newApisForAssociation"`
+}
