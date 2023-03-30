@@ -22,6 +22,7 @@ const (
 	pathWebmethodsApimUrl = "webmethods.url"
 	pathAuthUsername      = "webmethods.auth.username"
 	pathAuthPassword      = "webmethods.auth.password"
+	pathMaturityState     = "webmethods.maturityState"
 
 	pathSSLNextProtos         = "webmethods.ssl.nextProtos"
 	pathSSLInsecureSkipVerify = "webmethods.ssl.insecureSkipVerify"
@@ -60,6 +61,7 @@ type WebMethodConfig struct {
 	Environment       string            `config:"environment"`
 	Username          string            `config:"auth.username"`
 	Password          string            `config:"auth.password"`
+	MaturityState     string            `config:"maturityState"`
 	ProxyURL          string            `config:"proxyUrl"`
 	TLS               corecfg.TLSConfig `config:"ssl"`
 }
@@ -108,6 +110,8 @@ func AddConfigProperties(props properties.Properties) {
 	props.AddStringProperty(pathWebmethodsApimUrl, "https://api.webmethod.com", "Webmethods APIM URL.")
 	props.AddStringProperty(pathAuthUsername, "", "Webmethods APIM username.")
 	props.AddStringProperty(pathAuthPassword, "", "Webmethods APIM password.")
+	props.AddStringProperty(pathMaturityState, "Beta", "Webmethods APIM Maturity State.")
+
 	props.AddStringProperty(pathCachePath, "/tmp", "Webmethods Cache Path")
 	// ssl properties and command flags
 	props.AddStringSliceProperty(pathSSLNextProtos, []string{}, "List of supported application level protocols, comma separated.")
@@ -129,6 +133,7 @@ func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentTyp
 		Password:          props.StringPropertyValue(pathAuthPassword),
 		ProxyURL:          props.StringPropertyValue(pathProxyURL),
 		Username:          props.StringPropertyValue(pathAuthUsername),
+		MaturityState:     props.StringPropertyValue(pathMaturityState),
 		TLS: &corecfg.TLSConfiguration{
 			NextProtos:         props.StringSlicePropertyValue(pathSSLNextProtos),
 			InsecureSkipVerify: props.BoolPropertyValue(pathSSLInsecureSkipVerify),

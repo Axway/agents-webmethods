@@ -68,6 +68,7 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		logger.Errorf("failed to save api to cache: %s", err)
 	}
 
+	// setup authentication based on spec.
 	ard := provisioning.APIKeyARD
 	crds := []string{provisioning.APIKey}
 

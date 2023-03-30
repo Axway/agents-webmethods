@@ -1,7 +1,6 @@
 package discovery
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Axway/agent-sdk/pkg/apic"
@@ -26,6 +25,7 @@ type discovery struct {
 	pollInterval      time.Duration
 	stopDiscovery     chan bool
 	serviceHandler    ServiceHandler
+	maturityState     string
 }
 
 func (d *discovery) Stop() {
@@ -69,41 +69,40 @@ func (d *discovery) discoverAPIs() {
 		go func(api webmethods.ListApiResponse) {
 			apiResponse, err := d.client.GetApiDetails(api.WebmethodsApi.Id)
 			if err != nil {
-				panic(fmt.Sprintf("Unable to decompress : %s", err))
+				log.Error("Unable to decompress : %s", err)
+				return
 			}
 
-			var specification []byte
-			if api.WebmethodsApi.ApiType == "REST" {
-				specification, err = d.client.GetApiSpec(api.WebmethodsApi.Id)
-			} else if api.WebmethodsApi.ApiType == "SOAP" {
-				specification, err = d.client.GetWsdl(apiResponse.GatewayEndPoints[0])
-			}
-			if err != nil {
-				panic(fmt.Sprintf("Unable to decompress : %s", err))
-			}
-			//	authPolicy := handleAuthPolicy()
-
-			amplifyApi := webmethods.AmplifyAPI{
-				ID:          api.WebmethodsApi.Id,
-				Name:        api.WebmethodsApi.ApiName,
-				Description: api.WebmethodsApi.ApiDescription,
-				Version:     api.WebmethodsApi.ApiVersion,
-				// append endpoint url
-				Url:           apiResponse.GatewayEndPoints[0],
-				Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
-				ApiSpec:       specification,
-				//	AuthPolicy:    authPolicy,
-				ApiType: api.WebmethodsApi.ApiType,
-			}
-			svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
-			if svcDetail != nil {
-				d.apiChan <- svcDetail
+			if apiResponse.MaturityState == d.maturityState {
+				var specification []byte
+				if api.WebmethodsApi.ApiType == "REST" {
+					specification, err = d.client.GetApiSpec(api.WebmethodsApi.Id)
+				} else if api.WebmethodsApi.ApiType == "SOAP" {
+					specification, err = d.client.GetWsdl(apiResponse.GatewayEndPoints[0])
+				}
+				if err != nil {
+					log.Error("Unable to read API specification : %s", err)
+					return
+				}
+				amplifyApi := webmethods.AmplifyAPI{
+					ID:          api.WebmethodsApi.Id,
+					Name:        api.WebmethodsApi.ApiName,
+					Description: api.WebmethodsApi.ApiDescription,
+					Version:     api.WebmethodsApi.ApiVersion,
+					// append endpoint url
+					Url:           apiResponse.GatewayEndPoints[0],
+					Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
+					ApiSpec:       specification,
+					//	AuthPolicy:    authPolicy,
+					ApiType: api.WebmethodsApi.ApiType,
+				}
+				svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
+				if svcDetail != nil {
+					d.apiChan <- svcDetail
+				}
+			} else {
+				log.Info("Ignoring API %s with MaturityState %s", api.WebmethodsApi.ApiName, apiResponse.MaturityState)
 			}
 		}(api)
 	}
 }
-
-// func handleAuthPolicy() string {
-// 	authPolicy := "api-key" // Default auth i.e api key authentication
-// 	return authPolicy
-// }

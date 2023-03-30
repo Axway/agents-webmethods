@@ -46,9 +46,9 @@ type WebMethodClient struct {
 }
 
 // NewClient creates a new client for interacting with Webmethods APIM.
-func NewClient(webMethodConfig *config.WebMethodConfig) *WebMethodClient {
+func NewClient(webMethodConfig *config.WebMethodConfig, httpClient coreapi.Client) *WebMethodClient {
 	client := &WebMethodClient{}
-	client.httpClient = coreapi.NewClient(webMethodConfig.TLS, webMethodConfig.ProxyURL)
+	client.httpClient = httpClient
 	client.OnConfigChange(webMethodConfig)
 	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.healthcheck)
 	return client
@@ -108,7 +108,6 @@ func (c *WebMethodClient) ListAPIs() ([]ListApiResponse, error) {
 		Headers:     headers,
 		QueryParams: query,
 	}
-
 	response, err := c.httpClient.Send(request)
 	if err != nil {
 		return nil, err

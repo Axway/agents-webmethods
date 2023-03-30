@@ -54,6 +54,7 @@ func NewAgent(cfg *config.AgentConfig, client webmethods.Client) (agent *Agent) 
 		pollInterval:      cfg.WebMethodConfig.PollInterval,
 		stopDiscovery:     make(chan bool),
 		serviceHandler:    svcHandler,
+		maturityState:     cfg.WebMethodConfig.MaturityState,
 	}
 
 	return newAgent(client, disc, pub)

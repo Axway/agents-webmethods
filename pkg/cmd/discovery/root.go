@@ -6,6 +6,7 @@ import (
 
 	subs "git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
+	coreapi "github.com/Axway/agent-sdk/pkg/api"
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
@@ -54,8 +55,8 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"component": "agent",
 	})
-
-	gatewayClient := webmethods.NewClient(conf.WebMethodConfig)
+	client := coreapi.NewClient(conf.WebMethodConfig.TLS, conf.WebMethodConfig.ProxyURL)
+	gatewayClient := webmethods.NewClient(conf.WebMethodConfig, client)
 	if centralConfig.IsMarketplaceSubsEnabled() {
 		agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
 		agent.NewAPIKeyAccessRequestBuilder().Register()
