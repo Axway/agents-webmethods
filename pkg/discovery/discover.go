@@ -73,7 +73,7 @@ func (d *discovery) discoverAPIs() {
 				return
 			}
 
-			if apiResponse.MaturityState == d.maturityState {
+			if apiResponse.Api.MaturityState == d.maturityState {
 				var specification []byte
 				if api.WebmethodsApi.ApiType == "REST" {
 					specification, err = d.client.GetApiSpec(api.WebmethodsApi.Id)
@@ -101,7 +101,7 @@ func (d *discovery) discoverAPIs() {
 					d.apiChan <- svcDetail
 				}
 			} else {
-				log.Info("Ignoring API %s with MaturityState %s", api.WebmethodsApi.ApiName, apiResponse.MaturityState)
+				log.Info("Ignoring API %s with MaturityState %s", api.WebmethodsApi.ApiName, apiResponse.Api.MaturityState)
 			}
 		}(api)
 	}

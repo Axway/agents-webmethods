@@ -187,9 +187,7 @@ func (c *WebMethodClient) GetWsdl(gatewayEndpoint string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return response.Body, nil
-
 }
 
 func (c *WebMethodClient) GetApplication(applicationId string) (*Application, error) {

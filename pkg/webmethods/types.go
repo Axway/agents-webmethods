@@ -40,13 +40,18 @@ type GetApiDetails struct {
 type ApiResponse struct {
 	Api              Api      `json:"api"`
 	GatewayEndPoints []string `json:"gatewayEndPoints"`
-	MaturityState    string
-	Owner            string
 }
 
 type Api struct {
-	ApiDefinition ApiDefinition
+	ApiDescription string
+	ApiVersion     string
+	Title          string
+	ApiDefinition  ApiDefinition
+	MaturityState  string
+	ApiGroups      []string
+	Owner          string
 }
+
 type ApiDefinition struct {
 	Info Info
 }
@@ -75,10 +80,9 @@ type Oauth2Token struct {
 }
 
 type ApiAccessKey struct {
-	APIAccessKey       string   `json:"apiAccessKey"`
-	ExpirationInterval string   `json:"expirationInterval"`
-	ExpirationDate     string   `json:"expirationDate"`
-	ApiGroups          []string `json:"apiGroups"`
+	APIAccessKey       string `json:"apiAccessKey"`
+	ExpirationInterval string `json:"expirationInterval"`
+	ExpirationDate     string `json:"expirationDate"`
 }
 
 type Application struct {
