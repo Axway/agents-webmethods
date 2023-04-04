@@ -1,9 +1,9 @@
 image: dockerhub.artifactory-phx.ecd.axway.int/library/docker:20.10.6
 
 variables:
-  # PACKAGE_NAME: discovery_agent
-  # DOCKER_NAME: azure-discovery-agent
-  # GIT_REPO_NAME: azure_discovery_agent
+  PACKAGE_NAME: discovery_agent
+  DOCKER_NAME: agents-webmethods
+  GIT_REPO_NAME: agents-webmethods
 
   # # Irius risk
   # IRIUS_PROJECT: "amplify-apic_azure_discovery_agent"
@@ -83,3 +83,8 @@ build-feature:
 push-feature:
   extends: .only-never
 
+
+sonar:
+  only:
+    refs:
+      - never
