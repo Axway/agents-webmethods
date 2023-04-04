@@ -3,7 +3,7 @@
 sonar-scanner -X \
     -Dsonar.host.url=${SONAR_HOST} \
     -Dsonar.language=go \
-    -Dsonar.projectName=WebMethods_Agenta \
+    -Dsonar.projectName=WebMethods_Agents \
     -Dsonar.projectVersion=1.0 \
     -Dsonar.projectKey=WebMethodsAgents \
     -Dsonar.sourceEncoding=UTF-8 \
