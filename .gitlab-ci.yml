@@ -83,3 +83,6 @@ build-feature:
 push-feature:
   extends: .only-never
 
+
+sonar:
+  extends: .only-never
