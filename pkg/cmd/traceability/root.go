@@ -50,7 +50,7 @@ func run() error {
 func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	agentConfig := &config.AgentConfig{
 		CentralConfig:   centralConfig,
-		WebMethodConfig: config.NewWebmothodsConfig(RootCmd.GetProperties()),
+		WebMethodConfig: config.NewWebmothodsConfig(RootCmd.GetProperties(), centralConfig.GetAgentType()),
 	}
 	config.SetConfig(agentConfig)
 	return agentConfig, nil
