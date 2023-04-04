@@ -3502,3 +3502,42 @@ func TestRotateApplicationApikey(t *testing.T) {
 	err := webMethodsClient.RotateApplicationApikey("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
 	assert.Nil(t, err)
 }
+
+func TestDeleteApplication(t *testing.T) {
+
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 204,
+		}, nil
+	}
+	err := webMethodsClient.DeleteApplication("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
+	assert.Nil(t, err)
+}
+
+func TestDeleteApplicationAccessTokens(t *testing.T) {
+
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 204,
+		}, nil
+	}
+	err := webMethodsClient.DeleteApplicationAccessTokens("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
+	assert.Nil(t, err)
+}
+
+func TestUnsubscribeApplication(t *testing.T) {
+
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 204,
+		}, nil
+	}
+	err := webMethodsClient.UnsubscribeApplication("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6", "1178fcb2-faae-4fe4-94fa-f5efb0316285")
+	assert.Nil(t, err)
+}

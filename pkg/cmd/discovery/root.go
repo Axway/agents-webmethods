@@ -60,7 +60,8 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	if centralConfig.IsMarketplaceSubsEnabled() {
 		agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
 		agent.NewAPIKeyAccessRequestBuilder().Register()
-		agent.NewOAuthCredentialRequestBuilder(agent.WithCRDOAuthSecret()).IsRenewable().Register()
+		agent.NewAPIKeyCredentialRequestBuilder().Register()
+		//agent.NewOAuthCredentialRequestBuilder().IsRenewable().Register()
 	}
 
 	discoveryAgent = discovery.NewAgent(conf, gatewayClient)

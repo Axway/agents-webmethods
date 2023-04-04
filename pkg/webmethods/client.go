@@ -32,7 +32,10 @@ type Client interface {
 	SubscribeApplication(applicationId string, ApplicationApiSubscription *ApplicationApiSubscription) error
 	GetApplication(applicationId string) (*ApplicationResponse, error)
 	RotateApplicationApikey(applicationId string) error
+	DeleteApplication(applicationId string) error
 	OnConfigChange(webMethodConfig *config.WebMethodConfig)
+	DeleteApplicationAccessTokens(applicationId string) error
+	UnsubscribeApplication(applicationId string, apiId string) error
 }
 
 // WebMethodClient is the client for interacting with Webmethods APIM.
@@ -286,6 +289,79 @@ func (c *WebMethodClient) RotateApplicationApikey(applicationId string) error {
 	}
 	if response.Code != 201 {
 		return agenterrors.Newf(2001, "Unable to Rotate API Key")
+	}
+	return nil
+}
+
+func (c *WebMethodClient) DeleteApplication(applicationId string) error {
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	request := coreapi.Request{
+		Method:  coreapi.DELETE,
+		URL:     url,
+		Headers: headers,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return err
+	}
+	if response.Code != 204 {
+		return agenterrors.Newf(2001, "Unable to Delete Application")
+	}
+	return nil
+}
+
+func (c *WebMethodClient) DeleteApplicationAccessTokens(applicationId string) error {
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/accessTokens", c.url, applicationId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	var jsonBody = []byte(`{ "type": "accessTokens"}`)
+	request := coreapi.Request{
+		Method:  coreapi.DELETE,
+		URL:     url,
+		Headers: headers,
+		Body:    jsonBody,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return err
+	}
+	if response.Code != 204 {
+		return agenterrors.Newf(2001, "Unable to Delete Api Key / Oauth tokens")
+	}
+	return nil
+}
+
+func (c *WebMethodClient) UnsubscribeApplication(applicationId string, apiId string) error {
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/apis", c.url, applicationId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	queryString := map[string]string{
+		"apiIDs": apiId,
+	}
+
+	request := coreapi.Request{
+		Method:      coreapi.DELETE,
+		URL:         url,
+		Headers:     headers,
+		QueryParams: queryString,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return err
+	}
+	if response.Code != 204 {
+		return agenterrors.Newf(2001, "Unable to remove API to Application")
 	}
 	return nil
 }

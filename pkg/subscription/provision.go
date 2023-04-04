@@ -7,6 +7,7 @@ import (
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	prov "github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/util"
+	"github.com/Axway/agent-sdk/pkg/util/log"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,6 +36,15 @@ func (p provisioner) AccessRequestDeprovision(req prov.AccessRequest) prov.Reque
 	}
 
 	// process access request delete
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID))
+	}
+
+	err := p.client.UnsubscribeApplication(webmethodsApplicationId, apiID)
+	if err != nil {
+		return p.failed(rs, notFound("Error removing API from Webmethods Application"))
+	}
 
 	p.log.
 		WithField("api", apiID).
@@ -54,7 +64,7 @@ func (p provisioner) AccessRequestProvision(req prov.AccessRequest) (prov.Reques
 		return p.failed(rs, notFound(common.AttrAPIID)), nil
 	}
 
-	webmethodsApplicationId := req.GetApplicationDetailsValue("webmethodsApplicationId")
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
 	if webmethodsApplicationId == "" {
 		return p.failed(rs, notFound(common.AttrAppID)), nil
 	}
@@ -87,9 +97,15 @@ func (p provisioner) ApplicationRequestDeprovision(req prov.ApplicationRequest) 
 	rs := prov.NewRequestStatusBuilder()
 
 	appID := req.GetApplicationDetailsValue(common.AppID)
-
-	// process application delete
-
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID))
+	}
+	err := p.client.DeleteApplication(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Error Deleting Webmethods application"))
+	}
+	log.Infof("Application with Id %s deleted successfully on webmethods", webmethodsApplicationId)
 	p.log.
 		WithField("appName", req.GetManagedApplicationName()).
 		WithField("appID", appID).
@@ -106,18 +122,16 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 	if appName == "" {
 		return p.failed(rs, notFound("managed application name"))
 	}
-
 	// process application create
 	var application webmethods.Application
 	application.Name = appName
 	application.Version = "1.0"
-	application.Description = appName
-
+	application.Description = "Amplify " + appName
 	createdApplication, err := p.client.CreateApplication(&application)
 	if err != nil {
 		return p.failed(rs, notFound("Error creating application"))
 	}
-	rs.AddProperty("webmethodsApplicationId", createdApplication.Id)
+	rs.AddProperty(common.AttrAppID, createdApplication.Id)
 	p.log.
 		WithField("appName", req.GetManagedApplicationName()).
 		Info("created application")
@@ -126,11 +140,20 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 }
 
 // CredentialDeprovision returns success since credentials are removed with the app
-func (p provisioner) CredentialDeprovision(_ prov.CredentialRequest) prov.RequestStatus {
+func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.RequestStatus {
 	msg := "credentials will be removed when the subscription is deleted"
 	p.log.Info(msg)
+	rs := prov.NewRequestStatusBuilder()
 
 	// process credential delete
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID))
+	}
+	err := p.client.DeleteApplicationAccessTokens(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Unable to clear application credentials from Webmethods"))
+	}
 
 	return prov.NewRequestStatusBuilder().
 		SetMessage("credentials will be removed when the application is deleted").
@@ -147,14 +170,16 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 		return p.failed(rs, notFound("appName")), nil
 	}
 
-	appID := req.GetApplicationDetailsValue(common.AppID)
-	if appName == "" {
-		return p.failed(rs, notFound("appID")), nil
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID)), nil
 	}
-	applicationsResponse, err := p.client.GetApplication(appID)
+
+	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
 	if err != nil {
 		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
 	}
+
 	cr := prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 	p.log.Info("created credentials")
 
@@ -164,16 +189,25 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 func (p provisioner) CredentialUpdate(req prov.CredentialRequest) (prov.RequestStatus, prov.Credential) {
 	p.log.Info("updating credential for app %s", req.GetApplicationName())
 	rs := prov.NewRequestStatusBuilder()
-
 	appName := req.GetApplicationName()
 	if appName == "" {
 		return p.failed(rs, notFound("appName")), nil
 	}
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID)), nil
+	}
+	err := p.client.RotateApplicationApikey(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Unable to Rotate Webmethods Application APIkey")), nil
+	}
 
-	cr := prov.NewCredentialBuilder().SetAPIKey(appName)
-
+	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+	}
+	cr := prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 	p.log.Infof("updated credentials for app %s", req.GetApplicationName())
-
 	return rs.Success(), cr
 }
 

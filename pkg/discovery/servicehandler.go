@@ -6,7 +6,6 @@ import (
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
-	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
 
 	"github.com/sirupsen/logrus"
@@ -69,8 +68,8 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 	}
 
 	// setup authentication based on spec.
-	ard := provisioning.APIKeyARD
-	crds := []string{provisioning.APIKey}
+	// ard := provisioning.APIKeyARD
+	// crds := []string{provisioning.APIKey}
 
 	specType := getSpecType(api.ApiType)
 
@@ -79,10 +78,10 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 	}
 
 	return &ServiceDetail{
-		AccessRequestDefinition: ard,
-		CRDs:                    crds,
-		APIName:                 api.Name,
-		APISpec:                 api.ApiSpec,
+		// AccessRequestDefinition: ard,
+		// CRDs:                    crds,
+		APIName: api.Name,
+		APISpec: api.ApiSpec,
 		//AuthPolicy:              api.AuthPolicy,
 		Description: api.Description,
 		// Use the Asset ID for the externalAPIID so that apis linked to the asset are created as a revision
