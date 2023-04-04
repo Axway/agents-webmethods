@@ -85,4 +85,6 @@ push-feature:
 
 
 sonar:
-  extends: .only-never
+  only:
+    refs:
+      - never
