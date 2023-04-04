@@ -29,9 +29,8 @@ type Client interface {
 	GetApiSpec(id string) ([]byte, error)
 	GetWsdl(gatewayEndpoint string) ([]byte, error)
 	CreateApplication(application *Application) (*Application, error)
-	UpdateApplication(application *Application) (*Application, error)
-
-	GetApplication(applicationId string) (*Application, error)
+	SubscribeApplication(applicationId string, ApplicationApiSubscription *ApplicationApiSubscription) error
+	GetApplication(applicationId string) (*ApplicationResponse, error)
 	RotateApplicationApikey(applicationId string) error
 	OnConfigChange(webMethodConfig *config.WebMethodConfig)
 }
@@ -62,7 +61,6 @@ func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig
 
 func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {
 	url := c.url + "/rest/apigateway/health"
-	fmt.Println(url)
 	status = &hc.Status{
 		Result: hc.OK,
 	}
@@ -190,8 +188,8 @@ func (c *WebMethodClient) GetWsdl(gatewayEndpoint string) ([]byte, error) {
 	return response.Body, nil
 }
 
-func (c *WebMethodClient) GetApplication(applicationId string) (*Application, error) {
-	application := &Application{}
+func (c *WebMethodClient) GetApplication(applicationId string) (*ApplicationResponse, error) {
+	applicationResponse := &ApplicationResponse{}
 	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
@@ -207,11 +205,11 @@ func (c *WebMethodClient) GetApplication(applicationId string) (*Application, er
 		return nil, err
 	}
 
-	err = json.Unmarshal(response.Body, application)
+	err = json.Unmarshal(response.Body, applicationResponse)
 	if err != nil {
 		return nil, err
 	}
-	return application, nil
+	return applicationResponse, nil
 }
 
 func (c *WebMethodClient) CreateApplication(application *Application) (*Application, error) {
@@ -241,19 +239,18 @@ func (c *WebMethodClient) CreateApplication(application *Application) (*Applicat
 	return responseApplication, nil
 }
 
-func (c *WebMethodClient) UpdateApplication(application *Application) (*Application, error) {
-	responseApplication := &Application{}
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, application.Id)
+func (c *WebMethodClient) SubscribeApplication(applicationId string, ApplicationApiSubscription *ApplicationApiSubscription) error {
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/apis", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
 	}
-	buffer, err := json.Marshal(application)
+	buffer, err := json.Marshal(ApplicationApiSubscription)
 	if err != nil {
-		return nil, agenterrors.Newf(2000, err.Error())
+		return agenterrors.Newf(2000, err.Error())
 	}
 	request := coreapi.Request{
-		Method:  coreapi.PUT,
+		Method:  coreapi.POST,
 		URL:     url,
 		Headers: headers,
 		Body:    buffer,
@@ -261,15 +258,16 @@ func (c *WebMethodClient) UpdateApplication(application *Application) (*Applicat
 
 	response, err := c.httpClient.Send(request)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	err = json.Unmarshal(response.Body, responseApplication)
-	return responseApplication, nil
+	if response.Code != 201 {
+		return agenterrors.Newf(2001, "Unable to assicate API to Application")
+	}
+	return nil
 }
 
 func (c *WebMethodClient) RotateApplicationApikey(applicationId string) error {
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/accessTokens", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -283,8 +281,11 @@ func (c *WebMethodClient) RotateApplicationApikey(applicationId string) error {
 	}
 
 	response, err := c.httpClient.Send(request)
-	if err != nil && response.Code != 201 {
+	if err != nil {
 		return err
+	}
+	if response.Code != 201 {
+		return agenterrors.Newf(2001, "Unable to Rotate API Key")
 	}
 	return nil
 }

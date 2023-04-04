@@ -3368,3 +3368,137 @@ func TestGetWsdl(t *testing.T) {
 	assert.NotNil(t, apiResponse)
 
 }
+
+func TestGetApplication(t *testing.T) {
+
+	response := `{
+		"applications": [
+			{
+				"name": "consumerapp",
+				"description": "Testing subscription",
+				"contactEmails": [],
+				"identifiers": [],
+				"siteURLs": [],
+				"jsOrigins": [],
+				"authStrategyIds": [],
+				"version": null,
+				"id": "1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6",
+				"created": "2023-03-28 02:25:04 GMT",
+				"lastupdated": null,
+				"owner": "wecare@apiwheel.dev",
+				"ownerType": "user",
+				"subscription": false,
+				"consumingAPIs": [],
+				"teams": [],
+				"accessTokens": {
+					"apiAccessKey_credentials": {
+						"apiAccessKey": "e5c8641a-9b41-4b6b-8db2-4c75b24ed104",
+						"expirationInterval": null,
+						"expirationDate": null,
+						"expired": false
+					}
+				}
+			}
+		]
+	}`
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	applicationResponse, err := webMethodsClient.GetApplication("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
+	assert.Nil(t, err)
+	assert.Equal(t, applicationResponse.Applications[0].Id, "1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
+	assert.Equal(t, applicationResponse.Applications[0].Name, "consumerapp")
+	assert.Equal(t, applicationResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey, "e5c8641a-9b41-4b6b-8db2-4c75b24ed104")
+}
+
+func TestCreateApplication(t *testing.T) {
+
+	request := `{
+		"name": "consumerapp",
+		"description": "Testing subscription",
+		"siteURLs": [],
+		"jsOrigins": [],
+		"authStrategyIds": [],
+		"subscription": true,
+		"shell": false
+	  }
+	  `
+
+	response := `{
+		"name": "consumerapp",
+		"description": "Testing subscription",
+		"contactEmails": [],
+		"identifiers": [],
+		"siteURLs": [],
+		"jsOrigins": [],
+		"authStrategyIds": [],
+		"version": null,
+		"id": "1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6",
+		"created": null,
+		"lastupdated": null,
+		"owner": "wecare@apiwheel.dev",
+		"ownerType": "user",
+		"subscription": false,
+		"consumingAPIs": [],
+		"teams": [],
+		"accessTokens": {}
+	}`
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	applicationRequest := &Application{}
+	json.Unmarshal([]byte(request), applicationRequest)
+	applicationResponse, err := webMethodsClient.CreateApplication(applicationRequest)
+	assert.Nil(t, err)
+	assert.Equal(t, applicationResponse.Id, "1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
+	assert.Equal(t, applicationResponse.Name, "consumerapp")
+
+}
+
+func TestSubscribeApplication(t *testing.T) {
+
+	request := `{
+		"apiIDs": [
+			"2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2"
+		]
+	}`
+
+	response := `{}`
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 201,
+			Body: []byte(response),
+		}, nil
+	}
+	applicationApiSubscription := &ApplicationApiSubscription{}
+	json.Unmarshal([]byte(request), applicationApiSubscription)
+	err := webMethodsClient.SubscribeApplication("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6", applicationApiSubscription)
+	assert.Nil(t, err)
+}
+
+func TestRotateApplicationApikey(t *testing.T) {
+
+	response := `{}`
+	mc := &MockClient{}
+	webMethodsClient := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 201,
+			Body: []byte(response),
+		}, nil
+	}
+	err := webMethodsClient.RotateApplicationApikey("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6")
+	assert.Nil(t, err)
+}

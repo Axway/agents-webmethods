@@ -60,33 +60,20 @@ func (p provisioner) AccessRequestProvision(req prov.AccessRequest) (prov.Reques
 	}
 
 	webmethodsApplication, err := p.client.GetApplication(webmethodsApplicationId)
-	if err != nil {
+	if err != nil || len(webmethodsApplication.Applications) == 0 {
 		return p.failed(rs, notFound("Webmethods Application not found")), nil
 	}
-	apiIds := []string{apiID}
-	webmethodsApplication.NewApisForAssociation = apiIds
 
-	updatedWebmethodsApplication, err := p.client.UpdateApplication(webmethodsApplication)
+	apiIds := []string{apiID}
+	applicationApiSubscription := webmethods.ApplicationApiSubscription{
+		ApiIDs: apiIds,
+	}
+
+	err = p.client.SubscribeApplication(webmethodsApplicationId, &applicationApiSubscription)
 	if err != nil {
 		return p.failed(rs, notFound("Error assocating API to Webmethods Application")), nil
 	}
-
-	var matchAPI bool
-
-	for _, value := range updatedWebmethodsApplication.ConsumingAPIs {
-		if value == apiID {
-			p.log.Info("Successfully updated application %s with apikey  %s", updatedWebmethodsApplication.Name, apiID)
-			matchAPI = true
-			break
-		}
-	}
-
-	if !matchAPI {
-		return p.failed(rs, notFound("Error assocating API to Webmethods Application")), nil
-	}
-
 	// process access request create
-
 	p.log.
 		WithField("api", apiID).
 		WithField("app", req.GetApplicationName()).
@@ -121,7 +108,6 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 	}
 
 	// process application create
-
 	var application webmethods.Application
 	application.Name = appName
 	application.Version = "1.0"
@@ -165,11 +151,11 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 	if appName == "" {
 		return p.failed(rs, notFound("appID")), nil
 	}
-	application, err := p.client.GetApplication(appID)
+	applicationsResponse, err := p.client.GetApplication(appID)
 	if err != nil {
 		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
 	}
-	cr := prov.NewCredentialBuilder().SetAPIKey(application.AccessTokens.ApiAccessKey.APIAccessKey)
+	cr := prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 	p.log.Info("created credentials")
 
 	return rs.Success(), cr

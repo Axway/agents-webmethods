@@ -77,6 +77,10 @@ func (c *WebMethodConfig) ValidateCfg() (err error) {
 		}
 	}
 
+	if c.MaturityState == "" {
+		return fmt.Errorf("invalid Webmethods APIM configuration: maturityState is not configured")
+	}
+
 	if c.Username == "" {
 		return fmt.Errorf("invalid Webmethods APIM configuration: username is not configured")
 	}

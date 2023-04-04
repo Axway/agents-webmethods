@@ -18,7 +18,8 @@ type ListApi struct {
 }
 
 type ListApiResponse struct {
-	WebmethodsApi WebmethodsApi `json:"api"`
+	WebmethodsApi  WebmethodsApi `json:"api"`
+	ResponseStatus string        `json:"responseStatus"`
 }
 
 type WebmethodsApi struct {
@@ -64,8 +65,8 @@ type Info struct {
 // application
 
 type AccessTokens struct {
-	ApiAccessKey ApiAccessKey `json:"apiAccessKey"`
-	Oauth2Token  Oauth2Token  `json:"oauth2Token"`
+	ApiAccessKeyCredentials ApiAccessKeyCredentials `json:"apiAccessKey_credentials"`
+	Oauth2Token             Oauth2Token             `json:"oauth2Token"`
 }
 
 type Oauth2Token struct {
@@ -79,10 +80,14 @@ type Oauth2Token struct {
 	RedirectUris       []string `json:"redirectUris"`
 }
 
-type ApiAccessKey struct {
-	APIAccessKey       string `json:"apiAccessKey"`
+type ApiAccessKeyCredentials struct {
+	ApiAccessKey       string `json:"apiAccessKey"`
 	ExpirationInterval string `json:"expirationInterval"`
 	ExpirationDate     string `json:"expirationDate"`
+}
+
+type ApplicationResponse struct {
+	Applications []Application `json:"applications"`
 }
 
 type Application struct {
@@ -120,4 +125,8 @@ type SavedSettings struct {
 type ExtendedKeys struct {
 	ApiMaturityStatePossibleValues string `json:"apiMaturityStatePossibleValues"`
 	ApiGroupingPossibleValues      string `json:"apiGroupingPossibleValues"`
+}
+
+type ApplicationApiSubscription struct {
+	ApiIDs []string `json:"apiIDs"`
 }
