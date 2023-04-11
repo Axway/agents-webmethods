@@ -2,10 +2,13 @@ package webmethods
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"testing"
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,7 +57,7 @@ func TestListApi(t *testing.T) {
 		]
 	}`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 200,
@@ -1756,7 +1759,7 @@ func TestApiDetails(t *testing.T) {
 		}
 	}`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 200,
@@ -3257,7 +3260,7 @@ func TestGetApiSpec(t *testing.T) {
 	}`
 	mc := &MockClient{}
 
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
@@ -3356,7 +3359,7 @@ func TestGetWsdl(t *testing.T) {
     </wsdl:service>
 </wsdl:definitions>`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 200,
@@ -3402,7 +3405,7 @@ func TestGetApplication(t *testing.T) {
 		]
 	}`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 200,
@@ -3449,7 +3452,7 @@ func TestCreateApplication(t *testing.T) {
 		"accessTokens": {}
 	}`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 200,
@@ -3475,7 +3478,7 @@ func TestSubscribeApplication(t *testing.T) {
 
 	response := `{}`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 201,
@@ -3492,7 +3495,7 @@ func TestRotateApplicationApikey(t *testing.T) {
 
 	response := `{}`
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 201,
@@ -3506,7 +3509,7 @@ func TestRotateApplicationApikey(t *testing.T) {
 func TestDeleteApplication(t *testing.T) {
 
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 204,
@@ -3519,7 +3522,7 @@ func TestDeleteApplication(t *testing.T) {
 func TestDeleteApplicationAccessTokens(t *testing.T) {
 
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 204,
@@ -3532,7 +3535,7 @@ func TestDeleteApplicationAccessTokens(t *testing.T) {
 func TestUnsubscribeApplication(t *testing.T) {
 
 	mc := &MockClient{}
-	webMethodsClient := NewClient(cfg, mc)
+	webMethodsClient, _ := NewClient(cfg, mc)
 	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
 		return &coreapi.Response{
 			Code: 204,
@@ -3540,4 +3543,1729 @@ func TestUnsubscribeApplication(t *testing.T) {
 	}
 	err := webMethodsClient.UnsubscribeApplication("1cc88555-b7df-4e5b-a9e3-1728cc0ecfe6", "1178fcb2-faae-4fe4-94fa-f5efb0316285")
 	assert.Nil(t, err)
+}
+
+func TestIsAllowedTags(t *testing.T) {
+
+	responseStr := `{
+		"apiResponse": {
+			"api": {
+				"apiDefinition": {
+					"info": {
+						"description": "This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!\nYou can now help us improve the API whether it's by making changes to the definition itself or to the code.\nThat way, with time, we can improve the API in general, and expose some of the new features in OAS3.\n\nSome useful links:\n- [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)\n- [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)",
+						"version": "1.0.17",
+						"title": "Swagger Petstore - OpenAPI 3.0",
+						"termsOfService": "http://swagger.io/terms/",
+						"contact": {
+							"email": "apiteam@swagger.io"
+						},
+						"license": {
+							"name": "Apache 2.0",
+							"url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+						}
+					},
+					"serviceRegistryDisplayName": "petstore_1.0.17",
+					"tags": [
+						{
+							"name": "customrathna"
+						},
+						{
+							"name": "custom2"
+						},
+						{
+							"name": "pet",
+							"description": "Everything about your Pets",
+							"externalDocs": {
+								"description": "Find out more",
+								"url": "http://swagger.io"
+							}
+						},
+						{
+							"name": "store",
+							"description": "Access to Petstore orders",
+							"externalDocs": {
+								"description": "Find out more about our store",
+								"url": "http://swagger.io"
+							}
+						},
+						{
+							"name": "user",
+							"description": "Operations about user"
+						}
+					],
+					"schemes": [],
+					"security": [],
+					"paths": {
+						"/pet": {
+							"put": {
+								"tags": [
+									"pet",
+									"customrathna"
+								],
+								"summary": "Update an existing pet",
+								"description": "Update an existing pet by Id",
+								"operationId": "updatePet",
+								"consumes": [
+									"application/xml",
+									"application/json",
+									"application/x-www-form-urlencoded"
+								],
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [],
+								"responses": {
+									"200": {
+										"description": "Successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/Pet"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/Pet"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid ID supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"404": {
+										"description": "Pet not found",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"405": {
+										"description": "Validation exception",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/json": {
+											"schema": {
+												"$ref": "#/components/schemas/Pet"
+											},
+											"examples": {}
+										},
+										"application/x-www-form-urlencoded": {
+											"schema": {
+												"$ref": "#/components/schemas/Pet"
+											},
+											"examples": {}
+										},
+										"application/xml": {
+											"schema": {
+												"$ref": "#/components/schemas/Pet"
+											},
+											"examples": {}
+										}
+									},
+									"name": "updatePet"
+								}
+							},
+							"post": {
+								"tags": [
+									"pet",
+									"custom2"
+								],
+								"summary": "Add a new pet to the store",
+								"description": "Add a new pet to the store",
+								"operationId": "addPet",
+								"consumes": [
+									"application/xml",
+									"application/json",
+									"application/x-www-form-urlencoded"
+								],
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [],
+								"responses": {
+									"200": {
+										"description": "Successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/Pet"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/Pet"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"405": {
+										"description": "Invalid input",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/json": {
+											"schema": {
+												"$ref": "#/components/schemas/Pet"
+											},
+											"examples": {}
+										},
+										"application/x-www-form-urlencoded": {
+											"schema": {
+												"$ref": "#/components/schemas/Pet"
+											},
+											"examples": {}
+										},
+										"application/xml": {
+											"schema": {
+												"$ref": "#/components/schemas/Pet"
+											},
+											"examples": {}
+										}
+									},
+									"name": "addPet"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/pet",
+							"enabled": true
+						},
+						"/pet/findByStatus": {
+							"get": {
+								"tags": [
+									"pet"
+								],
+								"summary": "Finds Pets by status",
+								"description": "Multiple status values can be provided with comma separated strings",
+								"operationId": "findPetsByStatus",
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [
+									{
+										"default": "available",
+										"description": "Status values that need to be considered for filter",
+										"explode": true,
+										"in": "query",
+										"name": "status",
+										"parameterSchema": {
+											"default": "available",
+											"enum": [
+												"available",
+												"pending",
+												"sold"
+											],
+											"type": "string"
+										},
+										"required": false,
+										"style": "FORM",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Pet\"}}"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Pet\"}}"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid status value",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "findPetsByStatus"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/pet/findByStatus",
+							"enabled": true
+						},
+						"/pet/findByTags": {
+							"get": {
+								"tags": [
+									"pet"
+								],
+								"summary": "Finds Pets by tags",
+								"description": "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+								"operationId": "findPetsByTags",
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [
+									{
+										"description": "Tags to filter by",
+										"explode": true,
+										"in": "query",
+										"name": "tags",
+										"parameterSchema": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"required": false,
+										"style": "FORM"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Pet\"}}"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Pet\"}}"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid tag value",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "findPetsByTags"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/pet/findByTags",
+							"enabled": true
+						},
+						"/pet/{petId}": {
+							"get": {
+								"tags": [
+									"pet"
+								],
+								"summary": "Find pet by ID",
+								"description": "Returns a single pet",
+								"operationId": "getPetById",
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [
+									{
+										"description": "ID of pet to return",
+										"explode": false,
+										"format": "int64",
+										"in": "path",
+										"name": "petId",
+										"parameterSchema": {
+											"format": "int64",
+											"type": "integer"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "integer"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/Pet"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/Pet"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid ID supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"404": {
+										"description": "Pet not found",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"api_key": []
+										}
+									},
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "getPetById"
+								}
+							},
+							"post": {
+								"tags": [
+									"pet"
+								],
+								"summary": "Updates a pet in the store with form data",
+								"description": "",
+								"operationId": "updatePetWithForm",
+								"parameters": [
+									{
+										"description": "ID of pet that needs to be updated",
+										"explode": false,
+										"format": "int64",
+										"in": "path",
+										"name": "petId",
+										"parameterSchema": {
+											"format": "int64",
+											"type": "integer"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "integer"
+									},
+									{
+										"description": "Name of pet that needs to be updated",
+										"explode": true,
+										"in": "query",
+										"name": "name",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": false,
+										"style": "FORM",
+										"type": "string"
+									},
+									{
+										"description": "Status of pet that needs to be updated",
+										"explode": true,
+										"in": "query",
+										"name": "status",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": false,
+										"style": "FORM",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"405": {
+										"description": "Invalid input",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "updatePetWithForm"
+								}
+							},
+							"delete": {
+								"tags": [
+									"pet"
+								],
+								"summary": "Deletes a pet",
+								"description": "",
+								"operationId": "deletePet",
+								"parameters": [
+									{
+										"description": "",
+										"explode": false,
+										"in": "header",
+										"name": "api_key",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": false,
+										"style": "SIMPLE",
+										"type": "string"
+									},
+									{
+										"description": "Pet id to delete",
+										"explode": false,
+										"format": "int64",
+										"in": "path",
+										"name": "petId",
+										"parameterSchema": {
+											"format": "int64",
+											"type": "integer"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "integer"
+									}
+								],
+								"responses": {
+									"400": {
+										"description": "Invalid pet value",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "deletePet"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/pet/{petId}",
+							"enabled": true
+						},
+						"/pet/{petId}/uploadImage": {
+							"post": {
+								"tags": [
+									"pet"
+								],
+								"summary": "uploads an image",
+								"description": "",
+								"operationId": "uploadFile",
+								"consumes": [
+									"application/octet-stream"
+								],
+								"produces": [
+									"application/json"
+								],
+								"parameters": [
+									{
+										"description": "ID of pet to update",
+										"explode": false,
+										"format": "int64",
+										"in": "path",
+										"name": "petId",
+										"parameterSchema": {
+											"format": "int64",
+											"type": "integer"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "integer"
+									},
+									{
+										"description": "Additional Metadata",
+										"explode": true,
+										"in": "query",
+										"name": "additionalMetadata",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": false,
+										"style": "FORM",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/ApiResponse"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"petstore_auth": [
+												"write:pets",
+												"read:pets"
+											]
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/octet-stream": {
+											"schema": {
+												"type": "gateway",
+												"schema": "{\"type\":\"string\",\"format\":\"binary\"}"
+											},
+											"examples": {}
+										}
+									},
+									"name": "uploadFile"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/pet/{petId}/uploadImage",
+							"enabled": true
+						},
+						"/store/inventory": {
+							"get": {
+								"tags": [
+									"store"
+								],
+								"summary": "Returns pet inventories by status",
+								"description": "Returns a map of status codes to quantities",
+								"operationId": "getInventory",
+								"produces": [
+									"application/json"
+								],
+								"parameters": [],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"object\",\"additionalProperties\":{\"type\":\"integer\",\"format\":\"int32\"}}"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"security": [
+									{
+										"requirements": {
+											"api_key": []
+										}
+									}
+								],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "getInventory"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/store/inventory",
+							"enabled": true
+						},
+						"/store/order": {
+							"post": {
+								"tags": [
+									"store"
+								],
+								"summary": "Place an order for a pet",
+								"description": "Place a new order in the store",
+								"operationId": "placeOrder",
+								"consumes": [
+									"application/xml",
+									"application/json",
+									"application/x-www-form-urlencoded"
+								],
+								"produces": [
+									"application/json"
+								],
+								"parameters": [],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/Order"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"405": {
+										"description": "Invalid input",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/json": {
+											"schema": {
+												"$ref": "#/components/schemas/Order"
+											},
+											"examples": {}
+										},
+										"application/x-www-form-urlencoded": {
+											"schema": {
+												"$ref": "#/components/schemas/Order"
+											},
+											"examples": {}
+										},
+										"application/xml": {
+											"schema": {
+												"$ref": "#/components/schemas/Order"
+											},
+											"examples": {}
+										}
+									},
+									"name": "placeOrder"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/store/order",
+							"enabled": true
+						},
+						"/store/order/{orderId}": {
+							"get": {
+								"tags": [
+									"store"
+								],
+								"summary": "Find purchase order by ID",
+								"description": "For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.",
+								"operationId": "getOrderById",
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [
+									{
+										"description": "ID of order that needs to be fetched",
+										"explode": false,
+										"format": "int64",
+										"in": "path",
+										"name": "orderId",
+										"parameterSchema": {
+											"format": "int64",
+											"type": "integer"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "integer"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/Order"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/Order"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid ID supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"404": {
+										"description": "Order not found",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "getOrderById"
+								}
+							},
+							"delete": {
+								"tags": [
+									"store"
+								],
+								"summary": "Delete purchase order by ID",
+								"description": "For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors",
+								"operationId": "deleteOrder",
+								"parameters": [
+									{
+										"description": "ID of the order that needs to be deleted",
+										"explode": false,
+										"format": "int64",
+										"in": "path",
+										"name": "orderId",
+										"parameterSchema": {
+											"format": "int64",
+											"type": "integer"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "integer"
+									}
+								],
+								"responses": {
+									"400": {
+										"description": "Invalid ID supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"404": {
+										"description": "Order not found",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "deleteOrder"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/store/order/{orderId}",
+							"enabled": true
+						},
+						"/user": {
+							"post": {
+								"tags": [
+									"user"
+								],
+								"summary": "Create user",
+								"description": "This can only be done by the logged in user.",
+								"operationId": "createUser",
+								"consumes": [
+									"application/xml",
+									"application/json",
+									"application/x-www-form-urlencoded"
+								],
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [],
+								"responses": {
+									"default": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/User"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/User"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/json": {
+											"schema": {
+												"$ref": "#/components/schemas/User"
+											},
+											"examples": {}
+										},
+										"application/x-www-form-urlencoded": {
+											"schema": {
+												"$ref": "#/components/schemas/User"
+											},
+											"examples": {}
+										},
+										"application/xml": {
+											"schema": {
+												"$ref": "#/components/schemas/User"
+											},
+											"examples": {}
+										}
+									},
+									"name": "createUser"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/user",
+							"enabled": true
+						},
+						"/user/createWithList": {
+							"post": {
+								"tags": [
+									"user"
+								],
+								"summary": "Creates list of users with given input array",
+								"description": "Creates list of users with given input array",
+								"operationId": "createUsersWithListInput",
+								"consumes": [
+									"application/json"
+								],
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [],
+								"responses": {
+									"200": {
+										"description": "Successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/User"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/User"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"default": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/json": {
+											"schema": {
+												"type": "gateway",
+												"schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/User\"}}"
+											},
+											"examples": {}
+										}
+									},
+									"name": "createUsersWithListInput"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/user/createWithList",
+							"enabled": true
+						},
+						"/user/login": {
+							"get": {
+								"tags": [
+									"user"
+								],
+								"summary": "Logs user into the system",
+								"description": "",
+								"operationId": "loginUser",
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [
+									{
+										"description": "The user name for login",
+										"explode": true,
+										"in": "query",
+										"name": "username",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": false,
+										"style": "FORM",
+										"type": "string"
+									},
+									{
+										"description": "The password for login in clear text",
+										"explode": true,
+										"in": "query",
+										"name": "password",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": false,
+										"style": "FORM",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {
+											"X-Expires-After": {
+												"name": "X-Expires-After",
+												"in": "header",
+												"description": "date in UTC when token expires",
+												"required": false,
+												"type": "string",
+												"format": "date-time",
+												"style": "SIMPLE",
+												"explode": false,
+												"examples": {},
+												"parameterSchema": {
+													"type": "string",
+													"format": "date-time"
+												}
+											},
+											"X-Rate-Limit": {
+												"name": "X-Rate-Limit",
+												"in": "header",
+												"description": "calls per hour allowed by the user",
+												"required": false,
+												"type": "integer",
+												"format": "int32",
+												"style": "SIMPLE",
+												"explode": false,
+												"examples": {},
+												"parameterSchema": {
+													"type": "integer",
+													"format": "int32"
+												}
+											}
+										},
+										"content": {
+											"application/json": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"string\"}"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"type": "gateway",
+													"schema": "{\"type\":\"string\"}"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid username/password supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "loginUser"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/user/login",
+							"enabled": true
+						},
+						"/user/logout": {
+							"get": {
+								"tags": [
+									"user"
+								],
+								"summary": "Logs out current logged in user session",
+								"description": "",
+								"operationId": "logoutUser",
+								"parameters": [],
+								"responses": {
+									"default": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "logoutUser"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/user/logout",
+							"enabled": true
+						},
+						"/user/{username}": {
+							"get": {
+								"tags": [
+									"user"
+								],
+								"summary": "Get user by user name",
+								"description": "",
+								"operationId": "getUserByName",
+								"produces": [
+									"application/xml",
+									"application/json"
+								],
+								"parameters": [
+									{
+										"description": "The name that needs to be fetched. Use user1 for testing. ",
+										"explode": false,
+										"in": "path",
+										"name": "username",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"200": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {
+											"application/json": {
+												"schema": {
+													"$ref": "#/components/schemas/User"
+												},
+												"examples": {}
+											},
+											"application/xml": {
+												"schema": {
+													"$ref": "#/components/schemas/User"
+												},
+												"examples": {}
+											}
+										},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"400": {
+										"description": "Invalid username supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"404": {
+										"description": "User not found",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "getUserByName"
+								}
+							},
+							"put": {
+								"tags": [
+									"user"
+								],
+								"summary": "Update user",
+								"description": "This can only be done by the logged in user.",
+								"operationId": "updateUser",
+								"consumes": [
+									"application/xml",
+									"application/json",
+									"application/x-www-form-urlencoded"
+								],
+								"parameters": [
+									{
+										"description": "name that need to be deleted",
+										"explode": false,
+										"in": "path",
+										"name": "username",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"default": {
+										"description": "successful operation",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {
+										"application/json": {
+											"schema": {
+												"$ref": "#/components/schemas/User"
+											},
+											"examples": {}
+										},
+										"application/x-www-form-urlencoded": {
+											"schema": {
+												"$ref": "#/components/schemas/User"
+											},
+											"examples": {}
+										},
+										"application/xml": {
+											"schema": {
+												"$ref": "#/components/schemas/User"
+											},
+											"examples": {}
+										}
+									},
+									"name": "updateUser"
+								}
+							},
+							"delete": {
+								"tags": [
+									"user"
+								],
+								"summary": "Delete user",
+								"description": "This can only be done by the logged in user.",
+								"operationId": "deleteUser",
+								"parameters": [
+									{
+										"description": "The name that needs to be deleted",
+										"explode": false,
+										"in": "path",
+										"name": "username",
+										"parameterSchema": {
+											"type": "string"
+										},
+										"required": true,
+										"style": "SIMPLE",
+										"type": "string"
+									}
+								],
+								"responses": {
+									"400": {
+										"description": "Invalid username supplied",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									},
+									"404": {
+										"description": "User not found",
+										"headersV3": {},
+										"content": {},
+										"links": {},
+										"schema": {},
+										"examples": {},
+										"headers": {}
+									}
+								},
+								"mockedResponses": {},
+								"mockedConditionsBasedCustomResponsesList": [],
+								"enabled": true,
+								"scopes": [],
+								"requestBody": {
+									"content": {},
+									"name": "deleteUser"
+								}
+							},
+							"parameters": [],
+							"scopes": [],
+							"displayName": "/user/{username}",
+							"enabled": true
+						}
+					},
+					"securityDefinitions": {},
+					"definitions": {},
+					"parameters": {},
+					"baseUriParameters": [],
+					"externalDocs": [
+						{
+							"description": "Find out more about Swagger",
+							"url": "http://swagger.io"
+						}
+					],
+					"servers": [
+						{
+							"url": "/api/v3",
+							"variables": {}
+						}
+					],
+					"components": {
+						"schemas": {
+							"Address": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"example\":\"Palo Alto\"},\"state\":{\"type\":\"string\",\"example\":\"CA\"},\"street\":{\"type\":\"string\",\"example\":\"437 Lytton\"},\"zip\":{\"type\":\"string\",\"example\":\"94301\"}},\"xml\":{\"name\":\"address\"}}"
+							},
+							"ApiResponse": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}},\"xml\":{\"name\":\"##default\"}}"
+							},
+							"Category": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"format\":\"int64\",\"example\":\"1\"},\"name\":{\"type\":\"string\",\"example\":\"Dogs\"}},\"xml\":{\"name\":\"category\"}}"
+							},
+							"Customer": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"address\":{\"type\":\"array\",\"xml\":{\"name\":\"addresses\",\"wrapped\":true},\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Address\"}},\"id\":{\"type\":\"integer\",\"format\":\"int64\",\"example\":\"100000\"},\"username\":{\"type\":\"string\",\"example\":\"fehguy\"}},\"xml\":{\"name\":\"customer\"}}"
+							},
+							"Order": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"complete\":{\"type\":\"boolean\"},\"id\":{\"type\":\"integer\",\"format\":\"int64\",\"example\":\"10\"},\"petId\":{\"type\":\"integer\",\"format\":\"int64\",\"example\":\"198772\"},\"quantity\":{\"type\":\"integer\",\"format\":\"int32\",\"example\":\"7\"},\"shipDate\":{\"type\":\"string\",\"format\":\"date-time\"},\"status\":{\"type\":\"string\",\"description\":\"Order Status\",\"example\":\"approved\",\"enum\":[\"placed\",\"approved\",\"delivered\"]}},\"xml\":{\"name\":\"order\"}}"
+							},
+							"Pet": {
+								"type": "gateway",
+								"schema": "{\"required\":[\"name\",\"photoUrls\"],\"type\":\"object\",\"properties\":{\"category\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Category\"},\"id\":{\"type\":\"integer\",\"format\":\"int64\",\"example\":\"10\"},\"name\":{\"type\":\"string\",\"example\":\"doggie\"},\"photoUrls\":{\"type\":\"array\",\"xml\":{\"wrapped\":true},\"items\":{\"type\":\"string\",\"xml\":{\"name\":\"photoUrl\"}}},\"status\":{\"type\":\"string\",\"description\":\"pet status in the store\",\"enum\":[\"available\",\"pending\",\"sold\"]},\"tags\":{\"type\":\"array\",\"xml\":{\"wrapped\":true},\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/Tag\"}}},\"xml\":{\"name\":\"pet\"}}"
+							},
+							"Tag": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"format\":\"int64\"},\"name\":{\"type\":\"string\"}},\"xml\":{\"name\":\"tag\"}}"
+							},
+							"User": {
+								"type": "gateway",
+								"schema": "{\"type\":\"object\",\"properties\":{\"email\":{\"type\":\"string\",\"example\":\"john@email.com\"},\"firstName\":{\"type\":\"string\",\"example\":\"John\"},\"id\":{\"type\":\"integer\",\"format\":\"int64\",\"example\":\"10\"},\"lastName\":{\"type\":\"string\",\"example\":\"James\"},\"password\":{\"type\":\"string\",\"example\":\"12345\"},\"phone\":{\"type\":\"string\",\"example\":\"12345\"},\"userStatus\":{\"type\":\"integer\",\"description\":\"User Status\",\"format\":\"int32\",\"example\":\"1\"},\"username\":{\"type\":\"string\",\"example\":\"theUser\"}},\"xml\":{\"name\":\"user\"}}"
+							}
+						},
+						"responses": {},
+						"parameters": {},
+						"examples": {},
+						"requestBodies": {
+							"Pet": {
+								"content": {
+									"application/json": {
+										"schema": {
+											"$ref": "#/components/schemas/Pet"
+										},
+										"examples": {}
+									},
+									"application/xml": {
+										"schema": {
+											"$ref": "#/components/schemas/Pet"
+										},
+										"examples": {}
+									}
+								},
+								"name": "Pet"
+							},
+							"UserArray": {
+								"content": {
+									"application/json": {
+										"schema": {
+											"type": "gateway",
+											"schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"$ref\":\"#/components/schemas/User\"}}"
+										},
+										"examples": {}
+									}
+								},
+								"name": "UserArray"
+							}
+						},
+						"headers": {},
+						"links": {},
+						"callbacks": {}
+					},
+					"type": "rest"
+				},
+				"nativeEndpoint": [
+					{
+						"passSecurityHeaders": true,
+						"uri": "/api/v3",
+						"connectionTimeoutDuration": 0,
+						"alias": false
+					}
+				],
+				"apiName": "petstore",
+				"apiVersion": "1.0.17",
+				"apiDescription": "This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!\nYou can now help us improve the API whether it's by making changes to the definition itself or to the code.\nThat way, with time, we can improve the API in general, and expose some of the new features in OAS3.\n\nSome useful links:\n- [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)\n- [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)",
+				"maturityState": "Beta",
+				"apiGroups": [
+					"Finance Banking and Insurance",
+					"Sales and Ordering"
+				],
+				"isActive": true,
+				"type": "REST",
+				"owner": "wecare@apiwheel.dev",
+				"policies": [
+					"4631db34-04a7-4cad-860c-6a182c019d4a"
+				],
+				"tracingEnabled": false,
+				"scopes": [],
+				"publishedPortals": [
+					"69ca5c6b-8b0a-4bae-8021-4ccf0ffd136f"
+				],
+				"creationDate": "2023-03-18 06:29:48 GMT",
+				"lastModified": "2023-03-29 13:43:56 GMT",
+				"systemVersion": 1,
+				"gatewayEndpoints": {},
+				"deployments": [
+					"APIGateway"
+				],
+				"microgatewayEndpoints": [],
+				"appMeshEndpoints": [],
+				"id": "2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2"
+			},
+			"responseStatus": "SUCCESS",
+			"gatewayEndPoints": [
+				"http://env688761.apigw-aw-us.webmethods.io/gateway/petstore/1.0.17"
+			],
+			"gatewayEndPointList": [
+				{
+					"endpointName": "DEFAULT_GATEWAY_ENDPOINT",
+					"endpointDisplayName": "Default",
+					"endpoint": "gateway/petstore/1.0.17",
+					"endpointType": "DEFAULT",
+					"endpointUrls": [
+						"http://env688761.apigw-aw-us.webmethods.io/gateway/petstore/1.0.17"
+					]
+				}
+			],
+			"versions": [
+				{
+					"versionNumber": "1.0.17",
+					"apiId": "2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2"
+				}
+			]
+		}
+	}`
+
+	apiResponse := &GetApiDetails{}
+	json.Unmarshal([]byte(responseStr), apiResponse)
+	mc := &MockClient{}
+	cfg.Filter = `tag.custom2.Exists()`
+	// cfg.Filter = `tag.Contains(custom)` //invalid config
+	//cfg.Filter = `tag.Contains("custom")`
+	webMethodsClient, err := NewClient(cfg, mc)
+	assert.Nil(t, err)
+	logrus.SetLevel(logrus.DebugLevel)
+	// tags := make(map[string]interface{})
+	// for _, value := range apiResponse.ApiResponse.Api.ApiDefinition.Tags {
+	// 	tags[value.Name] = ""
+	// }
+	//fmt.Println(tags)
+
+	//NewFilterData(tags, nil)
+	result := webMethodsClient.IsAllowedTags(apiResponse.ApiResponse.Api.ApiDefinition.Tags)
+	assert.True(t, result)
+
+}
+
+// NewFilterData - Transforms the data to flat map which is used for filter evaluation
+func NewFilterData(tags interface{}, attr interface{}) {
+	vTags := reflect.ValueOf(tags)
+	fmt.Println(vTags.Kind())
+	tagsMap := make(map[string]string)
+	// Todo address other types
+	if vTags.Kind() == reflect.Map {
+		for _, key := range vTags.MapKeys() {
+			value := vTags.MapIndex(key)
+			vInterface := reflect.ValueOf(value.Interface())
+			fmt.Println(vInterface.Kind())
+			if vInterface.Kind() == reflect.Ptr {
+				vInterface = vInterface.Elem()
+			}
+			if vInterface.Kind() == reflect.String {
+				keyValue := vInterface.String()
+				tagsMap[key.String()] = keyValue
+			}
+			if vInterface.Kind() == reflect.Slice {
+				fmt.Println("slice")
+			}
+		}
+	}
 }

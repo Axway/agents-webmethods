@@ -56,12 +56,17 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 		"component": "agent",
 	})
 	client := coreapi.NewClient(conf.WebMethodConfig.TLS, conf.WebMethodConfig.ProxyURL)
-	gatewayClient := webmethods.NewClient(conf.WebMethodConfig, client)
+	gatewayClient, err := webmethods.NewClient(conf.WebMethodConfig, client)
+
+	if err != nil {
+		return nil, err
+	}
+
 	if centralConfig.IsMarketplaceSubsEnabled() {
 		agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
 		agent.NewAPIKeyAccessRequestBuilder().Register()
-		agent.NewAPIKeyCredentialRequestBuilder().Register()
-		//agent.NewOAuthCredentialRequestBuilder().IsRenewable().Register()
+		agent.NewAPIKeyCredentialRequestBuilder().IsRenewable().Register()
+		agent.NewOAuthCredentialRequestBuilder().IsRenewable().Register()
 	}
 
 	discoveryAgent = discovery.NewAgent(conf, gatewayClient)

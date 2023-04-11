@@ -6,6 +6,7 @@ import (
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
+	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
 
 	"github.com/sirupsen/logrus"
@@ -67,9 +68,8 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		logger.Errorf("failed to save api to cache: %s", err)
 	}
 
-	// setup authentication based on spec.
-	// ard := provisioning.APIKeyARD
-	// crds := []string{provisioning.APIKey}
+	var ardName string
+	crds := make([]string, 1)
 
 	specType := getSpecType(api.ApiType)
 
@@ -77,11 +77,37 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		return nil, fmt.Errorf("unknown spec type")
 	}
 
+	logger.Infof("Processing Spec type :%s", specType)
+
+	if specType == "oas3" {
+		specParser := apic.NewSpecResourceParser(api.ApiSpec, apic.Oas3)
+		specParser.Parse()
+		specProcessor := specParser.GetSpecProcessor()
+		if processor, ok := specProcessor.(apic.OasSpecProcessor); ok {
+			processor.ParseAuthInfo()
+			authPolicies := processor.GetAuthPolicies()
+			for _, value := range authPolicies {
+				logger.Infof("API Authentication Type %s", value)
+				if value == apic.Apikey {
+					ardName = provisioning.APIKeyARD
+					crds[0] = provisioning.APIKey
+					break
+				}
+				if value == apic.Oauth {
+					ardName = provisioning.OauthTokenAuthMethod
+					crds[0] = provisioning.OAuthIDPCRD
+				}
+			}
+		}
+	} else {
+		logger.Info("Ignoring authentication")
+	}
+
 	return &ServiceDetail{
-		// AccessRequestDefinition: ard,
-		// CRDs:                    crds,
-		APIName: api.Name,
-		APISpec: api.ApiSpec,
+		AccessRequestDefinition: ardName,
+		CRDs:                    crds,
+		APIName:                 api.Name,
+		APISpec:                 api.ApiSpec,
 		//AuthPolicy:              api.AuthPolicy,
 		Description: api.Description,
 		// Use the Asset ID for the externalAPIID so that apis linked to the asset are created as a revision

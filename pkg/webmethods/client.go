@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
+	"github.com/Axway/agent-sdk/pkg/filter"
 	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
 
@@ -26,6 +28,7 @@ type Client interface {
 	createAuthToken() string
 	ListAPIs() ([]ListApiResponse, error)
 	GetApiDetails(id string) (*ApiResponse, error)
+	IsAllowedTags(tags []Tag) bool
 	GetApiSpec(id string) ([]byte, error)
 	GetWsdl(gatewayEndpoint string) ([]byte, error)
 	CreateApplication(application *Application) (*Application, error)
@@ -33,7 +36,7 @@ type Client interface {
 	GetApplication(applicationId string) (*ApplicationResponse, error)
 	RotateApplicationApikey(applicationId string) error
 	DeleteApplication(applicationId string) error
-	OnConfigChange(webMethodConfig *config.WebMethodConfig)
+	OnConfigChange(webMethodConfig *config.WebMethodConfig) error
 	DeleteApplicationAccessTokens(applicationId string) error
 	UnsubscribeApplication(applicationId string, apiId string) error
 }
@@ -42,24 +45,35 @@ type Client interface {
 type WebMethodClient struct {
 	url string
 
-	username   string
-	password   string
-	httpClient coreapi.Client
+	username        string
+	password        string
+	httpClient      coreapi.Client
+	discoveryFilter filter.Filter
 }
 
 // NewClient creates a new client for interacting with Webmethods APIM.
-func NewClient(webMethodConfig *config.WebMethodConfig, httpClient coreapi.Client) *WebMethodClient {
+func NewClient(webMethodConfig *config.WebMethodConfig, httpClient coreapi.Client) (*WebMethodClient, error) {
 	client := &WebMethodClient{}
 	client.httpClient = httpClient
-	client.OnConfigChange(webMethodConfig)
+	err := client.OnConfigChange(webMethodConfig)
 	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.healthcheck)
-	return client
+	return client, err
 }
 
-func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig) {
+func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig) error {
 	c.url = webMethodConfig.WebmethodsApimUrl
 	c.username = webMethodConfig.Username
 	c.password = webMethodConfig.Password
+	c.discoveryFilter = nil
+	if strings.TrimSpace(webMethodConfig.Filter) != "" {
+
+		filter, err := filter.NewFilter(webMethodConfig.Filter)
+		if err != nil {
+			return err
+		}
+		c.discoveryFilter = filter
+	}
+	return nil
 }
 
 func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {
@@ -144,7 +158,22 @@ func (c *WebMethodClient) GetApiDetails(id string) (*ApiResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &getApiDetails.ApiResponse, nil
+}
+
+func (c *WebMethodClient) IsAllowedTags(tags []Tag) bool {
+	fmt.Println("validating 1")
+	fmt.Println(c.discoveryFilter)
+	if c.discoveryFilter != nil {
+		fmt.Println("validating")
+		tagsMap := make(map[string]interface{})
+		for _, value := range tags {
+			tagsMap[value.Name] = ""
+		}
+		return c.discoveryFilter.Evaluate(tagsMap)
+	}
+	return true
 }
 
 // GetAPI gets a single api by id

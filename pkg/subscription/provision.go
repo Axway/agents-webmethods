@@ -146,7 +146,9 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 	rs := prov.NewRequestStatusBuilder()
 
 	// process credential delete
-	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	webmethodsApplicationId := req.GetCredentialDetailsValue(common.AttrAppID)
+	log.Infof("webmethodsApplicationId : %s", webmethodsApplicationId)
+
 	if webmethodsApplicationId == "" {
 		return p.failed(rs, notFound(common.AttrAppID))
 	}
@@ -155,9 +157,7 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 		return p.failed(rs, notFound("Unable to clear application credentials from Webmethods"))
 	}
 
-	return prov.NewRequestStatusBuilder().
-		SetMessage("credentials will be removed when the application is deleted").
-		Success()
+	return rs.Success()
 }
 
 // CredentialProvision retrieves the credentials from an app
@@ -171,19 +171,27 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 	}
 
 	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	log.Infof("webmethodsApplicationId : %s", webmethodsApplicationId)
 	if webmethodsApplicationId == "" {
 		return p.failed(rs, notFound(common.AttrAppID)), nil
 	}
 
+	log.Infof("Credential Type %s", req.GetCredentialType())
 	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+	var credential prov.Credential
+
+	switch req.GetCredentialType() {
+	case prov.APIKeyCRD:
+		credential = prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+	case prov.OAuthIDPCRD:
+		credential = prov.NewCredentialBuilder().SetOAuthIDAndSecret("", "")
+	}
 	if err != nil {
 		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
 	}
-
-	cr := prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+	rs.AddProperty(common.AttrAppID, webmethodsApplicationId)
 	p.log.Info("created credentials")
-
-	return rs.Success(), cr
+	return rs.Success(), credential
 }
 
 func (p provisioner) CredentialUpdate(req prov.CredentialRequest) (prov.RequestStatus, prov.Credential) {
@@ -201,14 +209,20 @@ func (p provisioner) CredentialUpdate(req prov.CredentialRequest) (prov.RequestS
 	if err != nil {
 		return p.failed(rs, notFound("Unable to Rotate Webmethods Application APIkey")), nil
 	}
-
 	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
 	if err != nil {
 		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
 	}
-	cr := prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+	var credential prov.Credential
+
+	switch req.GetCredentialType() {
+	case prov.APIKeyCRD:
+		credential = prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+	case prov.OAuthIDPCRD:
+		credential = prov.NewCredentialBuilder().SetOAuthIDAndSecret("", "")
+	}
 	p.log.Infof("updated credentials for app %s", req.GetApplicationName())
-	return rs.Success(), cr
+	return rs.Success(), credential
 }
 
 func (p provisioner) failed(rs prov.RequestStatusBuilder, err error) prov.RequestStatus {

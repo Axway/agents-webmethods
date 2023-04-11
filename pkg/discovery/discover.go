@@ -62,7 +62,7 @@ func (d *discovery) Loop() {
 func (d *discovery) discoverAPIs() {
 	apis, err := d.client.ListAPIs()
 	if err != nil {
-		log.Error("Unable to list Apis ", err)
+		log.Errorf("Unable to list Apis :%v", err)
 		return
 	}
 
@@ -71,7 +71,12 @@ func (d *discovery) discoverAPIs() {
 			if api.ResponseStatus == "SUCCESS" {
 				apiResponse, err := d.client.GetApiDetails(api.WebmethodsApi.Id)
 				if err != nil {
-					log.Error("Unable to get API Details : ", err)
+					log.Errorf("Unable to get API Details : %v", err)
+					return
+				}
+
+				if !d.client.IsAllowedTags(apiResponse.Api.ApiDefinition.Tags) {
+					log.Info("API matched with filtered tags : %v , hence ignoring for discovery", err)
 					return
 				}
 

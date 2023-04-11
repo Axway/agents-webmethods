@@ -55,11 +55,16 @@ type Api struct {
 
 type ApiDefinition struct {
 	Info Info
+	Tags []Tag `json:"tags"`
 }
 type Info struct {
 	Description string
 	Version     string
 	Title       string
+}
+
+type Tag struct {
+	Name string
 }
 
 // application

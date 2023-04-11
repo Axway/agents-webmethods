@@ -16,6 +16,7 @@ var config *AgentConfig
 
 const (
 	pathPollInterval   = "webmethods.pollInterval"
+	pathFilter         = "webmethods.filter"
 	pathLogFile        = "webmethods.logFile"
 	pathProcessOnInput = "webmethods.processOnInput"
 
@@ -53,6 +54,7 @@ type AgentConfig struct {
 type WebMethodConfig struct {
 	corecfg.IConfigValidator
 	AgentType         corecfg.AgentType
+	Filter            string            `config:"filter"`
 	PollInterval      time.Duration     `config:"pollInterval"`
 	LogFile           string            `config:"logFile"`
 	ProcessOnInput    bool              `config:"processOnInput"`
@@ -115,7 +117,7 @@ func AddConfigProperties(props properties.Properties) {
 	props.AddStringProperty(pathAuthUsername, "", "Webmethods APIM username.")
 	props.AddStringProperty(pathAuthPassword, "", "Webmethods APIM password.")
 	props.AddStringProperty(pathMaturityState, "Beta", "Webmethods APIM Maturity State.")
-
+	props.AddStringProperty(pathFilter, "", "Webmethods Tag filter.")
 	props.AddStringProperty(pathCachePath, "/tmp", "Webmethods Cache Path")
 	// ssl properties and command flags
 	props.AddStringSliceProperty(pathSSLNextProtos, []string{}, "List of supported application level protocols, comma separated.")
@@ -130,6 +132,7 @@ func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentTyp
 	return &WebMethodConfig{
 		AgentType:         agentType,
 		PollInterval:      props.DurationPropertyValue(pathPollInterval),
+		Filter:            props.StringPropertyValue(pathFilter),
 		LogFile:           props.StringPropertyValue(pathLogFile),
 		ProcessOnInput:    props.BoolPropertyValue(pathProcessOnInput),
 		WebmethodsApimUrl: props.StringPropertyValue(pathWebmethodsApimUrl),
