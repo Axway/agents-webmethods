@@ -17,6 +17,8 @@ require (
 	github.com/elastic/beats/v7 v7.17.7
 	github.com/hpcloud/tail v1.0.0
 	github.com/sirupsen/logrus v1.9.0
+	github.com/stretchr/testify v1.8.0
+	gotest.tools v2.2.0+incompatible
 )
 
 require (
@@ -115,6 +117,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/santhosh-tekuri/jsonschema v1.2.4 // indirect

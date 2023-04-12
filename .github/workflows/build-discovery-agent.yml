@@ -1,0 +1,41 @@
+name: Build Webmethods Discovery Agent
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    env:
+      GOFLAGS: "-mod=mod"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Test
+        working-directory: .
+        run: |
+          make test
+  build:
+    env:
+      GOFLAGS: "-mod=mod"
+      VERSION: ${{ github.ref_name }}
+      COMMIT_ID: ${{ github.sha }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Build discovery agent
+        working-directory: .
+        run: |
+          make build-discovery
+      # - name: Build traceability agent
+      #   working-directory: .
+      #   run: |
+      #     make build-traceability
