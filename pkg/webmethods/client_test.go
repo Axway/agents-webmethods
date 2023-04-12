@@ -2,8 +2,6 @@ package webmethods
 
 import (
 	"encoding/json"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
@@ -5227,45 +5225,32 @@ func TestIsAllowedTags(t *testing.T) {
 	apiResponse := &GetApiDetails{}
 	json.Unmarshal([]byte(responseStr), apiResponse)
 	mc := &MockClient{}
-	cfg.Filter = `tag.custom2.Exists()`
+	cfg.Filter = `tag.custom2.Exists() && tag.customrathna.Exists()`
+
 	// cfg.Filter = `tag.Contains(custom)` //invalid config
-	//cfg.Filter = `tag.Contains("custom")`
+	//cfg.Filter = `tag.custom2 == "custom2"` // Not supported as tag does not have any value.
 	webMethodsClient, err := NewClient(cfg, mc)
 	assert.Nil(t, err)
 	logrus.SetLevel(logrus.DebugLevel)
-	// tags := make(map[string]interface{})
-	// for _, value := range apiResponse.ApiResponse.Api.ApiDefinition.Tags {
-	// 	tags[value.Name] = ""
-	// }
-	//fmt.Println(tags)
-
-	//NewFilterData(tags, nil)
 	result := webMethodsClient.IsAllowedTags(apiResponse.ApiResponse.Api.ApiDefinition.Tags)
 	assert.True(t, result)
 
-}
+	cfg.Filter = `tag.custom2.Exists() || tag.customrathna2.Exists()`
+	webMethodsClient, err = NewClient(cfg, mc)
+	assert.Nil(t, err)
+	result = webMethodsClient.IsAllowedTags(apiResponse.ApiResponse.Api.ApiDefinition.Tags)
+	assert.True(t, result)
 
-// NewFilterData - Transforms the data to flat map which is used for filter evaluation
-func NewFilterData(tags interface{}, attr interface{}) {
-	vTags := reflect.ValueOf(tags)
-	fmt.Println(vTags.Kind())
-	tagsMap := make(map[string]string)
-	// Todo address other types
-	if vTags.Kind() == reflect.Map {
-		for _, key := range vTags.MapKeys() {
-			value := vTags.MapIndex(key)
-			vInterface := reflect.ValueOf(value.Interface())
-			fmt.Println(vInterface.Kind())
-			if vInterface.Kind() == reflect.Ptr {
-				vInterface = vInterface.Elem()
-			}
-			if vInterface.Kind() == reflect.String {
-				keyValue := vInterface.String()
-				tagsMap[key.String()] = keyValue
-			}
-			if vInterface.Kind() == reflect.Slice {
-				fmt.Println("slice")
-			}
-		}
-	}
+	cfg.Filter = `tag.temp.Exists()`
+	webMethodsClient, err = NewClient(cfg, mc)
+	assert.Nil(t, err)
+	result = webMethodsClient.IsAllowedTags(apiResponse.ApiResponse.Api.ApiDefinition.Tags)
+	assert.False(t, result)
+
+	cfg.Filter = `tag.pet.Exists()`
+	webMethodsClient, err = NewClient(cfg, mc)
+	assert.Nil(t, err)
+	result = webMethodsClient.IsAllowedTags(apiResponse.ApiResponse.Api.ApiDefinition.Tags)
+	assert.True(t, result)
+
 }

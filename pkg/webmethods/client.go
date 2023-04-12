@@ -163,10 +163,7 @@ func (c *WebMethodClient) GetApiDetails(id string) (*ApiResponse, error) {
 }
 
 func (c *WebMethodClient) IsAllowedTags(tags []Tag) bool {
-	fmt.Println("validating 1")
-	fmt.Println(c.discoveryFilter)
 	if c.discoveryFilter != nil {
-		fmt.Println("validating")
 		tagsMap := make(map[string]interface{})
 		for _, value := range tags {
 			tagsMap[value.Name] = ""
