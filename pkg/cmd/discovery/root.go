@@ -2,12 +2,15 @@ package discovery
 
 import (
 	"github.com/Axway/agent-sdk/pkg/agent"
+	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/sirupsen/logrus"
 
 	subs "git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
+	coreagent "github.com/Axway/agent-sdk/pkg/agent"
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
+
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
 
@@ -57,19 +60,74 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	})
 	client := coreapi.NewClient(conf.WebMethodConfig.TLS, conf.WebMethodConfig.ProxyURL)
 	gatewayClient, err := webmethods.NewClient(conf.WebMethodConfig, client)
-
 	if err != nil {
 		return nil, err
 	}
 
-	if centralConfig.IsMarketplaceSubsEnabled() {
-		agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
-		agent.NewAPIKeyAccessRequestBuilder().Register()
-		agent.NewAPIKeyCredentialRequestBuilder().IsRenewable().Register()
-		agent.NewOAuthCredentialRequestBuilder().IsRenewable().Register()
+	oauthServersResponse, err := gatewayClient.ListOauth2Servers()
+
+	if err != nil {
+		return nil, err
+	}
+	servers := []string{}
+
+	for _, server := range oauthServersResponse.Alias {
+		servers = append(servers, server.Name)
 	}
 
-	discoveryAgent = discovery.NewAgent(conf, gatewayClient)
+	scopes := []string{}
 
+	for _, server := range oauthServersResponse.Alias {
+		for _, scope := range server.Scopes {
+			serverPlusScope := server.Name + "-" + scope.Name
+			scopes = append(scopes, serverPlusScope)
+		}
+	}
+
+	corsProp := getCorsSchemaPropertyBuilder()
+
+	agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
+	agent.NewAPIKeyAccessRequestBuilder().Register()
+	agent.NewAPIKeyCredentialRequestBuilder(coreagent.WithCRDRequestSchemaProperty(corsProp)).IsRenewable().Register()
+	oAuthRedirects := getAuthRedirectSchemaPropertyBuilder()
+
+	oAuthServers := provisioning.NewSchemaPropertyBuilder().
+		SetName("oauthServer").
+		SetRequired().
+		SetLabel("Oauth Server").
+		IsString().
+		SetEnumValues(servers)
+
+	agent.NewOAuthCredentialRequestBuilder(
+		//coreagent.WithCRDSco
+		coreagent.WithCRDOAuthSecret(),
+		coreagent.WithCRDRequestSchemaProperty(oAuthRedirects),
+		coreagent.WithCRDRequestSchemaProperty(oAuthServers),
+		coreagent.WithCRDRequestSchemaProperty(corsProp)).IsRenewable().Register()
+
+	discoveryAgent = discovery.NewAgent(conf, gatewayClient)
 	return conf, nil
+}
+
+func getCorsSchemaPropertyBuilder() provisioning.PropertyBuilder {
+	// register the supported credential request defs
+	return provisioning.NewSchemaPropertyBuilder().
+		SetName("cors").
+		SetLabel("Javascript Origins").
+		IsArray().
+		AddItem(
+			provisioning.NewSchemaPropertyBuilder().
+				SetName("Origins").
+				IsString())
+}
+
+func getAuthRedirectSchemaPropertyBuilder() provisioning.PropertyBuilder {
+	return provisioning.NewSchemaPropertyBuilder().
+		SetName("redirectURLs").
+		SetLabel("Redirect URLs").
+		IsArray().
+		AddItem(
+			provisioning.NewSchemaPropertyBuilder().
+				SetName("URL").
+				IsString())
 }

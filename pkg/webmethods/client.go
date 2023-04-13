@@ -31,14 +31,19 @@ type Client interface {
 	IsAllowedTags(tags []Tag) bool
 	GetApiSpec(id string) ([]byte, error)
 	GetWsdl(gatewayEndpoint string) ([]byte, error)
+	FindApplicationByName(applicationName string) (*SearchApplicationResponse, error)
 	CreateApplication(application *Application) (*Application, error)
+	UpdateApplication(application *Application) (*Application, error)
 	SubscribeApplication(applicationId string, ApplicationApiSubscription *ApplicationApiSubscription) error
 	GetApplication(applicationId string) (*ApplicationResponse, error)
 	RotateApplicationApikey(applicationId string) error
+	CreateOauth2Strategy(strategy *Strategy) (*StrategyResponse, error)
+	GetStrategy(strategyId string) (*StrategyResponse, error)
 	DeleteApplication(applicationId string) error
 	OnConfigChange(webMethodConfig *config.WebMethodConfig) error
 	DeleteApplicationAccessTokens(applicationId string) error
 	UnsubscribeApplication(applicationId string, apiId string) error
+	ListOauth2Servers() (*OauthServers, error)
 }
 
 // WebMethodClient is the client for interacting with Webmethods APIM.
@@ -217,6 +222,42 @@ func (c *WebMethodClient) GetWsdl(gatewayEndpoint string) ([]byte, error) {
 	return response.Body, nil
 }
 
+func (c *WebMethodClient) FindApplicationByName(applicationName string) (*SearchApplicationResponse, error) {
+	searchRequest := &Search{}
+	searchRequest.Types = []string{"APPLICATION"}
+	searchRequest.ResponseFields = []string{"applicationID", "name"}
+	applicationResponse := &SearchApplicationResponse{}
+	scope := Scope{}
+	scope.AttributeName = "name"
+	scope.Keyword = applicationName
+	searchRequest.Scope = []Scope{scope}
+	url := fmt.Sprintf("%s/rest/apigateway/search", c.url)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	buffer, err := json.Marshal(searchRequest)
+	if err != nil {
+		return nil, agenterrors.Newf(2000, err.Error())
+	}
+	request := coreapi.Request{
+		Method:  coreapi.POST,
+		URL:     url,
+		Headers: headers,
+		Body:    buffer,
+	}
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, applicationResponse)
+	if err != nil {
+		return nil, err
+	}
+	return applicationResponse, nil
+}
+
 func (c *WebMethodClient) GetApplication(applicationId string) (*ApplicationResponse, error) {
 	applicationResponse := &ApplicationResponse{}
 	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
@@ -266,6 +307,89 @@ func (c *WebMethodClient) CreateApplication(application *Application) (*Applicat
 
 	err = json.Unmarshal(response.Body, responseApplication)
 	return responseApplication, nil
+}
+
+func (c *WebMethodClient) UpdateApplication(application *Application) (*Application, error) {
+	responseApplication := &Application{}
+	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, application.Id)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	buffer, err := json.Marshal(application)
+	if err != nil {
+		return nil, agenterrors.Newf(2000, err.Error())
+	}
+	request := coreapi.Request{
+		Method:  coreapi.PUT,
+		URL:     url,
+		Headers: headers,
+		Body:    buffer,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, responseApplication)
+	return responseApplication, nil
+}
+
+func (c *WebMethodClient) CreateOauth2Strategy(strategy *Strategy) (*StrategyResponse, error) {
+	strategyResponse := &StrategyResponse{}
+
+	url := fmt.Sprintf("%s/rest/apigateway/strategies", c.url)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	buffer, err := json.Marshal(strategy)
+	if err != nil {
+		return nil, agenterrors.Newf(2000, err.Error())
+	}
+	request := coreapi.Request{
+		Method:  coreapi.POST,
+		URL:     url,
+		Headers: headers,
+		Body:    buffer,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code == 201 {
+		err = json.Unmarshal(response.Body, strategyResponse)
+		return strategyResponse, nil
+	}
+
+	return nil, agenterrors.Newf(2000, "Unable to create strategy")
+}
+
+func (c *WebMethodClient) GetStrategy(strategyId string) (*StrategyResponse, error) {
+	strategyResponse := &StrategyResponse{}
+	url := fmt.Sprintf("%s/rest/apigateway/strategies/%s", c.url, strategyId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Accept":        "application/json",
+	}
+	request := coreapi.Request{
+		Method:  coreapi.GET,
+		URL:     url,
+		Headers: headers,
+	}
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, strategyResponse)
+	if err != nil {
+		return nil, err
+	}
+	return strategyResponse, nil
 }
 
 func (c *WebMethodClient) SubscribeApplication(applicationId string, ApplicationApiSubscription *ApplicationApiSubscription) error {
@@ -390,6 +514,51 @@ func (c *WebMethodClient) UnsubscribeApplication(applicationId string, apiId str
 		return agenterrors.Newf(2001, "Unable to remove API to Application")
 	}
 	return nil
+}
+
+func (c *WebMethodClient) ListOauth2Servers() (*OauthServers, error) {
+	requestStr := `{
+		"types": [
+			"alias"
+		],
+		"scope": [
+			{
+				"attributeName": "type",
+				"keyword": "authServerAlias"
+			}
+		],
+		"responseFields": [
+			"id",
+			"name",
+			"type",
+			"description"
+		],
+		"condition": "or",
+		"sortByField": "name"
+	}`
+	oauthServers := &OauthServers{}
+	url := fmt.Sprintf("%s/rest/apigateway/search", c.url)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+
+	request := coreapi.Request{
+		Method:  coreapi.POST,
+		URL:     url,
+		Headers: headers,
+		Body:    []byte(requestStr),
+	}
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, oauthServers)
+	if err != nil {
+		return nil, err
+	}
+	return oauthServers, nil
 }
 
 func (c *WebMethodClient) createAuthToken() string {

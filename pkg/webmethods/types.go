@@ -95,6 +95,15 @@ type ApplicationResponse struct {
 	Applications []Application `json:"applications"`
 }
 
+type SearchApplicationResponse struct {
+	SearchApplication []SearchApplication `json:"application"`
+}
+
+type SearchApplication struct {
+	ApplicationID string `json:"applicationID"`
+	Name          string `json:"name"`
+}
+
 type Application struct {
 	Id            string `json:"id"`
 	ApplicationID string `json:"applicationID"`
@@ -134,4 +143,76 @@ type ExtendedKeys struct {
 
 type ApplicationApiSubscription struct {
 	ApiIDs []string `json:"apiIDs"`
+}
+
+type Search struct {
+	Types          []string `json:"types"`
+	Scope          []Scope  `json:"scope"`
+	ResponseFields []string `json:"responseFields"`
+	Condition      string   `json:"condition,omitempty"`
+	SortByField    string   `json:"sortByField,omitempty"`
+}
+
+type Scope struct {
+	AttributeName string `json:"attributeName"`
+	Keyword       string `json:"keyword"`
+}
+
+type Strategy struct {
+	Id                 string             `json:"id,omitempty"`
+	Name               string             `json:"name"`
+	Description        string             `json:"description"`
+	AuthServerAlias    string             `json:"authServerAlias"`
+	Audience           string             `json:"audience"`
+	Type               string             `json:"type"`
+	DcrConfig          DcrConfig          `json:"dcrConfig"`
+	ClientRegistration ClientRegistration `json:"clientRegistration"`
+}
+
+type DcrConfig struct {
+	AllowedGrantTypes  []string `json:"allowedGrantTypes"`
+	Scopes             []string `json:"scopes"`
+	RedirectUris       []string `json:"redirectUris"`
+	AuthServer         string   `json:"authServer"`
+	ApplicationType    string   `json:"applicationType"`
+	ClientType         string   `json:"clientType"`
+	ExpirationInterval string   `json:"expirationInterval"`
+	RefreshCount       string   `json:"refreshCount"`
+}
+
+type StrategyResponse struct {
+	Strategy Strategy `json:"strategy"`
+}
+
+type ClientRegistration struct {
+	Shell                    bool          `json:"shell"`
+	ClientId                 string        `json:"clientId"`
+	Name                     string        `json:"name"`
+	TokenLifetime            int           `json:"tokenLifetime"`
+	TokenRefreshLimit        int           `json:"tokenRefreshLimit"`
+	ClientSecret             string        `json:"clientSecret"`
+	Enabled                  bool          `json:"enabled"`
+	RedirectUris             []string      `json:"redirectUris"`
+	ClScopes                 []interface{} `json:"clScopes"`
+	AuthCodeAllowed          bool          `json:"authCodeAllowed"`
+	ImplicitAllowed          bool          `json:"implicitAllowed"`
+	ClientCredentialsAllowed bool          `json:"clientCredentialsAllowed"`
+	ResourceOwnerAllowed     bool          `json:"resourceOwnerAllowed"`
+	PkceType                 string        `json:"pkceType"`
+}
+
+type OauthServers struct {
+	Alias []struct {
+		ID                  string       `json:"id"`
+		Name                string       `json:"name"`
+		Description         string       `json:"description,omitempty"`
+		Type                string       `json:"type"`
+		Scopes              []OauthScope `json:"scopes"`
+		SupportedGrantTypes []string     `json:"supportedGrantTypes"`
+	} `json:"alias"`
+}
+
+type OauthScope struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }

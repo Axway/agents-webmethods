@@ -5254,3 +5254,244 @@ func TestIsAllowedTags(t *testing.T) {
 	assert.True(t, result)
 
 }
+
+func TestFindApplicationByName(t *testing.T) {
+
+	response := `{
+		"application": [
+			{
+				"applicationID": "5dc30779-2d4b-441c-97d0-b2c05a2ae1c8",
+				"name": "oauthokta",
+				"ownerType": "user",
+				"identifiers": [],
+				"lastUpdated": 0,
+				"siteURLs": [],
+				"jsOrigins": [],
+				"isSuspended": false,
+				"authStrategyIds": [],
+				"shell": false,
+				"subscription": false
+			}
+		]
+	}`
+	mc := &MockClient{}
+	webMethodsClient, _ := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	applicationResponse, err := webMethodsClient.FindApplicationByName("oauthokta")
+	assert.Nil(t, err)
+	assert.Equal(t, applicationResponse.SearchApplication[0].ApplicationID, "5dc30779-2d4b-441c-97d0-b2c05a2ae1c8")
+	assert.Equal(t, applicationResponse.SearchApplication[0].Name, "oauthokta")
+
+}
+
+func TestCreateOauth2Strategy(t *testing.T) {
+	request := `{
+		"name": "oauthdynamic2",
+		"description": "oauthdynamic2",
+		"authServerAlias": "okta",
+		"audience": "api://default",
+		"type": "OAUTH2",
+		"dcrConfig": {
+			"allowedGrantTypes": [
+				"authorization_code",
+				"password",
+				"client_credentials",
+				"refresh_token",
+				"implicit"
+			],
+			"scopes": [],
+			"redirectUris": [
+				"https://redirectURI.com"
+			],
+			"authServer": "okta",
+			"applicationType": "web",
+			"clientType": "CONFIDENTIAL",
+			"expirationInterval": "3600",
+			"refreshCount": "100"
+		}
+	}`
+
+	response := `{
+		"strategy": {
+			"id": "1b322290-9805-4057-91cb-c803b9750227",
+			"type": "OAUTH2",
+			"authServerAlias": "okta",
+			"name": "oauthdynamic2",
+			"description": "oauthdynamic2",
+			"clientId": "0oa1maithleD7Owas0h8",
+			"dcrConfig": {
+				"allowedGrantTypes": [
+					"authorization_code",
+					"password",
+					"client_credentials",
+					"refresh_token",
+					"implicit"
+				],
+				"applicationType": "web",
+				"clientType": "CONFIDENTIAL",
+				"clientName": "oauthdynamic2",
+				"clientVersion": "1.0",
+				"expirationInterval": "3600",
+				"refreshCount": "100",
+				"scopes": [],
+				"redirectUris": [
+					"https://redirectURI.com"
+				],
+				"pkceType": "USE_GLOBAL_SETTING"
+			},
+			"clientRegistration": {
+				"shell": false,
+				"clientId": "0oa1maithleD7Owas0h8",
+				"name": "oauthdynamic2",
+				"tokenLifetime": 0,
+				"tokenRefreshLimit": 0,
+				"clientSecret": "********************************",
+				"enabled": false,
+				"redirectUris": [
+					"https://redirectURI.com"
+				],
+				"clScopes": [],
+				"authCodeAllowed": true,
+				"implicitAllowed": true,
+				"clientCredentialsAllowed": true,
+				"resourceOwnerAllowed": true,
+				"pkceType": "NOT_ENFORCED"
+			},
+			"audience": "api://default"
+		}
+	}`
+
+	mc := &MockClient{}
+	webMethodsClient, _ := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 201,
+			Body: []byte(response),
+		}, nil
+	}
+	strategyRequest := &Strategy{}
+	json.Unmarshal([]byte(request), strategyRequest)
+	strategyResponse, err := webMethodsClient.CreateOauth2Strategy(strategyRequest)
+	assert.Nil(t, err)
+	assert.Equal(t, strategyResponse.Strategy.Id, "1b322290-9805-4057-91cb-c803b9750227")
+
+}
+
+func TestGetStrategy(t *testing.T) {
+	response := `{
+		"strategy": {
+			"id": "1b322290-9805-4057-91cb-c803b9750227",
+			"type": "OAUTH2",
+			"authServerAlias": "okta",
+			"name": "oauthdynamic2",
+			"description": "oauthdynamic2",
+			"clientId": "0oa1maithleD7Owas0h8",
+			"dcrConfig": {
+				"allowedGrantTypes": [
+					"authorization_code",
+					"password",
+					"client_credentials",
+					"refresh_token",
+					"implicit"
+				],
+				"applicationType": "web",
+				"clientType": "CONFIDENTIAL",
+				"clientName": "oauthdynamic2",
+				"clientVersion": "1.0",
+				"expirationInterval": "3600",
+				"refreshCount": "100",
+				"scopes": [],
+				"redirectUris": [
+					"https://redirectURI.com"
+				],
+				"pkceType": "USE_GLOBAL_SETTING"
+			},
+			"clientRegistration": {
+				"shell": false,
+				"clientId": "aaaaaaa",
+				"name": "oauthdynamic2",
+				"tokenLifetime": 0,
+				"tokenRefreshLimit": 0,
+				"clientSecret": "xxxxxxx",
+				"enabled": false,
+				"redirectUris": [
+					"https://redirectURI.com"
+				],
+				"clScopes": [],
+				"authCodeAllowed": true,
+				"implicitAllowed": true,
+				"clientCredentialsAllowed": true,
+				"resourceOwnerAllowed": true,
+				"pkceType": "NOT_ENFORCED"
+			},
+			"audience": "api://default"
+		}
+	}`
+	mc := &MockClient{}
+	webMethodsClient, _ := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	strategyResponse, err := webMethodsClient.GetStrategy("1b322290-9805-4057-91cb-c803b9750227")
+	assert.Nil(t, err)
+	assert.Equal(t, strategyResponse.Strategy.Id, "1b322290-9805-4057-91cb-c803b9750227")
+	assert.Equal(t, strategyResponse.Strategy.ClientRegistration.ClientId, "aaaaaaa")
+	assert.Equal(t, strategyResponse.Strategy.ClientRegistration.ClientSecret, "xxxxxxx")
+	assert.Equal(t, strategyResponse.Strategy.ClientRegistration.RedirectUris[0], "https://redirectURI.com")
+
+}
+
+func TestListOauth2Servers(t *testing.T) {
+	response := `{
+		"alias": [
+			{
+				"id": "local",
+				"name": "local",
+				"description": "API Gateway as an Authorization server.",
+				"type": "authServerAlias",
+				"scopes": [],
+				"supportedGrantTypes": [
+					"authorization_code",
+					"password",
+					"client_credentials",
+					"refresh_token",
+					"implicit"
+				]
+			},
+			{
+				"id": "5de40a58-0b8b-4841-8c13-22d3bc6589c8",
+				"name": "okta",
+				"type": "authServerAlias",
+				"scopes": [],
+				"supportedGrantTypes": [
+					"authorization_code",
+					"password",
+					"client_credentials",
+					"refresh_token",
+					"implicit"
+				]
+			}
+		]
+	}`
+	mc := &MockClient{}
+	webMethodsClient, _ := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	oAuthServersResponse, err := webMethodsClient.ListOauth2Servers()
+	assert.Nil(t, err)
+	assert.Equal(t, oAuthServersResponse.Alias[0].Name, "local")
+	assert.Equal(t, oAuthServersResponse.Alias[1].Name, "okta")
+
+}

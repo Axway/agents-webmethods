@@ -122,6 +122,7 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 	if appName == "" {
 		return p.failed(rs, notFound("managed application name"))
 	}
+
 	// process application create
 	var application webmethods.Application
 	application.Name = appName
@@ -178,17 +179,43 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 
 	log.Infof("Credential Type %s", req.GetCredentialType())
 	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+	}
 	var credential prov.Credential
 
 	switch req.GetCredentialType() {
 	case prov.APIKeyCRD:
 		credential = prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 	case prov.OAuthIDPCRD:
-		credential = prov.NewCredentialBuilder().SetOAuthIDAndSecret("", "")
+		dcrconfig := webmethods.DcrConfig{}
+		strategy := &webmethods.Strategy{
+			Name:            "test",
+			Description:     "test",
+			AuthServerAlias: "",
+			Audience:        "",
+			Type:            "OAUTH2",
+			DcrConfig:       dcrconfig,
+		}
+
+		strategyResponse, err := p.client.CreateOauth2Strategy(strategy)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+
+		}
+
+		application := applicationsResponse.Applications[0]
+		application.AuthStrategyIds = []string{strategyResponse.Strategy.Id}
+		applicationsResponse, err := p.client.UpdateApplication(&application)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to get update  Webmethods applicaiton")), nil
+		}
+		if applicationsResponse == nil {
+			return p.failed(rs, notFound("Unable to get update  Webmethods applicaiton")), nil
+		}
+		credential = prov.NewCredentialBuilder().SetOAuthIDAndSecret(strategyResponse.Strategy.ClientRegistration.ClientId, strategyResponse.Strategy.ClientRegistration.ClientSecret)
 	}
-	if err != nil {
-		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
-	}
+
 	rs.AddProperty(common.AttrAppID, webmethodsApplicationId)
 	p.log.Info("created credentials")
 	return rs.Success(), credential
