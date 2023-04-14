@@ -94,8 +94,9 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 					break
 				}
 				if value == apic.Oauth {
-					ardName = provisioning.OauthTokenAuthMethod
-					crds[0] = provisioning.OAuthIDPCRD
+					ardName = "oauth2"
+					crds[0] = "oauth2"
+					break
 				}
 			}
 		}

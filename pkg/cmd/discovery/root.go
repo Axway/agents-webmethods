@@ -5,6 +5,7 @@ import (
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/sirupsen/logrus"
 
+	"git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
 	subs "git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	coreagent "github.com/Axway/agent-sdk/pkg/agent"
@@ -88,22 +89,33 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 
 	agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
 	agent.NewAPIKeyAccessRequestBuilder().Register()
+
 	agent.NewAPIKeyCredentialRequestBuilder(coreagent.WithCRDRequestSchemaProperty(corsProp)).IsRenewable().Register()
 	oAuthRedirects := getAuthRedirectSchemaPropertyBuilder()
 
 	oAuthServers := provisioning.NewSchemaPropertyBuilder().
-		SetName("oauthServer").
+		SetName(subscription.OauthServerField).
 		SetRequired().
 		SetLabel("Oauth Server").
 		IsString().
 		SetEnumValues(servers)
 
+	oAuthType := provisioning.NewSchemaPropertyBuilder().
+		SetName(subscription.ApplicationTypeField).
+		SetRequired().
+		SetLabel("Application Type").
+		IsString().
+		SetEnumValues([]string{"Confidential", "Public"})
+
+	agent.NewAccessRequestBuilder().SetName(subscription.OAuth2AuthType).Register()
+
 	agent.NewOAuthCredentialRequestBuilder(
 		//coreagent.WithCRDSco
 		coreagent.WithCRDOAuthSecret(),
-		coreagent.WithCRDRequestSchemaProperty(oAuthRedirects),
 		coreagent.WithCRDRequestSchemaProperty(oAuthServers),
-		coreagent.WithCRDRequestSchemaProperty(corsProp)).IsRenewable().Register()
+		coreagent.WithCRDRequestSchemaProperty(oAuthType),
+		coreagent.WithCRDRequestSchemaProperty(oAuthRedirects),
+		coreagent.WithCRDRequestSchemaProperty(corsProp)).SetName(subscription.OAuth2AuthType).IsRenewable().Register()
 
 	discoveryAgent = discovery.NewAgent(conf, gatewayClient)
 	return conf, nil
@@ -112,7 +124,7 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 func getCorsSchemaPropertyBuilder() provisioning.PropertyBuilder {
 	// register the supported credential request defs
 	return provisioning.NewSchemaPropertyBuilder().
-		SetName("cors").
+		SetName(subscription.CorsField).
 		SetLabel("Javascript Origins").
 		IsArray().
 		AddItem(
@@ -123,7 +135,7 @@ func getCorsSchemaPropertyBuilder() provisioning.PropertyBuilder {
 
 func getAuthRedirectSchemaPropertyBuilder() provisioning.PropertyBuilder {
 	return provisioning.NewSchemaPropertyBuilder().
-		SetName("redirectURLs").
+		SetName(subscription.RedirectURLsField).
 		SetLabel("Redirect URLs").
 		IsArray().
 		AddItem(

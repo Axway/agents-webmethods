@@ -38,6 +38,7 @@ type Client interface {
 	GetApplication(applicationId string) (*ApplicationResponse, error)
 	RotateApplicationApikey(applicationId string) error
 	CreateOauth2Strategy(strategy *Strategy) (*StrategyResponse, error)
+	DeleteStrategy(strategyId string) error
 	GetStrategy(strategyId string) (*StrategyResponse, error)
 	DeleteApplication(applicationId string) error
 	OnConfigChange(webMethodConfig *config.WebMethodConfig) error
@@ -439,6 +440,28 @@ func (c *WebMethodClient) RotateApplicationApikey(applicationId string) error {
 	}
 	if response.Code != 201 {
 		return agenterrors.Newf(2001, "Unable to Rotate API Key")
+	}
+	return nil
+}
+
+func (c *WebMethodClient) DeleteStrategy(strategyId string) error {
+	url := fmt.Sprintf("%s/rest/apigateway/strategies/%s", c.url, strategyId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	request := coreapi.Request{
+		Method:  coreapi.DELETE,
+		URL:     url,
+		Headers: headers,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return err
+	}
+	if response.Code != 204 {
+		return agenterrors.Newf(2001, "Unable to Delete Stratgey")
 	}
 	return nil
 }
