@@ -94,18 +94,15 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	oAuthRedirects := getAuthRedirectSchemaPropertyBuilder()
 
 	oAuthServers := provisioning.NewSchemaPropertyBuilder().
-		SetName(subscription.OauthServerField).
-		SetRequired().
-		SetLabel("Oauth Server").
-		IsString().
-		SetEnumValues(servers)
+		SetName(subscription.OauthServerField).SetRequired().SetLabel("Oauth Server").
+		IsString().SetEnumValues(servers)
 
 	oAuthType := provisioning.NewSchemaPropertyBuilder().
-		SetName(subscription.ApplicationTypeField).
-		SetRequired().
-		SetLabel("Application Type").
-		IsString().
-		SetEnumValues([]string{"Confidential", "Public"})
+		SetName(subscription.ApplicationTypeField).SetRequired().SetLabel("Application Type").
+		IsString().SetEnumValues([]string{"Confidential", "Public"}).SetFirstEnumValue("Confidential")
+
+	audience := provisioning.NewSchemaPropertyBuilder().
+		SetName(subscription.AudienceField).SetLabel("Audience").IsString().SetAsTextArea()
 
 	agent.NewAccessRequestBuilder().SetName(subscription.OAuth2AuthType).Register()
 
@@ -114,6 +111,7 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 		coreagent.WithCRDOAuthSecret(),
 		coreagent.WithCRDRequestSchemaProperty(oAuthServers),
 		coreagent.WithCRDRequestSchemaProperty(oAuthType),
+		coreagent.WithCRDRequestSchemaProperty(audience),
 		coreagent.WithCRDRequestSchemaProperty(oAuthRedirects),
 		coreagent.WithCRDRequestSchemaProperty(corsProp)).SetName(subscription.OAuth2AuthType).IsRenewable().Register()
 

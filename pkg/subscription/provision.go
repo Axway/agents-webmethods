@@ -24,6 +24,7 @@ const (
 	ApplicationTypeField = "applicationType"
 	// ClientTypeField -
 	ClientTypeField = "clientType"
+	AudienceField   = "audience"
 )
 
 type provisioner struct {
@@ -300,6 +301,11 @@ func getCredProvData(credData map[string]interface{}) credentialMetaData {
 		credMetaData.appType = data.(string)
 	}
 
+	// Audience type field
+	if data, ok := credData[AudienceField]; ok && data != nil {
+		credMetaData.audience = data.(string)
+	}
+
 	return credMetaData
 }
 
@@ -308,6 +314,7 @@ type credentialMetaData struct {
 	redirectURLs    []string
 	oauthServerName string
 	appType         string
+	audience        string
 }
 
 func createOrGetOauthCredential(application webmethods.Application, provData credentialMetaData, p provisioner) (prov.Credential, error) {
@@ -332,7 +339,7 @@ func createOrGetOauthCredential(application webmethods.Application, provData cre
 			Name:            application.Name,
 			Description:     application.Name,
 			AuthServerAlias: provData.oauthServerName,
-			Audience:        "",
+			Audience:        provData.audience,
 			Type:            "OAUTH2",
 			DcrConfig:       dcrconfig,
 		}
