@@ -5289,6 +5289,25 @@ func TestFindApplicationByName(t *testing.T) {
 
 }
 
+func TestFindApplicationByNameNegative(t *testing.T) {
+
+	response := `{
+		"application": []
+	}`
+	mc := &MockClient{}
+	webMethodsClient, _ := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	applicationResponse, err := webMethodsClient.FindApplicationByName("oauthokta")
+	assert.Nil(t, err)
+	assert.Equal(t, len(applicationResponse.SearchApplication), 0)
+
+}
+
 func TestCreateOauth2Strategy(t *testing.T) {
 	request := `{
 		"name": "oauthdynamic2",

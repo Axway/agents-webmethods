@@ -52,15 +52,15 @@ func (p provisioner) AccessRequestDeprovision(req prov.AccessRequest) prov.Reque
 	}
 
 	// process access request delete
-	// webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
-	// if webmethodsApplicationId == "" {
-	// 	return p.failed(rs, notFound(common.AttrAppID))
-	// }
+	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	if webmethodsApplicationId == "" {
+		return p.failed(rs, notFound(common.AttrAppID))
+	}
 
-	// err := p.client.UnsubscribeApplication(webmethodsApplicationId, apiID)
-	// if err != nil {
-	// 	return p.failed(rs, notFound("Error removing API from Webmethods Application"))
-	// }
+	err := p.client.UnsubscribeApplication(webmethodsApplicationId, apiID)
+	if err != nil {
+		return p.failed(rs, notFound("Error removing API from Webmethods Application"))
+	}
 
 	p.log.
 		WithField("api", apiID).
@@ -118,7 +118,15 @@ func (p provisioner) ApplicationRequestDeprovision(req prov.ApplicationRequest) 
 	if webmethodsApplicationId == "" {
 		return p.failed(rs, notFound(common.AttrAppID))
 	}
-	err := p.client.DeleteApplication(webmethodsApplicationId)
+	applicationResponse, err := p.client.GetApplication(webmethodsApplicationId)
+	if err != nil {
+		return p.failed(rs, notFound("Error calling webmethods"))
+	}
+	if len(applicationResponse.Applications) == 0 {
+		log.Warnf("Application with id %s is already deleted", webmethodsApplicationId)
+		return rs.Success()
+	}
+	err = p.client.DeleteApplication(webmethodsApplicationId)
 	if err != nil {
 		return p.failed(rs, notFound("Error Deleting Webmethods application"))
 	}
@@ -140,16 +148,28 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 		return p.failed(rs, notFound("managed application name"))
 	}
 
-	// process application create
-	var application webmethods.Application
-	application.Name = appName
-	application.Version = "1.0"
-	application.Description = "Amplify " + appName
-	createdApplication, err := p.client.CreateApplication(&application)
+	searchAppResponse, err := p.client.FindApplicationByName(appName)
 	if err != nil {
-		return p.failed(rs, notFound("Error creating application"))
+		return p.failed(rs, notFound("Error contacting webmethods"))
 	}
-	rs.AddProperty(common.AttrAppID, createdApplication.Id)
+	var applicationId string
+	if len(searchAppResponse.SearchApplication) == 0 {
+		log.Infof("Creating new application with name %s", appName)
+		var application webmethods.Application
+		application.Name = appName
+		application.Version = "1.0"
+		application.Description = "Amplify " + appName
+		createdApplication, err := p.client.CreateApplication(&application)
+		if err != nil {
+			return p.failed(rs, notFound("Error creating application"))
+		}
+		applicationId = createdApplication.ApplicationID
+	} else {
+		log.Infof("Using the exsting application with Id %s", searchAppResponse.SearchApplication[0].ApplicationID)
+		applicationId = searchAppResponse.SearchApplication[0].ApplicationID
+	}
+	// process application create
+	rs.AddProperty(common.AttrAppID, applicationId)
 	p.log.
 		WithField("appName", req.GetManagedApplicationName()).
 		Info("created application")
@@ -179,8 +199,20 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 		}
 	case OAuth2AuthType:
 		log.Info("Removing oauth credential")
+		applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to get application from Webmethods"))
+		}
+		if len(applicationsResponse.Applications[0].AuthStrategyIds) == 0 {
+			log.Warnf("Oauth Credential already cleaned up for application %s", applicationsResponse.Applications[0].Name)
+			return rs.Success()
+		}
+		strategyId := applicationsResponse.Applications[0].AuthStrategyIds[0]
+		err = p.client.DeleteStrategy(strategyId)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to delete Oauth2 strategy from Webmethods"))
+		}
 	}
-
 	return rs.Success()
 }
 
@@ -210,7 +242,19 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 
 	switch req.GetCredentialType() {
 	case prov.APIKeyCRD:
-		credential = prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+		application := applicationsResponse.Applications[0]
+		if len(provData.cors) > 0 {
+			log.Infof("Update javascript origins for the application %s", application.Name)
+			// Updating java script origins
+			applicationsResponse.Applications[0].JsOrigins = append(application.JsOrigins, provData.cors...)
+			applicationUpdateResponse, err := p.client.UpdateApplication(&application)
+			if err != nil {
+				return p.failed(rs, notFound("Unable to to update Java Script Origins")), nil
+			}
+			credential = prov.NewCredentialBuilder().SetAPIKey(applicationUpdateResponse.AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+		} else {
+			credential = prov.NewCredentialBuilder().SetAPIKey(application.AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
+		}
 	case OAuth2AuthType:
 		credential, err = createOrGetOauthCredential(applicationsResponse.Applications[0], provData, p)
 		if err != nil {
@@ -233,23 +277,27 @@ func (p provisioner) CredentialUpdate(req prov.CredentialRequest) (prov.RequestS
 	if webmethodsApplicationId == "" {
 		return p.failed(rs, notFound(common.AttrAppID)), nil
 	}
-	err := p.client.RotateApplicationApikey(webmethodsApplicationId)
-	if err != nil {
-		return p.failed(rs, notFound("Unable to Rotate Webmethods Application APIkey")), nil
-	}
-	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
-	if err != nil {
-		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
-	}
+
 	var credential prov.Credential
 
 	switch req.GetCredentialType() {
 	case prov.APIKeyCRD:
+		err := p.client.RotateApplicationApikey(webmethodsApplicationId)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to Rotate Webmethods Application APIkey")), nil
+		}
+		applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+		}
 		credential = prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 	case OAuth2AuthType:
+		applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+		if err != nil {
+			return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+		}
 		strategyId := applicationsResponse.Applications[0].AuthStrategyIds[0]
-		log.Infof("Using existing Oauth Strategy named %s with id %s", applicationsResponse.Applications[0].Name, strategyId)
-		strategyResponse, err := p.client.GetStrategy(strategyId)
+		strategyResponse, err := p.client.RefereshOauth2Credential(strategyId)
 		if err != nil {
 			return p.failed(rs, notFound("Unable to get strategy from Webmethods")), nil
 		}
@@ -276,6 +324,7 @@ func getCredProvData(credData map[string]interface{}) credentialMetaData {
 		cors:         []string{"*"},
 		redirectURLs: []string{},
 		appType:      "Confidential",
+		audience:     "",
 	}
 
 	// get cors from credential request
@@ -301,10 +350,10 @@ func getCredProvData(credData map[string]interface{}) credentialMetaData {
 		credMetaData.appType = data.(string)
 	}
 
-	// Audience type field
-	if data, ok := credData[AudienceField]; ok && data != nil {
-		credMetaData.audience = data.(string)
-	}
+	// // Audience type field
+	// if data, ok := credData[AudienceField]; ok && data != nil {
+	// 	credMetaData.audience = data.(string)
+	// }
 
 	return credMetaData
 }
@@ -334,14 +383,19 @@ func createOrGetOauthCredential(application webmethods.Application, provData cre
 			ClientType:         provData.appType,
 			ExpirationInterval: "3600",
 			RefreshCount:       "100",
+			PkceType:           "USE_GLOBAL_SETTING",
 		}
 		strategy := &webmethods.Strategy{
 			Name:            application.Name,
 			Description:     application.Name,
 			AuthServerAlias: provData.oauthServerName,
 			Audience:        provData.audience,
-			Type:            "OAUTH2",
+			Type:            "OAUTH2_LOCAL_RSA",
 			DcrConfig:       dcrconfig,
+		}
+
+		if provData.oauthServerName == "local" {
+			strategy.Type = "OAUTH2"
 		}
 
 		strategyResponse, err = p.client.CreateOauth2Strategy(strategy)

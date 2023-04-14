@@ -178,6 +178,7 @@ type DcrConfig struct {
 	ClientType         string   `json:"clientType"`
 	ExpirationInterval string   `json:"expirationInterval"`
 	RefreshCount       string   `json:"refreshCount"`
+	PkceType           string   `json:"pkceType"`
 }
 
 type StrategyResponse struct {

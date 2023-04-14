@@ -101,8 +101,8 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 		SetName(subscription.ApplicationTypeField).SetRequired().SetLabel("Application Type").
 		IsString().SetEnumValues([]string{"Confidential", "Public"}).SetFirstEnumValue("Confidential")
 
-	audience := provisioning.NewSchemaPropertyBuilder().
-		SetName(subscription.AudienceField).SetLabel("Audience").IsString().SetAsTextArea()
+	// audience := provisioning.NewSchemaPropertyBuilder().
+	// 	SetName(subscription.AudienceField).SetLabel("Audience").IsString().SetAsTextArea()
 
 	agent.NewAccessRequestBuilder().SetName(subscription.OAuth2AuthType).Register()
 
@@ -111,7 +111,7 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 		coreagent.WithCRDOAuthSecret(),
 		coreagent.WithCRDRequestSchemaProperty(oAuthServers),
 		coreagent.WithCRDRequestSchemaProperty(oAuthType),
-		coreagent.WithCRDRequestSchemaProperty(audience),
+		//	coreagent.WithCRDRequestSchemaProperty(audience),
 		coreagent.WithCRDRequestSchemaProperty(oAuthRedirects),
 		coreagent.WithCRDRequestSchemaProperty(corsProp)).SetName(subscription.OAuth2AuthType).IsRenewable().Register()
 

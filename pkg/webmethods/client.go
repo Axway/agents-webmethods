@@ -39,6 +39,7 @@ type Client interface {
 	RotateApplicationApikey(applicationId string) error
 	CreateOauth2Strategy(strategy *Strategy) (*StrategyResponse, error)
 	DeleteStrategy(strategyId string) error
+	RefereshOauth2Credential(strategyId string) (*StrategyResponse, error)
 	GetStrategy(strategyId string) (*StrategyResponse, error)
 	DeleteApplication(applicationId string) error
 	OnConfigChange(webMethodConfig *config.WebMethodConfig) error
@@ -464,6 +465,32 @@ func (c *WebMethodClient) DeleteStrategy(strategyId string) error {
 		return agenterrors.Newf(2001, "Unable to Delete Stratgey")
 	}
 	return nil
+}
+
+func (c *WebMethodClient) RefereshOauth2Credential(strategyId string) (*StrategyResponse, error) {
+	strategyResponse := &StrategyResponse{}
+
+	url := fmt.Sprintf("%s/rest/apigateway/strategies/%s/refreshCredentials", c.url, strategyId)
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+	request := coreapi.Request{
+		Method:  coreapi.PUT,
+		URL:     url,
+		Headers: headers,
+	}
+
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, strategyResponse)
+	if err != nil {
+		return nil, err
+	}
+	return strategyResponse, nil
 }
 
 func (c *WebMethodClient) DeleteApplication(applicationId string) error {
