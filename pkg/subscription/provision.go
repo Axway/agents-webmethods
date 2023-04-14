@@ -52,7 +52,8 @@ func (p provisioner) AccessRequestDeprovision(req prov.AccessRequest) prov.Reque
 	}
 
 	// process access request delete
-	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	webmethodsApplicationId := req.GetAccessRequestDetailsValue(common.AttrAppID)
+	//GetApplicationDetailsValue(common.AttrAppID)
 	if webmethodsApplicationId == "" {
 		return p.failed(rs, notFound(common.AttrAppID))
 	}
@@ -163,7 +164,7 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 		if err != nil {
 			return p.failed(rs, notFound("Error creating application"))
 		}
-		applicationId = createdApplication.ApplicationID
+		applicationId = createdApplication.Id
 	} else {
 		log.Infof("Using the exsting application with Id %s", searchAppResponse.SearchApplication[0].ApplicationID)
 		applicationId = searchAppResponse.SearchApplication[0].ApplicationID
@@ -200,6 +201,10 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 	case OAuth2AuthType:
 		log.Info("Removing oauth credential")
 		applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
+		if len(applicationsResponse.Applications) == 0 {
+			log.Warnf("Unable to find webmethods application with Id %s", webmethodsApplicationId)
+			return rs.Success()
+		}
 		if err != nil {
 			return p.failed(rs, notFound("Unable to get application from Webmethods"))
 		}

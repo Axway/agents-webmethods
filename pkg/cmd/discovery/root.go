@@ -91,6 +91,7 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	agent.NewAPIKeyAccessRequestBuilder().Register()
 
 	agent.NewAPIKeyCredentialRequestBuilder(coreagent.WithCRDRequestSchemaProperty(corsProp)).IsRenewable().Register()
+
 	oAuthRedirects := getAuthRedirectSchemaPropertyBuilder()
 
 	oAuthServers := provisioning.NewSchemaPropertyBuilder().
