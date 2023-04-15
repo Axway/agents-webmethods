@@ -10,9 +10,10 @@ log:
   path: logs
 
 webmethods:
-  # TODO: Add config for webmethods API Gateway here
-  specPath: ./apis
   pollInterval: 30s
-  config_key_1: "value-1"
-  config_key_2: "value-2"
-  config_key_3: "value-3"
+  url: ""
+  maturityState: "${}"
+  filter: "${}"
+  auth: 
+    username: "${}"
+    password: "${}"
