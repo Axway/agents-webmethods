@@ -15,13 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Create commit_id & version files
-        working-directory: discovery
-        run: |
-          git branch --show-current > commit_id
-          echo "${{ github.ref_name }}" > version
-
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
