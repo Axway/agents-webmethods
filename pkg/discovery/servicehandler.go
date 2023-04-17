@@ -90,7 +90,7 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 				logger.Infof("API Authentication Type %s", value)
 				if value == apic.Apikey {
 					ardName = provisioning.APIKeyARD
-					crds[0] = provisioning.APIKey
+					crds[0] = provisioning.APIKeyARD
 					break
 				}
 				if value == apic.Oauth {

@@ -60,7 +60,7 @@ func (p provisioner) AccessRequestDeprovision(req prov.AccessRequest) prov.Reque
 
 	err := p.client.UnsubscribeApplication(webmethodsApplicationId, apiID)
 	if err != nil {
-		return p.failed(rs, notFound("Error removing API from Webmethods Application"))
+		return p.failed(rs, errors.New("Error removing API from Webmethods Application"))
 	}
 
 	p.log.
@@ -82,13 +82,20 @@ func (p provisioner) AccessRequestProvision(req prov.AccessRequest) (prov.Reques
 	}
 
 	webmethodsApplicationId := req.GetApplicationDetailsValue(common.AttrAppID)
+	log.Infof("webmethodsApplicationId : %s", webmethodsApplicationId)
 	if webmethodsApplicationId == "" {
-		return p.failed(rs, notFound(common.AttrAppID)), nil
+		// Using the existing application
+		appName := req.GetApplicationName()
+		var err error
+		webmethodsApplicationId, err = createApplication(appName, p)
+		if err != nil {
+			return p.failed(rs, errors.New("Error creating webmethods application")), nil
+		}
 	}
 
 	webmethodsApplication, err := p.client.GetApplication(webmethodsApplicationId)
 	if err != nil || len(webmethodsApplication.Applications) == 0 {
-		return p.failed(rs, notFound("Webmethods Application not found")), nil
+		return p.failed(rs, errors.New("Unable to get Webmethods Application")), nil
 	}
 
 	apiIds := []string{apiID}
@@ -98,7 +105,7 @@ func (p provisioner) AccessRequestProvision(req prov.AccessRequest) (prov.Reques
 
 	err = p.client.SubscribeApplication(webmethodsApplicationId, &applicationApiSubscription)
 	if err != nil {
-		return p.failed(rs, notFound("Error assocating API to Webmethods Application")), nil
+		return p.failed(rs, errors.New("Error assocating API to Webmethods Application")), nil
 	}
 	// process access request create
 	rs.AddProperty(common.AttrAppID, webmethodsApplicationId)
@@ -121,7 +128,7 @@ func (p provisioner) ApplicationRequestDeprovision(req prov.ApplicationRequest) 
 	}
 	applicationResponse, err := p.client.GetApplication(webmethodsApplicationId)
 	if err != nil {
-		return p.failed(rs, notFound("Error calling webmethods"))
+		return p.failed(rs, errors.New("Error calling webmethods"))
 	}
 	if len(applicationResponse.Applications) == 0 {
 		log.Warnf("Application with id %s is already deleted", webmethodsApplicationId)
@@ -129,7 +136,7 @@ func (p provisioner) ApplicationRequestDeprovision(req prov.ApplicationRequest) 
 	}
 	err = p.client.DeleteApplication(webmethodsApplicationId)
 	if err != nil {
-		return p.failed(rs, notFound("Error Deleting Webmethods application"))
+		return p.failed(rs, errors.New("Error Deleting Webmethods application"))
 	}
 	log.Infof("Application with Id %s deleted successfully on webmethods", webmethodsApplicationId)
 	p.log.
@@ -149,25 +156,9 @@ func (p provisioner) ApplicationRequestProvision(req prov.ApplicationRequest) pr
 		return p.failed(rs, notFound("managed application name"))
 	}
 
-	searchAppResponse, err := p.client.FindApplicationByName(appName)
+	applicationId, err := createApplication(appName, p)
 	if err != nil {
-		return p.failed(rs, notFound("Error contacting webmethods"))
-	}
-	var applicationId string
-	if len(searchAppResponse.SearchApplication) == 0 {
-		log.Infof("Creating new application with name %s", appName)
-		var application webmethods.Application
-		application.Name = appName
-		application.Version = "1.0"
-		application.Description = "Amplify " + appName
-		createdApplication, err := p.client.CreateApplication(&application)
-		if err != nil {
-			return p.failed(rs, notFound("Error creating application"))
-		}
-		applicationId = createdApplication.Id
-	} else {
-		log.Infof("Using the exsting application with Id %s", searchAppResponse.SearchApplication[0].ApplicationID)
-		applicationId = searchAppResponse.SearchApplication[0].ApplicationID
+		return p.failed(rs, errors.New("Error creating application"))
 	}
 	// process application create
 	rs.AddProperty(common.AttrAppID, applicationId)
@@ -196,7 +187,7 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 	case prov.APIKeyCRD:
 		err := p.client.DeleteApplicationAccessTokens(webmethodsApplicationId)
 		if err != nil {
-			return p.failed(rs, notFound("Unable to clear application credentials from Webmethods"))
+			return p.failed(rs, errors.New("Unable to clear application credentials from Webmethods"))
 		}
 	case OAuth2AuthType:
 		log.Info("Removing oauth credential")
@@ -206,7 +197,7 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 			return rs.Success()
 		}
 		if err != nil {
-			return p.failed(rs, notFound("Unable to get application from Webmethods"))
+			return p.failed(rs, errors.New("Unable to get application from Webmethods"))
 		}
 		if len(applicationsResponse.Applications[0].AuthStrategyIds) == 0 {
 			log.Warnf("Oauth Credential already cleaned up for application %s", applicationsResponse.Applications[0].Name)
@@ -215,7 +206,7 @@ func (p provisioner) CredentialDeprovision(req prov.CredentialRequest) prov.Requ
 		strategyId := applicationsResponse.Applications[0].AuthStrategyIds[0]
 		err = p.client.DeleteStrategy(strategyId)
 		if err != nil {
-			return p.failed(rs, notFound("Unable to delete Oauth2 strategy from Webmethods"))
+			return p.failed(rs, errors.New("Unable to delete Oauth2 strategy from Webmethods"))
 		}
 	}
 	return rs.Success()
@@ -239,8 +230,8 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 
 	log.Infof("Credential Type %s", req.GetCredentialType())
 	applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
-	if err != nil {
-		return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+	if err != nil || len(applicationsResponse.Applications) == 0 {
+		return p.failed(rs, errors.New("Unable to get application from Webmethods")), nil
 	}
 	var credential prov.Credential
 	provData := getCredProvData(req.GetCredentialData())
@@ -251,10 +242,10 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 		if len(provData.cors) > 0 {
 			log.Infof("Update javascript origins for the application %s", application.Name)
 			// Updating java script origins
-			applicationsResponse.Applications[0].JsOrigins = append(application.JsOrigins, provData.cors...)
+			application.JsOrigins = append(application.JsOrigins, provData.cors...)
 			applicationUpdateResponse, err := p.client.UpdateApplication(&application)
 			if err != nil {
-				return p.failed(rs, notFound("Unable to to update Java Script Origins")), nil
+				return p.failed(rs, errors.New("Unable to to update Java Script Origins")), nil
 			}
 			credential = prov.NewCredentialBuilder().SetAPIKey(applicationUpdateResponse.AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 		} else {
@@ -263,7 +254,7 @@ func (p provisioner) CredentialProvision(req prov.CredentialRequest) (prov.Reque
 	case OAuth2AuthType:
 		credential, err = createOrGetOauthCredential(applicationsResponse.Applications[0], provData, p)
 		if err != nil {
-			return p.failed(rs, notFound(err.Error())), nil
+			return p.failed(rs, err), nil
 		}
 	}
 	rs.AddProperty(common.AttrAppID, webmethodsApplicationId)
@@ -289,22 +280,22 @@ func (p provisioner) CredentialUpdate(req prov.CredentialRequest) (prov.RequestS
 	case prov.APIKeyCRD:
 		err := p.client.RotateApplicationApikey(webmethodsApplicationId)
 		if err != nil {
-			return p.failed(rs, notFound("Unable to Rotate Webmethods Application APIkey")), nil
+			return p.failed(rs, errors.New("Unable to Rotate Webmethods Application APIkey")), nil
 		}
 		applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
 		if err != nil {
-			return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+			return p.failed(rs, errors.New("Unable to get application from Webmethods")), nil
 		}
 		credential = prov.NewCredentialBuilder().SetAPIKey(applicationsResponse.Applications[0].AccessTokens.ApiAccessKeyCredentials.ApiAccessKey)
 	case OAuth2AuthType:
 		applicationsResponse, err := p.client.GetApplication(webmethodsApplicationId)
 		if err != nil {
-			return p.failed(rs, notFound("Unable to get application from Webmethods")), nil
+			return p.failed(rs, errors.New("Unable to get application from Webmethods")), nil
 		}
 		strategyId := applicationsResponse.Applications[0].AuthStrategyIds[0]
 		strategyResponse, err := p.client.RefereshOauth2Credential(strategyId)
 		if err != nil {
-			return p.failed(rs, notFound("Unable to get strategy from Webmethods")), nil
+			return p.failed(rs, errors.New("Unable to get strategy from Webmethods")), nil
 		}
 		credential = prov.NewCredentialBuilder().SetOAuthIDAndSecret(strategyResponse.Strategy.ClientRegistration.ClientId, strategyResponse.Strategy.ClientRegistration.ClientSecret)
 	}
@@ -426,4 +417,28 @@ func createOrGetOauthCredential(application webmethods.Application, provData cre
 	}
 	credential := prov.NewCredentialBuilder().SetOAuthIDAndSecret(strategyResponse.Strategy.ClientRegistration.ClientId, strategyResponse.Strategy.ClientRegistration.ClientSecret)
 	return credential, nil
+}
+
+func createApplication(appName string, p provisioner) (string, error) {
+	searchAppResponse, err := p.client.FindApplicationByName(appName)
+	if err != nil {
+		return "", errors.New("Error contacting webmethods")
+	}
+	var applicationId string
+	if len(searchAppResponse.SearchApplication) == 0 {
+		log.Infof("Creating new application with name %s", appName)
+		var application webmethods.Application
+		application.Name = appName
+		application.Version = "1.0"
+		application.Description = "Amplify " + appName
+		createdApplication, err := p.client.CreateApplication(&application)
+		if err != nil {
+			return "", errors.New("Error creating application")
+		}
+		applicationId = createdApplication.Id
+	} else {
+		log.Infof("Using the exsting application with Id %s", searchAppResponse.SearchApplication[0].ApplicationID)
+		applicationId = searchAppResponse.SearchApplication[0].ApplicationID
+	}
+	return applicationId, nil
 }
