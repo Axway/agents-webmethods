@@ -61,7 +61,7 @@ CENTRAL_AUTH_CLIENTID=<Amplify Central Service Account>  # created in Prepare AM
 CENTRAL_AUTH_PRIVATEKEY=/keys/private_key.pem            # path to the key file created with openssl
 CENTRAL_AUTH_PUBLICKEY=/keys/public_key.pem              # path to the key file created with openssl
 
-WEBMETHODS__URL=<Webmethods API Gateway UI URL>          # created in Prepare Webmethods agent step
+WEBMETHODS_URL=<Webmethods API Gateway UI URL>          # created in Prepare Webmethods agent step
 WEBMETHODS_MATURITYSTATE=<Webmethods Maturity State>     # created in Webmethods agent step
 WEBMETHODS_FILTER=<Webmethods Tag filter>                # created in Webmethods agent step
 WEBMETHODS_AUTH_USERNAME=<Webmethods Username>           # created in Prepare Webmethods agent step

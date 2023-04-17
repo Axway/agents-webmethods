@@ -2,6 +2,8 @@ central:
   agentName:
   organizationID:
   environment:
+  grpc:
+    enabled: 'true'
 
 log:
   level: debug
@@ -12,8 +14,8 @@ log:
 webmethods:
   pollInterval: 30s
   url: ""
-  maturityState: "${}"
-  filter: "${}"
+  maturityState: ""
+  filter: ""
   auth: 
-    username: "${}"
-    password: "${}"
+    username: ""
+    password: ""
