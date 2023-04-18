@@ -47,6 +47,80 @@ include:
     file:
       - "/gitlabci/csrjobs.yml"
 
+# twistlock-discovery:
+#   extends: .twistlock
+#   before_script:
+#     - apk --no-cache update && apk add make
+#     - make docker-build-discovery 
+#     - export IMAGE_NAME=mulesoft_discovery_agent:latest
+#   except:
+#     refs:
+#       - schedules
+#       - tags
+#       - main
+
+# twistlock-traceability:
+#   extends: .twistlock
+#   before_script:
+#     - apk --no-cache update && apk add make
+#     - make docker-build-traceability 
+#     - export IMAGE_NAME=mulesoft_traceability_agent:latest
+#   except:
+#     refs:
+#       - schedules
+#       - tags
+#       - main
+
+# twistlock-discovery:on-schedule:
+#   extends: .twistlock
+#   dependencies: []
+#   before_script:
+#     - apk --no-cache update && apk add git
+#     - *get-latest-tag
+#     - export IMAGE_NAME=ghcr.io/axway/mulesoft_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+#     - docker pull ${IMAGE_NAME}
+#   only:
+#     refs:
+#       - schedules
+
+# twistlock-traceability:on-schedule:
+#   extends: .twistlock
+#   dependencies: []
+#   before_script:
+#     - apk --no-cache update && apk add git
+#     - *get-latest-tag
+#     - export IMAGE_NAME=ghcr.io/axway/mulesoft_traceability_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+#     - docker pull ${IMAGE_NAME}
+#   only:
+#     refs:
+#       - schedules
+
+whitesource:on-schedule:
+  extends: .whitesource
+  before_script:
+    - git config --global http.sslVerify false
+    - git config --global url."ssh://git@git.ecd.axway.org".insteadOf "https://git.ecd.axway.org"''
+    - git fetch
+    - *get-latest-tag
+    - echo "Checking out ${GIT_TAG_PREFIX}${LATEST_TAG}"
+    - git checkout ${GIT_TAG_PREFIX}${LATEST_TAG}
+
+# overridden from csrjobs.yml because mirror repos like this one don't get merge events
+fetch-fortify:
+  only:
+    refs:
+      - /^APIGOV-.*$/
+
+run-csr:
+  only:
+    refs:
+      - /^APIGOV-.*$/
+
+whitesource:
+  only:
+    refs:
+      - /^APIGOV-.*$/
+
 ####################
 # CSR - overridden from csrjobs.yml to effectively not see these jobs ever. For some reason, probably multi-level
 # extends and overrides, using only-never for these csr jobs doesn't work. Had to do it like this.
@@ -91,3 +165,9 @@ twistlock-master:
   except:
     refs:
       - neverever
+
+###################
+# These overridden from jobs.xml to never run      
+###################
+test:
+  extends: .only-never
