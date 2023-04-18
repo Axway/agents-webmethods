@@ -25,13 +25,14 @@ const (
 	pathAuthPassword      = "webmethods.auth.password"
 	pathMaturityState     = "webmethods.maturityState"
 
-	pathSSLNextProtos         = "webmethods.ssl.nextProtos"
-	pathSSLInsecureSkipVerify = "webmethods.ssl.insecureSkipVerify"
-	pathSSLCipherSuites       = "webmethods.ssl.cipherSuites"
-	pathSSLMinVersion         = "webmethods.ssl.minVersion"
-	pathSSLMaxVersion         = "webmethods.ssl.maxVersion"
-	pathProxyURL              = "webmethods.proxyUrl"
-	pathCachePath             = "webmethods.cachePath"
+	pathSSLNextProtos          = "webmethods.ssl.nextProtos"
+	pathSSLInsecureSkipVerify  = "webmethods.ssl.insecureSkipVerify"
+	pathSSLCipherSuites        = "webmethods.ssl.cipherSuites"
+	pathSSLMinVersion          = "webmethods.ssl.minVersion"
+	pathSSLMaxVersion          = "webmethods.ssl.maxVersion"
+	pathProxyURL               = "webmethods.proxyUrl"
+	pathCachePath              = "webmethods.cachePath"
+	pathOauth2AuthzServerAlias = "webmethods.oauth2AuthzServerAlias"
 )
 
 // SetConfig sets the global AgentConfig reference.
@@ -53,19 +54,20 @@ type AgentConfig struct {
 // WebMethodConfig - represents the config for the Webmethods APIM
 type WebMethodConfig struct {
 	corecfg.IConfigValidator
-	AgentType         corecfg.AgentType
-	Filter            string            `config:"filter"`
-	PollInterval      time.Duration     `config:"pollInterval"`
-	LogFile           string            `config:"logFile"`
-	ProcessOnInput    bool              `config:"processOnInput"`
-	CachePath         string            `config:"cachePath"`
-	WebmethodsApimUrl string            `config:"url"`
-	Environment       string            `config:"environment"`
-	Username          string            `config:"auth.username"`
-	Password          string            `config:"auth.password"`
-	MaturityState     string            `config:"maturityState"`
-	ProxyURL          string            `config:"proxyUrl"`
-	TLS               corecfg.TLSConfig `config:"ssl"`
+	AgentType              corecfg.AgentType
+	Filter                 string            `config:"filter"`
+	PollInterval           time.Duration     `config:"pollInterval"`
+	LogFile                string            `config:"logFile"`
+	ProcessOnInput         bool              `config:"processOnInput"`
+	CachePath              string            `config:"cachePath"`
+	WebmethodsApimUrl      string            `config:"url"`
+	Environment            string            `config:"environment"`
+	Username               string            `config:"auth.username"`
+	Password               string            `config:"auth.password"`
+	MaturityState          string            `config:"maturityState"`
+	Oauth2AuthzServerAlias string            `config:"oauth2AuthzServerAlias"`
+	ProxyURL               string            `config:"proxyUrl"`
+	TLS                    corecfg.TLSConfig `config:"ssl"`
 }
 
 // ValidateCfg - Validates the gateway config
@@ -118,6 +120,7 @@ func AddConfigProperties(props properties.Properties) {
 	props.AddStringProperty(pathAuthPassword, "", "Webmethods APIM password.")
 	props.AddStringProperty(pathMaturityState, "Beta", "Webmethods APIM Maturity State.")
 	props.AddStringProperty(pathFilter, "", "Webmethods Tag filter.")
+	props.AddStringProperty(pathOauth2AuthzServerAlias, "", "Webmethods Oauth2 Authorization Server alias name.")
 	props.AddStringProperty(pathCachePath, "/tmp", "Webmethods Cache Path")
 	// ssl properties and command flags
 	props.AddStringSliceProperty(pathSSLNextProtos, []string{}, "List of supported application level protocols, comma separated.")
@@ -130,17 +133,18 @@ func AddConfigProperties(props properties.Properties) {
 // NewWebmothodsConfig - parse the props and create an Webmethods Configuration structure
 func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentType) *WebMethodConfig {
 	return &WebMethodConfig{
-		AgentType:         agentType,
-		PollInterval:      props.DurationPropertyValue(pathPollInterval),
-		Filter:            props.StringPropertyValue(pathFilter),
-		LogFile:           props.StringPropertyValue(pathLogFile),
-		ProcessOnInput:    props.BoolPropertyValue(pathProcessOnInput),
-		WebmethodsApimUrl: props.StringPropertyValue(pathWebmethodsApimUrl),
-		CachePath:         props.StringPropertyValue(pathCachePath),
-		Password:          props.StringPropertyValue(pathAuthPassword),
-		ProxyURL:          props.StringPropertyValue(pathProxyURL),
-		Username:          props.StringPropertyValue(pathAuthUsername),
-		MaturityState:     props.StringPropertyValue(pathMaturityState),
+		AgentType:              agentType,
+		PollInterval:           props.DurationPropertyValue(pathPollInterval),
+		Filter:                 props.StringPropertyValue(pathFilter),
+		LogFile:                props.StringPropertyValue(pathLogFile),
+		ProcessOnInput:         props.BoolPropertyValue(pathProcessOnInput),
+		WebmethodsApimUrl:      props.StringPropertyValue(pathWebmethodsApimUrl),
+		CachePath:              props.StringPropertyValue(pathCachePath),
+		Password:               props.StringPropertyValue(pathAuthPassword),
+		ProxyURL:               props.StringPropertyValue(pathProxyURL),
+		Username:               props.StringPropertyValue(pathAuthUsername),
+		MaturityState:          props.StringPropertyValue(pathMaturityState),
+		Oauth2AuthzServerAlias: props.StringPropertyValue(pathOauth2AuthzServerAlias),
 		TLS: &corecfg.TLSConfiguration{
 			NextProtos:         props.StringSlicePropertyValue(pathSSLNextProtos),
 			InsecureSkipVerify: props.BoolPropertyValue(pathSSLInsecureSkipVerify),

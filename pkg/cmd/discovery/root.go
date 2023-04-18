@@ -4,6 +4,7 @@ import (
 	"github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
 	subs "git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
@@ -74,6 +75,11 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 
 	for _, server := range oauthServersResponse.Alias {
 		servers = append(servers, server.Name)
+	}
+
+	// filter oauth authz server based on config
+	if slices.Contains(servers, conf.WebMethodConfig.Oauth2AuthzServerAlias) {
+		servers = []string{conf.WebMethodConfig.Oauth2AuthzServerAlias}
 	}
 
 	scopes := []string{}
