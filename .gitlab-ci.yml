@@ -1,7 +1,7 @@
 image: dockerhub.artifactory-phx.ecd.axway.int/library/docker:20.10.6
 
 variables:
-  PROJECT: "agents-apigee"
+  PROJECT: "agents-webmethods"
   CSR_SUPPRESSION_LIST: "/tmp/csr-suppressions/amplify-central/golang-agents-common.json"
 
   # # Fortify
@@ -54,17 +54,17 @@ include:
     export LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
   fi
 
-# twistlock-discovery:
-#   extends: .twistlock
-#   before_script:
-#     - apk --no-cache update && apk add make
-#     - make docker-build-discovery 
-#     - export IMAGE_NAME=mulesoft_discovery_agent:latest
-#   except:
-#     refs:
-#       - schedules
-#       - tags
-#       - main
+twistlock-discovery:
+  extends: .twistlock
+  before_script:
+    - apk --no-cache update && apk add make
+    - make docker-build-discovery 
+    - export IMAGE_NAME=mulesoft_discovery_agent:latest
+  except:
+    refs:
+      - schedules
+      - tags
+      - main
 
 # twistlock-traceability:
 #   extends: .twistlock
@@ -78,17 +78,17 @@ include:
 #       - tags
 #       - main
 
-# twistlock-discovery:on-schedule:
-#   extends: .twistlock
-#   dependencies: []
-#   before_script:
-#     - apk --no-cache update && apk add git
-#     - *get-latest-tag
-#     - export IMAGE_NAME=ghcr.io/axway/mulesoft_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
-#     - docker pull ${IMAGE_NAME}
-#   only:
-#     refs:
-#       - schedules
+twistlock-discovery:on-schedule:
+  extends: .twistlock
+  dependencies: []
+  before_script:
+    - apk --no-cache update && apk add git
+    - *get-latest-tag
+    - export IMAGE_NAME=ghcr.io/axway/mulesoft_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+    - docker pull ${IMAGE_NAME}
+  only:
+    refs:
+      - schedules
 
 # twistlock-traceability:on-schedule:
 #   extends: .twistlock

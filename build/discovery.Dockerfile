@@ -1,6 +1,6 @@
 # Build image
 FROM docker.io/golang@sha256:46752c2ee3bd8388608e41362964c84f7a6dffe99d86faeddc82d917740c5968 as builder
-ENV APP_HOME /go/src/github.com/Axway/agents-webmetods
+ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 ENV AGENT=${APP_HOME}/cmd/discovery
 
@@ -23,7 +23,7 @@ RUN export time=`date +%Y%m%d%H%M%S` && \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildVersion=${version}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildCommitSha=${commit_id}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.SDKBuildVersion=${sdk_version}' \
-  -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=ApigeeDiscoveryAgent'" \
+  -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=webMethodsDiscoveryAgent'" \
   -a -o ${APP_HOME}/bin/webmethods_discovery_agent ${AGENT}/main.go
 
 # Create non-root user
@@ -35,7 +35,7 @@ USER $APP_USER
 # Base image
 FROM docker.io/alpine@sha256:1304f174557314a7ed9eddb4eab12fed12cb0cd9809e4c28f29af86979a3c870
 ENV APP_USER axway
-ENV APP_HOME /go/src/github.com/Axway/agents-webmetods
+ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 
 # Copy binary, user, config file and certs from previous build step
 
