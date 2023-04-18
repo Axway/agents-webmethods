@@ -1,6 +1,6 @@
 # Build image
 # golang:1.19.6-alpine3.17 linux/amd64
-FROM dockerhub.artifactory-phx.ecd.axway.int/golang@sha256:f2e0acaf7c628cd819b73541d7c1ea8f888d51edb0a58935a3c46a084fa953fa
+FROM dockerhub.artifactory-phx.ecd.axway.int/golang@sha256:f2e0acaf7c628cd819b73541d7c1ea8f888d51edb0a58935a3c46a084fa953fa as builder
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 ENV AGENT=${APP_HOME}/cmd/discovery
@@ -48,7 +48,7 @@ COPY --from=builder ${APP_HOME}/bin/webmethods_discovery_agent /webmethods_disco
 
 RUN mkdir /keys && \
   chown -R axway /keys && \
-  apk --no-cache add openssl libssl1.1 libcrypto1.1 musl musl-utils libc6-compat busybox curl && \
+  apk --no-cache add openssl libssl libcrypto musl musl-utils libc6-compat busybox curl && \
   find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 
