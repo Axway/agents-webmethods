@@ -12,6 +12,8 @@ variables:
   WS_PROJECT_ID: "agents-webmethods"
   WS_CONFIG_FILE: "whitesource.config"
 
+  GIT_TAG_PREFIX: v
+
   # just to be sure we don't do vendoring
   GOFLAGS: "-mod=mod"
 
@@ -59,7 +61,7 @@ twistlock-discovery:
   before_script:
     - apk --no-cache update && apk add make
     - make docker-build-discovery 
-    - export IMAGE_NAME=mulesoft_discovery_agent:latest
+    - export IMAGE_NAME=webmethods_discovery_agent:latest
   except:
     refs:
       - schedules
@@ -71,7 +73,7 @@ twistlock-discovery:
 #   before_script:
 #     - apk --no-cache update && apk add make
 #     - make docker-build-traceability 
-#     - export IMAGE_NAME=mulesoft_traceability_agent:latest
+#     - export IMAGE_NAME=webmethods_traceability_agent:latest
 #   except:
 #     refs:
 #       - schedules
@@ -84,7 +86,7 @@ twistlock-discovery:on-schedule:
   before_script:
     - apk --no-cache update && apk add git
     - *get-latest-tag
-    - export IMAGE_NAME=ghcr.io/axway/mulesoft_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+    - export IMAGE_NAME=ghcr.io/axway/webmethods_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
     - docker pull ${IMAGE_NAME}
   only:
     refs:
@@ -96,7 +98,7 @@ twistlock-discovery:on-schedule:
 #   before_script:
 #     - apk --no-cache update && apk add git
 #     - *get-latest-tag
-#     - export IMAGE_NAME=ghcr.io/axway/mulesoft_traceability_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+#     - export IMAGE_NAME=ghcr.io/axway/webmethods_traceability_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
 #     - docker pull ${IMAGE_NAME}
 #   only:
 #     refs:
