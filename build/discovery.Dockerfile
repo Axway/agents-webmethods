@@ -1,5 +1,6 @@
 # Build image
-FROM docker.io/golang@sha256:46752c2ee3bd8388608e41362964c84f7a6dffe99d86faeddc82d917740c5968 as builder
+# golang:1.19.6-alpine3.17 linux/amd64
+FROM dockerhub.artifactory-phx.ecd.axway.int/golang@sha256:f2e0acaf7c628cd819b73541d7c1ea8f888d51edb0a58935a3c46a084fa953fa
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 ENV AGENT=${APP_HOME}/cmd/discovery
