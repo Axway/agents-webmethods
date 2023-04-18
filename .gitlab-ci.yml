@@ -12,8 +12,6 @@ variables:
   # WS_PROJECT_ID: "Azure-Discovery-Agent"
   WS_CONFIG_FILE: "whitesource.config"
 
-  GIT_TAG_PREFIX: v
-
   # just to be sure we don't do vendoring
   GOFLAGS: "-mod=mod"
 
@@ -40,6 +38,7 @@ include:
     file:
       - "/.gitlab-ci-fortify.yml"
       - "/.gitlab-ci-whitesource.yml"
+      - "/.gitlab-ci-iriusrisk.yml"
       - "/.gitlab-ci-twistlock.yml"
       - "/.gitlab-ci-csr.yml"
   - project: "apigov/beano_cicd"
@@ -53,14 +52,6 @@ include:
 # extends and overrides, using only-never for these csr jobs doesn't work. Had to do it like this.
 ####################
 fetch-iriusrisk:
-  only:
-    refs:
-      - never
-  except:
-    refs:
-      - neverever
-
-fetch-iriusrisk:on-schedule:
   only:
     refs:
       - never
