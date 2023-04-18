@@ -6,10 +6,10 @@ variables:
 
   # # Fortify
   # FORTIFY_PROJECT: "10623"
-  # FORTIFY_BUILD_ID: "azure_discovery_agent"
+  FORTIFY_BUILD_ID: "agents-webmethods"
 
   # # Whitesource
-  # WS_PROJECT_ID: "Azure-Discovery-Agent"
+  WS_PROJECT_ID: "agents-webmethods"
   WS_CONFIG_FILE: "whitesource.config"
 
   # just to be sure we don't do vendoring
