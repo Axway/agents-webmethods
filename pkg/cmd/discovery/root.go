@@ -1,8 +1,11 @@
 package discovery
 
 import (
+	"errors"
+
 	"github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
+	"github.com/Axway/agent-sdk/pkg/util/log"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 
@@ -80,45 +83,57 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	// filter oauth authz server based on config
 	if slices.Contains(servers, conf.WebMethodConfig.Oauth2AuthzServerAlias) {
 		servers = []string{conf.WebMethodConfig.Oauth2AuthzServerAlias}
+	} else {
+		return nil, errors.New("Invalid Oauth2 Authorization Server alias name")
 	}
 
 	scopes := []string{}
 
 	for _, server := range oauthServersResponse.Alias {
+		var serverPlusScope string
 		for _, scope := range server.Scopes {
-			serverPlusScope := server.Name + "-" + scope.Name
+			if server.Name == conf.WebMethodConfig.Oauth2AuthzServerAlias {
+				serverPlusScope = scope.Name
+
+			} else {
+				// Handle multiple IDP todo - create multipel credential definition if needed.
+				serverPlusScope = server.Name + "-" + scope.Name
+			}
 			scopes = append(scopes, serverPlusScope)
 		}
 	}
 
-	corsProp := getCorsSchemaPropertyBuilder()
+	log.Infof("Available scopes from IDP %v", scopes)
 
+	corsProp := getCorsSchemaPropertyBuilder()
 	agent.RegisterProvisioner(subs.NewProvisioner(gatewayClient, logger))
 	agent.NewAPIKeyAccessRequestBuilder().Register()
-
 	agent.NewAPIKeyCredentialRequestBuilder(coreagent.WithCRDRequestSchemaProperty(corsProp)).IsRenewable().Register()
 
 	oAuthRedirects := getAuthRedirectSchemaPropertyBuilder()
-
 	oAuthServers := provisioning.NewSchemaPropertyBuilder().
 		SetName(subscription.OauthServerField).SetRequired().SetLabel("Oauth Server").
 		IsString().SetEnumValues(servers)
 
 	oAuthType := provisioning.NewSchemaPropertyBuilder().
 		SetName(subscription.ApplicationTypeField).SetRequired().SetLabel("Application Type").
-		IsString().SetEnumValues([]string{"Confidential", "Public"}).SetFirstEnumValue("Confidential")
+		IsString().SetEnumValues([]string{"Confidential", "Public"}).SetDefaultValue("Confidential")
 
 	// audience := provisioning.NewSchemaPropertyBuilder().
 	// 	SetName(subscription.AudienceField).SetLabel("Audience").IsString().SetAsTextArea()
 
+	oAuthApiScope := provisioning.NewSchemaPropertyBuilder().
+		SetName(subscription.OauthScopes).SetLabel("Scopes").IsArray().AddItem(
+		provisioning.NewSchemaPropertyBuilder().SetName("scope").IsString().SetEnumValues(scopes))
+
 	agent.NewAccessRequestBuilder().SetName(subscription.OAuth2AuthType).Register()
 
 	agent.NewOAuthCredentialRequestBuilder(
-		//coreagent.WithCRDSco
 		coreagent.WithCRDOAuthSecret(),
 		coreagent.WithCRDRequestSchemaProperty(oAuthServers),
 		coreagent.WithCRDRequestSchemaProperty(oAuthType),
 		//	coreagent.WithCRDRequestSchemaProperty(audience),
+		coreagent.WithCRDRequestSchemaProperty(oAuthApiScope),
 		coreagent.WithCRDRequestSchemaProperty(oAuthRedirects),
 		coreagent.WithCRDRequestSchemaProperty(corsProp)).SetName(subscription.OAuth2AuthType).IsRenewable().Register()
 
@@ -127,7 +142,6 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 }
 
 func getCorsSchemaPropertyBuilder() provisioning.PropertyBuilder {
-	// register the supported credential request defs
 	return provisioning.NewSchemaPropertyBuilder().
 		SetName(subscription.CorsField).
 		SetLabel("Javascript Origins").

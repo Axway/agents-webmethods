@@ -100,8 +100,7 @@ func (d *discovery) discoverAPIs() {
 						Url:           apiResponse.GatewayEndPoints[0],
 						Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
 						ApiSpec:       specification,
-						//	AuthPolicy:    authPolicy,
-						ApiType: api.WebmethodsApi.ApiType,
+						ApiType:       api.WebmethodsApi.ApiType,
 					}
 					svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
 					if svcDetail != nil {

@@ -581,7 +581,8 @@ func (c *WebMethodClient) ListOauth2Servers() (*OauthServers, error) {
 			"id",
 			"name",
 			"type",
-			"description"
+			"description",
+			"scopes"
 		],
 		"condition": "or",
 		"sortByField": "name"
