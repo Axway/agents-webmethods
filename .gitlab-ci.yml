@@ -4,11 +4,11 @@ variables:
   PROJECT: "agents-webmethods"
   CSR_SUPPRESSION_LIST: "/tmp/csr-suppressions/amplify-central/golang-agents-common.json"
 
-  # # Fortify
-  # FORTIFY_PROJECT: "10623"
+  # Fortify
+  FORTIFY_PROJECT: "10808"
   FORTIFY_BUILD_ID: "agents-webmethods"
 
-  # # Whitesource
+  # Whitesource
   WS_PROJECT_ID: "agents-webmethods"
   WS_CONFIG_FILE: "whitesource.config"
 
