@@ -7,8 +7,8 @@ import (
 
 	"github.com/Axway/agent-sdk/pkg/cache"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
+	"github.com/Axway/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
 	"github.com/sirupsen/logrus"
 

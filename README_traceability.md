@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Install the agent and provision Amplify Central access as described in [https://git.ecd.axway.org/apigov/agents-webmethods/blob/main/README.md](https://git.ecd.axway.org/apigov/agents-webmethods/blob/main/README.md).
+Install the agent and provision Amplify Central access as described in [https://github.com/Axway/agents-webmethods/blob/main/README.md](https://github.com/Axway/agents-webmethods/blob/main/README.md).
 
 - Amplify organization id: the organization identifier. Refer to Platform home > Organization
 - Amplify Central environment name: the name of the environment the agent will report APIs to.

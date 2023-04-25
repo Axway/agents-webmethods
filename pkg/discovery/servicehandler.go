@@ -4,15 +4,15 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
+	"github.com/Axway/agents-webmethods/pkg/common"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
 	"github.com/sirupsen/logrus"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 	"github.com/Axway/agent-sdk/pkg/apic"
+	"github.com/Axway/agents-webmethods/pkg/config"
 )
 
 const (
