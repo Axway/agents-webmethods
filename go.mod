@@ -1,4 +1,4 @@
-module git.ecd.axway.org/apigov/agents-webmethods
+module github.com/Axway/agents-webmethods
 
 go 1.18
 
@@ -13,6 +13,7 @@ replace (
 )
 
 require (
+	git.ecd.axway.org/apigov/agents-webmethods v0.0.0-20230425204558-c2f94237ca20
 	github.com/Axway/agent-sdk v1.1.51
 	github.com/elastic/beats/v7 v7.17.5
 	github.com/hpcloud/tail v1.0.0
@@ -73,7 +74,7 @@ require (
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/gnostic v0.4.1 // indirect
+	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/h2non/filetype v1.1.1 // indirect
@@ -176,8 +177,8 @@ require (
 	k8s.io/api v0.21.1 // indirect
 	k8s.io/apimachinery v0.22.7 // indirect
 	k8s.io/client-go v0.21.1 // indirect
-	k8s.io/klog/v2 v2.8.0 // indirect
+	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.1.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
