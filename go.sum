@@ -112,8 +112,8 @@ github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 h1:YEetp8
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0 h1:YOEu7KNc61ntiQlcEeUIoDTJ2o8mQznoNvUhiigpIqc=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
-github.com/elastic/beats/v7 v7.17.7 h1:I1StNgMXbcPr3GXR1jJXLwIUjVrBC5OMhiZb2nw3m1s=
-github.com/elastic/beats/v7 v7.17.7/go.mod h1:oivE+WJI3AswUSTe7nb1Y5K1oMHCh2r5kVo1VBaUV3E=
+github.com/elastic/beats/v7 v7.17.5 h1:/cvFiUuXnIHzBnb7RzCfn06nydYbJyD9VIPv2N4UWG4=
+github.com/elastic/beats/v7 v7.17.5/go.mod h1:nFsbsraCRGlck/aOwtfEJFKEyVBiDqxGvZ3ZES6sMn4=
 github.com/elastic/ecs v1.12.0 h1:u6WZ2AWtxv5vHvTQ4EuVZdWZ51mKHQ2UIltRePcta5U=
 github.com/elastic/ecs v1.12.0/go.mod h1:pgiLbQsijLOJvFR8OTILLu0Ni/R/foUNg0L+T6mU9b4=
 github.com/elastic/elastic-agent-client/v7 v7.0.0-20220607160924-1a71765a8bbe h1:knHO5fYAT3+sLf64NxcOxdjGysPxsSMkQGB27vMS8TE=
