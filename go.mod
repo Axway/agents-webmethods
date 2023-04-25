@@ -13,7 +13,6 @@ replace (
 )
 
 require (
-	git.ecd.axway.org/apigov/agents-webmethods v0.0.0-20230425204558-c2f94237ca20
 	github.com/Axway/agent-sdk v1.1.51
 	github.com/elastic/beats/v7 v7.17.5
 	github.com/hpcloud/tail v1.0.0

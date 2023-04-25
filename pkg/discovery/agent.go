@@ -5,10 +5,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	coreAgent "github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/cache"
+	"github.com/Axway/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 )
 
 type Repeater interface {

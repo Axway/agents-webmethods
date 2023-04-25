@@ -1,10 +1,10 @@
 package discovery
 
 import (
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 	coreAgent "github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/apic"
 	"github.com/Axway/agent-sdk/pkg/util"
+	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/sirupsen/logrus"
 )
 
