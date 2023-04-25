@@ -2,7 +2,7 @@ name: Build Webmethods Discovery Agent
 
 on:
   push:
-    branches: [main]
+    branches: [main, '*']
 
 jobs:
   test:
