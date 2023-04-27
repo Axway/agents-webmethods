@@ -34,14 +34,13 @@ RUN chown -R $APP_USER:$APP_USER  ${APP_HOME}/bin/webmethods_discovery_agent
 
 USER $APP_USER
 
-# Base image
-FROM docker.io/alpine@sha256:1304f174557314a7ed9eddb4eab12fed12cb0cd9809e4c28f29af86979a3c870
+# alpine 3.17.3
+FROM docker.io/alpine@sha256:b6ca290b6b4cdcca5b3db3ffa338ee0285c11744b4a6abaa9627746ee3291d8d
+
 ENV APP_USER axway
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 
 # Copy binary, user, config file and certs from previous build step
-
-
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder $APP_HOME/build/webmethods_discovery_agent.yml /webmethods_discovery_agent.yml
