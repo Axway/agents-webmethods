@@ -1,5 +1,7 @@
 # Build image
-FROM golang:1.19.2 as builder
+# golang:1.19.8-alpine3.17 linux/amd64
+FROM docker.io/golang@sha256:841c160ed35923d96c95c52403c4e6db5decd9cbce034aa851e412ade5d4b74f as builder
+
 ENV APP_HOME /build
 ENV APP_USER axway
 
@@ -26,8 +28,8 @@ RUN mkdir /app/data && \
 
 RUN chgrp -R 0 /app && chmod -R g=u /app && chown -R $APP_USER /app
 
-# Base image
-FROM scratch
+# alpine 3.17.3
+FROM docker.io/alpine@sha256:b6ca290b6b4cdcca5b3db3ffa338ee0285c11744b4a6abaa9627746ee3291d8d
 ENV APP_HOME /build
 ENV APP_USER axway
 
