@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/cmd/discovery"
+	"github.com/Axway/agents-webmethods/pkg/cmd/discovery"
 )
 
 func main() {

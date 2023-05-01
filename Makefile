@@ -87,10 +87,10 @@ test:
 	mkdir -p coverage
 	@go test -race -short -count=1 -coverprofile=coverage/coverage.cov ${GO_PKG_LIST}
 
-docker-build-disc:
+docker-build-discovery:
 	@docker build -t webmethods_discovery_agent:latest -f ${WORKSPACE}/build/discovery.Dockerfile .
 	@echo "Docker build complete"
 
-docker-build-trace:
+docker-build-traceability:
 	@docker build -t webmethods_traceability_agent:latest -f ${WORKSPACE}/build/traceability.Dockerfile .
 	@echo "Docker build complete"

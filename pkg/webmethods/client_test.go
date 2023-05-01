@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
+	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )

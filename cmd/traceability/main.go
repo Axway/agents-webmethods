@@ -7,7 +7,7 @@ import (
 	// Required Import to setup factory for traceability transport
 	_ "github.com/Axway/agent-sdk/pkg/traceability"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/cmd/traceability"
+	"github.com/Axway/agents-webmethods/pkg/cmd/traceability"
 )
 
 func main() {

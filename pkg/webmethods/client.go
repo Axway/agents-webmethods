@@ -12,7 +12,7 @@ import (
 	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/config"
 )
 
 const HealthCheckEndpoint = "health"
