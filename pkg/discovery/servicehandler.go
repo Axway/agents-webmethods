@@ -155,6 +155,5 @@ func isPublished(api *webmethods.AmplifyAPI, c cache.Cache) (bool, string) {
 	if err != nil || item == nil {
 		return false, checksum
 	}
-
 	return true, checksum
 }

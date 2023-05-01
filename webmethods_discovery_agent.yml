@@ -1,0 +1,30 @@
+agentFeatures:
+  versionChecker: false
+  marketplaceProvisioning: true
+central:
+  agentName: webmethods-agent
+  organizationID: 613867752138776
+  environment: webmethods
+  auth:
+    clientId: webmethods_7b782b4c-62e9-4721-b881-b6a5e4610a6f
+    privateKey: keys/private_key.pem
+    publicKey: keys/public_key.pem
+    timout: 20s
+  grpc:
+    enabled: 'true'
+log:
+  level: info
+  format: line
+  # output: stdout
+  output: file
+  path: logs
+
+webmethods:
+  pollInterval: 30s
+  url: "https://env688761.apigw-aw-us.webmethods.io"
+  maturityState: Beta
+  filter: 
+  oauth2AuthzServerAlias: okta
+  auth: 
+    username: wecare@apiwheel.dev
+    password: Newyear2023!
