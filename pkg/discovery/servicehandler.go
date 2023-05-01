@@ -18,7 +18,6 @@ import (
 
 const (
 	marketplace = "marketplace"
-	ß
 )
 
 // ServiceHandler converts a webmethods APIM to an array of ServiceDetails
