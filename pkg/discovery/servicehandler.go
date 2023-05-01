@@ -6,7 +6,6 @@ import (
 
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
-	"github.com/Axway/agents-webmethods/pkg/common"
 	"github.com/Axway/agents-webmethods/pkg/subscription"
 	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
@@ -18,7 +17,6 @@ import (
 
 const (
 	marketplace = "marketplace"
-	ß
 )
 
 // ServiceHandler converts a webmethods APIM to an array of ServiceDetails
