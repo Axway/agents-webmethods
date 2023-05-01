@@ -9,18 +9,18 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
-	subs "git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	coreagent "github.com/Axway/agent-sdk/pkg/agent"
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
+	"github.com/Axway/agents-webmethods/pkg/subscription"
+	subs "github.com/Axway/agents-webmethods/pkg/subscription"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/discovery"
+	"github.com/Axway/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/discovery"
 )
 
 // RootCmd - Agent root command

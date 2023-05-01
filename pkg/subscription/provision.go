@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	prov "github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/util"
 	"github.com/Axway/agent-sdk/pkg/util/log"
+	"github.com/Axway/agents-webmethods/pkg/common"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 	"github.com/sirupsen/logrus"
 )
 
