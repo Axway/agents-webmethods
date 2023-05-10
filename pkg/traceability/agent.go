@@ -9,7 +9,6 @@ import (
 	"github.com/Axway/agent-sdk/pkg/transaction"
 	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
-	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
 )
@@ -26,12 +25,12 @@ type Agent struct {
 // NewBeater creates an instance of webmethods_traceability_agent.
 func NewBeater(_ *beat.Beat, _ *common.Config) (beat.Beater, error) {
 	eventChannel := make(chan string)
-	agentConfig := config.GetConfig()
+	agentConfig := GetConfig()
 
 	generator := transaction.NewEventGenerator()
 	mapper := &EventMapper{}
 	processor := NewEventProcessor(agentConfig, generator, mapper)
-	emitter := NewWebmethodsEventEmitter(agentConfig.WebMethodConfig.LogFile, eventChannel)
+	emitter := NewWebmethodsEventEmitter(agentConfig.WebMethodConfigTracability.LogFile, eventChannel)
 
 	return newAgent(processor, emitter, eventChannel)
 }

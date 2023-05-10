@@ -1,13 +1,10 @@
 package traceability
 
 import (
-	"encoding/json"
-	"time"
+	"fmt"
 
 	"github.com/Axway/agent-sdk/pkg/transaction"
-	"github.com/Axway/agent-sdk/pkg/util/log"
 
-	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/elastic/beats/v7/libbeat/beat"
 )
 
@@ -25,13 +22,13 @@ type Processor interface {
 // log entry and performs the mapping to structure expected for Amplify Central Observer. The method returns the converted Events to
 // transport publisher which then produces the events over the transport.
 type EventProcessor struct {
-	cfg            *config.AgentConfig
+	cfg            *AgentConfigTraceability
 	eventGenerator transaction.EventGenerator
 	eventMapper    *EventMapper
 }
 
 func NewEventProcessor(
-	gateway *config.AgentConfig,
+	gateway *AgentConfigTraceability,
 	eventGenerator transaction.EventGenerator,
 	mapper *EventMapper,
 ) *EventProcessor {
@@ -45,23 +42,27 @@ func NewEventProcessor(
 
 // ProcessRaw - process the received log entry and returns the event to be published to Amplifyingestion service
 func (ep *EventProcessor) ProcessRaw(rawEvent []byte) []beat.Event {
-	var gatewayTrafficLogEntry GwTrafficLogEntry
-	err := json.Unmarshal(rawEvent, &gatewayTrafficLogEntry)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
+	// var gatewayTrafficLogEntry GwTrafficLogEntry
+	// err := json.Unmarshal(rawEvent, &gatewayTrafficLogEntry)
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return nil
+	// }
+	fmt.Println(string(rawEvent))
+	// data := strings.Split(string(rawEvent), "|")
+	// fmt.Println(len(data))
 	// Map the log entry to log event structure expected by AmplifyCentral Observer
-	summaryEvent, logEvents, err := ep.eventMapper.processMapping(gatewayTrafficLogEntry)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
+	// summaryEvent, logEvents, err := ep.eventMapper.processMapping(gatewayTrafficLogEntry)
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return nil
+	// }
 
-	events, err := ep.eventGenerator.CreateEvents(*summaryEvent, logEvents, time.Now(), nil, nil, nil)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
-	return events
+	// events, err := ep.eventGenerator.CreateEvents(*summaryEvent, logEvents, time.Now(), nil, nil, nil)
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return nil
+	// }
+	// return events
+	return nil
 }
