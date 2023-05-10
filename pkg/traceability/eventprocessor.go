@@ -1,11 +1,15 @@
 package traceability
 
 import (
-	"fmt"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/Axway/agent-sdk/pkg/transaction"
 
 	"github.com/elastic/beats/v7/libbeat/beat"
+
+	"github.com/Axway/agent-sdk/pkg/util/log"
 )
 
 type Processor interface {
@@ -42,27 +46,68 @@ func NewEventProcessor(
 
 // ProcessRaw - process the received log entry and returns the event to be published to Amplifyingestion service
 func (ep *EventProcessor) ProcessRaw(rawEvent []byte) []beat.Event {
-	// var gatewayTrafficLogEntry GwTrafficLogEntry
-	// err := json.Unmarshal(rawEvent, &gatewayTrafficLogEntry)
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return nil
-	// }
-	fmt.Println(string(rawEvent))
-	// data := strings.Split(string(rawEvent), "|")
-	// fmt.Println(len(data))
-	// Map the log entry to log event structure expected by AmplifyCentral Observer
-	// summaryEvent, logEvents, err := ep.eventMapper.processMapping(gatewayTrafficLogEntry)
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return nil
-	// }
+	var gatewayTrafficLogEntry GwTrafficLogEntry
+	data := strings.Split(string(rawEvent), "|")
+	if len(data) == 39 && data[0] == "#AGW_EVENT_TXN" {
+		totalTime, _ := strconv.Atoi(data[17])
+		nativeTime, _ := strconv.Atoi(data[18])
+		gatewayTrafficLogEntry = GwTrafficLogEntry{
+			EventType:             data[0],
+			RootContext:           data[1],
+			ParentContext:         data[2],
+			CurrentContext:        data[3],
+			Uuid:                  data[4],
+			ServerId:              data[5],
+			EventTimestamp:        data[6],
+			CurrentTimestamp:      data[7],
+			SessionId:             data[8],
+			ApiName:               data[9],
+			ApiVersion:            data[10],
+			TargetName:            data[11],
+			ApplicationName:       data[12],
+			ApplicationIp:         data[13],
+			ApplicationId:         data[14],
+			Request:               data[15],
+			Response:              data[16],
+			TotalTime:             totalTime,
+			NativeTime:            nativeTime,
+			RequestStatus:         data[19],
+			OperationName:         data[20],
+			NatvieEndpoint:        data[21],
+			PartnerId:             data[22],
+			ApiId:                 data[23],
+			ServiceName:           data[24],
+			RequestHeaders:        data[25],
+			QueryParam:            data[26],
+			ResponseHeaders:       data[27],
+			CorrelationId:         data[28],
+			ErrorOrigin:           data[29],
+			Custom:                data[30],
+			NativeRequestHeaders:  data[31],
+			NativeRequestPayload:  data[32],
+			NativeResponseHeaders: data[33],
+			NativeResponsePayload: data[34],
+			NativeHttpMethod:      data[35],
+			NativeUrl:             data[36],
+			ExternalCalls:         data[37],
+			SourceGatewayNode:     data[38],
+		}
+	} else {
+		log.Errorf("Invalid record %s", string(rawEvent))
+		return nil
+	}
 
-	// events, err := ep.eventGenerator.CreateEvents(*summaryEvent, logEvents, time.Now(), nil, nil, nil)
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return nil
-	// }
-	// return events
-	return nil
+	//Map the log entry to log event structure expected by AmplifyCentral Observer
+	summaryEvent, logEvents, err := ep.eventMapper.processMapping(gatewayTrafficLogEntry)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+
+	events, err := ep.eventGenerator.CreateEvents(*summaryEvent, logEvents, time.Now(), nil, nil, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return events
 }

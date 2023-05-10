@@ -26,7 +26,6 @@ type Agent struct {
 func NewBeater(_ *beat.Beat, _ *common.Config) (beat.Beater, error) {
 	eventChannel := make(chan string)
 	agentConfig := GetConfig()
-
 	generator := transaction.NewEventGenerator()
 	mapper := &EventMapper{}
 	processor := NewEventProcessor(agentConfig, generator, mapper)

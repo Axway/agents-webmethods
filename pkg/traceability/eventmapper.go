@@ -1,15 +1,14 @@
 package traceability
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/transaction"
 	transutil "github.com/Axway/agent-sdk/pkg/transaction/util"
-	"github.com/Axway/agent-sdk/pkg/util/log"
 )
 
 // EventMapper -
@@ -19,19 +18,12 @@ type EventMapper struct {
 func (m *EventMapper) processMapping(gatewayTrafficLogEntry GwTrafficLogEntry) (*transaction.LogEvent, []transaction.LogEvent, error) {
 	centralCfg := agent.GetCentralConfig()
 
-	eventTime := time.Now().UnixNano() / int64(time.Millisecond)
-	txID := gatewayTrafficLogEntry.TraceID
-	txEventID := gatewayTrafficLogEntry.InboundTransaction.ID
-	txDetails := gatewayTrafficLogEntry.InboundTransaction
-	transInboundLogEventLeg, err := m.createTransactionEvent(eventTime, txID, txDetails, txEventID, "", "Inbound")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	txEventID = gatewayTrafficLogEntry.OutboundTransaction.ID
-	txParentEventID := gatewayTrafficLogEntry.InboundTransaction.ID
-	txDetails = gatewayTrafficLogEntry.OutboundTransaction
-	transOutboundLogEventLeg, err := m.createTransactionEvent(eventTime, txID, txDetails, txEventID, txParentEventID, "Outbound")
+	eventTimestamp, _ := time.Parse(time.RFC3339, gatewayTrafficLogEntry.EventTimestamp)
+	eventTime := eventTimestamp.UTC().UnixNano() / int64(time.Millisecond)
+	//eventTime := time.Now().UTC().Format(gatewayTrafficLogEntry.EventTimestamp)
+	txID := gatewayTrafficLogEntry.Uuid
+	txEventID := gatewayTrafficLogEntry.CorrelationId
+	transInboundLogEventLeg, err := m.createTransactionEvent(eventTime, txID, gatewayTrafficLogEntry, txEventID, "Inbound")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,15 +35,21 @@ func (m *EventMapper) processMapping(gatewayTrafficLogEntry GwTrafficLogEntry) (
 
 	return transSummaryLogEvent, []transaction.LogEvent{
 		*transInboundLogEventLeg,
-		*transOutboundLogEventLeg,
 	}, nil
 }
 
-func (m *EventMapper) getTransactionEventStatus(code int) transaction.TxEventStatus {
-	if code >= 400 {
+func (m *EventMapper) getTransactionEventStatus(code string) transaction.TxEventStatus {
+	if code != "SUCCESS" {
 		return transaction.TxEventStatusFail
 	}
-	return transaction.TxEventStatusFail
+	return transaction.TxEventStatusPass
+}
+
+func (m *EventMapper) getHttpStatusCode(code string) int {
+	if code == "SUCCESS" {
+		return 200
+	}
+	return 500
 }
 
 func (m *EventMapper) getTransactionSummaryStatus(statusCode int) transaction.TxSummaryStatus {
@@ -66,25 +64,25 @@ func (m *EventMapper) getTransactionSummaryStatus(statusCode int) transaction.Tx
 	return transSummaryStatus
 }
 
-func (m *EventMapper) buildHeaders(headers map[string]string) string {
-	jsonHeader, err := json.Marshal(headers)
-	if err != nil {
-		log.Error(err.Error())
-	}
-	return string(jsonHeader)
-}
+func (m *EventMapper) createTransactionEvent(eventTime int64, txID string, txDetails GwTrafficLogEntry, eventID, direction string) (*transaction.LogEvent, error) {
 
-func (m *EventMapper) createTransactionEvent(eventTime int64, txID string, txDetails GwTransaction, eventID, parentEventID, direction string) (*transaction.LogEvent, error) {
+	httpStatus := m.getHttpStatusCode(txDetails.RequestStatus)
+
+	host := txDetails.ServerId
+	port := 443
+	if strings.Index(host, ":") != -1 {
+		uris := strings.Split(host, ":")
+		host = uris[0]
+		port, _ = strconv.Atoi(uris[1])
+
+	}
 
 	httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
-		SetURI(txDetails.URI).
-		SetMethod(txDetails.Method).
-		SetStatus(txDetails.StatusCode, http.StatusText(txDetails.StatusCode)).
-		SetHost(txDetails.SourceHost).
-		SetHeaders(m.buildHeaders(txDetails.RequestHeaders), m.buildHeaders(txDetails.ResponseHeaders)).
-		SetByteLength(txDetails.RequestBytes, txDetails.ResponseBytes).
-		SetRemoteAddress("", txDetails.DesHost, txDetails.DestPort).
-		SetLocalAddress(txDetails.SourceHost, txDetails.SourcePort).
+		SetURI(txDetails.OperationName).
+		SetMethod(txDetails.NativeHttpMethod).
+		SetStatus(httpStatus, http.StatusText(httpStatus)).
+		SetHost(host).
+		SetLocalAddress(host, port).
 		Build()
 	if err != nil {
 		return nil, err
@@ -94,30 +92,35 @@ func (m *EventMapper) createTransactionEvent(eventTime int64, txID string, txDet
 		SetTimestamp(eventTime).
 		SetTransactionID(txID).
 		SetID(eventID).
-		SetParentID(parentEventID).
-		SetSource(txDetails.SourceHost + ":" + strconv.Itoa(txDetails.SourcePort)).
-		SetDestination(txDetails.DesHost + ":" + strconv.Itoa(txDetails.DestPort)).
+		SetSource(txDetails.ServerId).
 		SetDirection(direction).
-		SetStatus(m.getTransactionEventStatus(txDetails.StatusCode)).
+		SetStatus(m.getTransactionEventStatus(txDetails.RequestStatus)).
 		SetProtocolDetail(httpProtocolDetails).
 		Build()
 }
 
 func (m *EventMapper) createSummaryEvent(eventTime int64, txID string, gatewayTrafficLogEntry GwTrafficLogEntry, teamID string) (*transaction.LogEvent, error) {
-	statusCode := gatewayTrafficLogEntry.InboundTransaction.StatusCode
-	method := gatewayTrafficLogEntry.InboundTransaction.Method
-	uri := gatewayTrafficLogEntry.InboundTransaction.URI
-	host := gatewayTrafficLogEntry.InboundTransaction.SourceHost
+	statusCode := m.getHttpStatusCode(gatewayTrafficLogEntry.RequestStatus)
+	method := gatewayTrafficLogEntry.NativeHttpMethod
+	uri := gatewayTrafficLogEntry.OperationName
+	host := gatewayTrafficLogEntry.ApplicationIp
 
-	return transaction.NewTransactionSummaryBuilder().
+	builder := transaction.NewTransactionSummaryBuilder().
 		SetTimestamp(eventTime).
 		SetTransactionID(txID).
 		SetStatus(m.getTransactionSummaryStatus(statusCode), strconv.Itoa(statusCode)).
 		SetTeam(teamID).
+		SetDuration(gatewayTrafficLogEntry.TotalTime).
 		SetEntryPoint("http", method, uri, host).
 		// If the API is published to Central as unified catalog item/API service, se the Proxy details with the API definition
 		// The Proxy.Name represents the name of the API
 		// The Proxy.ID should be of format "remoteApiId_<ID Of the API on remote gateway>". Use transaction.FormatProxyID(<ID Of the API on remote gateway>) to get the formatted value.
-		SetProxy(transutil.FormatProxyID(gatewayTrafficLogEntry.APIName), gatewayTrafficLogEntry.APIName, 0).
-		Build()
+		SetProxy(transutil.FormatProxyID(gatewayTrafficLogEntry.ApiName), gatewayTrafficLogEntry.ApiName, 0)
+
+	if gatewayTrafficLogEntry.ApplicationName != "Unknown" && gatewayTrafficLogEntry.ApplicationId != "Unknown" {
+		builder.SetApplication(gatewayTrafficLogEntry.ApplicationId, gatewayTrafficLogEntry.ApplicationName)
+	}
+
+	return builder.Build()
+
 }
