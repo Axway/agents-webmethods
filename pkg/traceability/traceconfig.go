@@ -1,9 +1,6 @@
 package traceability
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/Axway/agent-sdk/pkg/cmd/properties"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
 )
@@ -41,15 +38,6 @@ type WebMethodConfigTracability struct {
 // ValidateCfg - Validates the gateway config
 func (c *WebMethodConfigTracability) ValidateCfg() (err error) {
 
-	if c.LogFile == "" {
-		return fmt.Errorf("invalid Webmethods APIM configuration: logFile is not configured")
-	}
-
-	if c.AgentType == corecfg.TraceabilityAgent && c.LogFile != "" {
-		if _, err := os.Stat(c.LogFile); os.IsNotExist(err) {
-			return fmt.Errorf("invalid  Webmethods APIM log path: path does not exist: %s", c.LogFile)
-		}
-	}
 	return
 }
 

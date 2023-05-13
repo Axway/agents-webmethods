@@ -4,7 +4,7 @@ import "fmt"
 
 const (
 	AppID        = "appID"
-	AttrAPIID    = "sampleApiId"
+	AttrAPIID    = "apiId"
 	AttrChecksum = "checksum"
 	AttrAppID    = "webmethodsApplicationId"
 )

@@ -1,93 +1,93 @@
 package traceability
 
 import (
+	"errors"
+	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
+	"path/filepath"
+	"strings"
 
-	coreagent "github.com/Axway/agent-sdk/pkg/agent"
-	"github.com/Axway/agent-sdk/pkg/transaction"
-	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
-	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
+	"github.com/elastic/beats/v7/filebeat/beater"
+	fbcfg "github.com/elastic/beats/v7/filebeat/config"
+	v2 "github.com/elastic/beats/v7/filebeat/input/v2"
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
+	"github.com/elastic/beats/v7/libbeat/logp"
+
+	"github.com/Axway/agent-sdk/pkg/traceability"
+	localerrors "github.com/Axway/agents-webmethods/pkg/errors"
 )
 
-// Agent - Webmethods Beater configuration. Implements the beat.Beater interface.
-type Agent struct {
-	client         beat.Client
-	doneCh         chan struct{}
-	eventChannel   chan string
-	eventProcessor Processor
-	webmethods     Emitter
-}
-
-// NewBeater creates an instance of webmethods_traceability_agent.
-func NewBeater(_ *beat.Beat, _ *common.Config) (beat.Beater, error) {
-	eventChannel := make(chan string)
-	agentConfig := GetConfig()
-	generator := transaction.NewEventGenerator()
-	mapper := &EventMapper{}
-	processor := NewEventProcessor(agentConfig, generator, mapper)
-	emitter := NewWebmethodsEventEmitter(agentConfig.WebMethodConfigTracability.LogFile, eventChannel)
-
-	return newAgent(processor, emitter, eventChannel)
-}
-
-func newAgent(
-	processor Processor,
-	emitter Emitter,
-	eventChannel chan string,
-) (*Agent, error) {
-	a := &Agent{
-		doneCh:         make(chan struct{}),
-		eventChannel:   eventChannel,
-		eventProcessor: processor,
-		webmethods:     emitter,
-	}
-
-	// Validate that all necessary services are up and running. If not, return error
-	if hc.RunChecks() != hc.OK {
-		return nil, agenterrors.ErrInitServicesNotReady
-	}
-
-	return a, nil
-}
-
-// Run starts the webmethods traceability agent.
-func (a *Agent) Run(b *beat.Beat) error {
-	coreagent.OnConfigChange(a.onConfigChange)
-
-	var err error
-	a.client, err = b.Publisher.Connect()
+func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
+	fmt.Println("beater")
+	err := validateInput(cfg)
 	if err != nil {
-		coreagent.UpdateStatus(coreagent.AgentFailed, err.Error())
+		return nil, localerrors.ErrInvalidInputConfig.FormatError(err.Error())
+	}
+
+	agentCfg := GetConfig()
+	if agentCfg == nil {
+		return nil, localerrors.ErrConfigFile
+	}
+	eventProcessor := NewEventProcessor(agentCfg, traceability.GetMaxRetries())
+	traceability.SetOutputEventProcessor(eventProcessor)
+
+	factory := func(beat.Info, *logp.Logger, beater.StateStore) []v2.Plugin {
+		return []v2.Plugin{}
+	}
+
+	// Initialize the filebeat to read events
+	creator := beater.New(factory)
+	return creator(b, cfg)
+}
+
+func validateInput(cfg *common.Config) error {
+	filebeatConfig := fbcfg.DefaultConfig
+	err := cfg.Unpack(&filebeatConfig)
+	if err != nil {
 		return err
 	}
 
-	go a.webmethods.Start()
+	if len(filebeatConfig.Inputs) == 0 {
+		return errors.New("no inputs configured")
+	}
 
-	gracefulStop := make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM, os.Interrupt)
-
-	for {
-		select {
-		case <-a.doneCh:
-			return a.client.Close()
-		case <-gracefulStop:
-			return a.client.Close()
-		case event := <-a.eventChannel:
-			eventsToPublish := a.eventProcessor.ProcessRaw([]byte(event))
-			a.client.PublishAll(eventsToPublish)
+	inputsEnabled := 0
+	for _, input := range filebeatConfig.Inputs {
+		inputConfig := struct {
+			Enabled bool     `config:"enabled"`
+			Paths   []string `config:"paths"`
+		}{}
+		input.Unpack(&inputConfig)
+		if inputConfig.Enabled {
+			inputsEnabled++
+			err = validateInputPaths(inputConfig.Paths)
+			if err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
-// onConfigChange apply configuration changes
-func (a *Agent) onConfigChange() {
-}
-
-// Stop stops the agent.
-func (a *Agent) Stop() {
-	a.doneCh <- struct{}{}
+func validateInputPaths(paths []string) error {
+	foundPath := false
+	for _, path := range paths {
+		path = strings.TrimSpace(path)
+		if path != "" {
+			parentDir := filepath.Dir(path)
+			fileInfo, err := os.Stat(parentDir)
+			if err != nil {
+				return err
+			}
+			if !fileInfo.IsDir() {
+				return errors.New("invalid path " + path)
+			}
+			foundPath = true
+		}
+	}
+	if !foundPath {
+		return errors.New("no paths were defined for input processing")
+	}
+	return nil
 }

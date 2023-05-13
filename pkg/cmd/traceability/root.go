@@ -1,10 +1,11 @@
 package traceability
 
 import (
+	"fmt"
+
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
-	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/Axway/agents-webmethods/pkg/traceability"
 
 	libcmd "github.com/elastic/beats/v7/libbeat/cmd"
@@ -16,6 +17,7 @@ var RootCmd corecmd.AgentRootCmd
 var beatCmd *libcmd.BeatsRootCmd
 
 func init() {
+	fmt.Println("initanliing root")
 	name := "webmethods_traceability_agent"
 	settings := instance.Settings{
 		Name:            name,
@@ -24,7 +26,7 @@ func init() {
 	}
 
 	// Initialize the beat command
-	beatCmd = libcmd.GenRootCmdWithSettings(traceability.NewBeater, settings)
+	beatCmd = libcmd.GenRootCmdWithSettings(traceability.New, settings)
 	cmd := beatCmd.Command
 	// Wrap the beat command with the agent command processor with callbacks to initialize the agent config and command execution.
 	// The first parameter identifies the name of the yaml file that agent will look for to load the config
@@ -36,12 +38,14 @@ func init() {
 		run,
 		corecfg.TraceabilityAgent,
 	)
-	config.AddConfigProperties(RootCmd.GetProperties())
-	RootCmd.AddCommand(service.GenServiceCmd("pathConfig"))
+	traceability.AddConfigProperties(RootCmd.GetProperties())
+	RootCmd.AddCommand(service.GenServiceCmd("path.Config"))
 }
 
 // Callback that agent will call to process the execution
 func run() error {
+	fmt.Println("initanliing root")
+
 	return beatCmd.Execute()
 }
 
