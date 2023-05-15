@@ -7,7 +7,7 @@ import (
 	"github.com/Axway/agent-sdk/pkg/transaction"
 	"github.com/Axway/agent-sdk/pkg/util/log"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/elastic/beats/v7/libbeat/beat"
 )
 

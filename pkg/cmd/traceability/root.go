@@ -1,11 +1,11 @@
 package traceability
 
 import (
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/traceability"
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/traceability"
 
 	libcmd "github.com/elastic/beats/v7/libbeat/cmd"
 	"github.com/elastic/beats/v7/libbeat/cmd/instance"

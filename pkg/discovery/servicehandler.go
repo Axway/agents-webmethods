@@ -4,21 +4,20 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/common"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/subscription"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
+	"github.com/Axway/agents-webmethods/pkg/common"
+	"github.com/Axway/agents-webmethods/pkg/subscription"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
 	"github.com/sirupsen/logrus"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 	"github.com/Axway/agent-sdk/pkg/apic"
+	"github.com/Axway/agents-webmethods/pkg/config"
 )
 
 const (
 	marketplace = "marketplace"
-	ß
 )
 
 // ServiceHandler converts a webmethods APIM to an array of ServiceDetails
@@ -156,6 +155,5 @@ func isPublished(api *webmethods.AmplifyAPI, c cache.Cache) (bool, string) {
 	if err != nil || item == nil {
 		return false, checksum
 	}
-
 	return true, checksum
 }

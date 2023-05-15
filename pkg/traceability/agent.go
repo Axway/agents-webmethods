@@ -5,11 +5,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
 	coreagent "github.com/Axway/agent-sdk/pkg/agent"
 	"github.com/Axway/agent-sdk/pkg/transaction"
 	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
+	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
 )

@@ -7,8 +7,8 @@ import (
 
 	"github.com/Axway/agent-sdk/pkg/cache"
 
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/config"
-	"git.ecd.axway.org/apigov/agents-webmethods/pkg/webmethods"
+	"github.com/Axway/agents-webmethods/pkg/config"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
 	"github.com/sirupsen/logrus"
 
@@ -76,7 +76,7 @@ func (d *discovery) discoverAPIs() {
 				}
 
 				if !d.client.IsAllowedTags(apiResponse.Api.ApiDefinition.Tags) {
-					log.Info("API matched with filtered tags : %v , hence ignoring for discovery", err)
+					log.Infof("API matched with filtered tags : %v, hence ignoring for discovery", err)
 					return
 				}
 
