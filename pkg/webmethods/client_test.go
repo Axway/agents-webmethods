@@ -5514,3 +5514,79 @@ func TestListOauth2Servers(t *testing.T) {
 	assert.Equal(t, oAuthServersResponse.Alias[1].Name, "okta")
 
 }
+
+func TestSearchApis(t *testing.T) {
+	response := `{
+		"api": [
+			{
+				"apiName": "Calculator",
+				"apiVersion": "1",
+				"isActive": true,
+				"type": "SOAP",
+				"policies": [],
+				"tracingEnabled": false,
+				"publishedPortals": [],
+				"systemVersion": 1,
+				"gatewayEndpoints": {},
+				"id": "1178fcb2-faae-4fe4-94fa-f5efb0316285"
+			},
+			{
+				"apiName": "petstore",
+				"apiVersion": "1.0.17",
+				"apiDescription": "This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!\nYou can now help us improve the API whether it's by making changes to the definition itself or to the code.\nThat way, with time, we can improve the API in general, and expose some of the new features in OAS3.\n\nSome useful links:\n- [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)\n- [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)",
+				"isActive": true,
+				"type": "REST",
+				"policies": [],
+				"tracingEnabled": false,
+				"publishedPortals": [
+					"f03df5ce-9542-4161-ad49-c6c76f08f8ee"
+				],
+				"systemVersion": 1,
+				"gatewayEndpoints": {},
+				"id": "2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2"
+			},
+			{
+				"apiName": "TODO",
+				"apiVersion": "1.0",
+				"isActive": true,
+				"type": "REST",
+				"policies": [],
+				"tracingEnabled": false,
+				"publishedPortals": [],
+				"systemVersion": 1,
+				"gatewayEndpoints": {},
+				"id": "41d41c3b-6675-454e-80c4-a4af3d6b517f"
+			},
+			{
+				"apiName": "watchlist",
+				"apiVersion": "1.0",
+				"apiDescription": "Stock Watch List API",
+				"isActive": true,
+				"type": "REST",
+				"policies": [],
+				"tracingEnabled": false,
+				"publishedPortals": [],
+				"systemVersion": 1,
+				"gatewayEndpoints": {},
+				"id": "9bf61a62-20f7-47f5-bd10-806d98330622"
+			}
+		]
+	}`
+	mc := &MockClient{}
+	webMethodsClient, _ := NewClient(cfg, mc)
+	mc.SendFunc = func(request coreapi.Request) (*coreapi.Response, error) {
+		return &coreapi.Response{
+			Code: 200,
+			Body: []byte(response),
+		}, nil
+	}
+	apis, err := webMethodsClient.SearchAPIs()
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(apis.WebmethodsApi))
+
+	assert.Equal(t, apis.WebmethodsApi[0].ApiName, "Calculator")
+	assert.Equal(t, apis.WebmethodsApi[1].ApiName, "petstore")
+	assert.Equal(t, apis.WebmethodsApi[2].ApiName, "TODO")
+	assert.Equal(t, apis.WebmethodsApi[3].ApiName, "watchlist")
+
+}

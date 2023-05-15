@@ -7,6 +7,7 @@ import (
 	"github.com/Axway/agent-sdk/pkg/apic/provisioning"
 	"github.com/Axway/agent-sdk/pkg/cache"
 	"github.com/Axway/agents-webmethods/pkg/common"
+	"github.com/Axway/agents-webmethods/pkg/subscription"
 	"github.com/Axway/agents-webmethods/pkg/webmethods"
 
 	"github.com/sirupsen/logrus"
@@ -17,7 +18,6 @@ import (
 
 const (
 	marketplace = "marketplace"
-	catalog     = "unified-catalog"
 )
 
 // ServiceHandler converts a webmethods APIM to an array of ServiceDetails
@@ -86,6 +86,11 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		if processor, ok := specProcessor.(apic.OasSpecProcessor); ok {
 			processor.ParseAuthInfo()
 			authPolicies := processor.GetAuthPolicies()
+			oauthScopes := processor.GetOAuthScopes()
+			oauthScopesList := make([]string, 0, len(oauthScopes))
+			for k := range oauthScopes {
+				oauthScopesList = append(oauthScopesList, k)
+			}
 			for _, value := range authPolicies {
 				logger.Infof("API Authentication Type %s", value)
 				if value == apic.Apikey {
@@ -94,8 +99,8 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 					break
 				}
 				if value == apic.Oauth {
-					ardName = "oauth2"
-					crds[0] = "oauth2"
+					ardName = subscription.OAuth2AuthType
+					crds[0] = subscription.OAuth2AuthType
 					break
 				}
 			}
@@ -150,6 +155,5 @@ func isPublished(api *webmethods.AmplifyAPI, c cache.Cache) (bool, string) {
 	if err != nil || item == nil {
 		return false, checksum
 	}
-
 	return true, checksum
 }

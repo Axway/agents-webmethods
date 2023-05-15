@@ -27,6 +27,7 @@ type Page struct {
 type Client interface {
 	createAuthToken() string
 	ListAPIs() ([]ListApiResponse, error)
+	SearchAPIs() (*Apis, error)
 	GetApiDetails(id string) (*ApiResponse, error)
 	IsAllowedTags(tags []Tag) bool
 	GetApiSpec(id string) ([]byte, error)
@@ -140,6 +141,47 @@ func (c *WebMethodClient) ListAPIs() ([]ListApiResponse, error) {
 		return nil, err
 	}
 	return listApi.ListApiResponse, nil
+}
+
+func (c *WebMethodClient) SearchAPIs() (*Apis, error) {
+	//webmethodsApis := make([]WebmethodsApi, 0)
+	url := fmt.Sprintf("%s/rest/apigateway/search", c.url)
+	requestStr := `{
+		"types": [
+			"api"
+		],
+		"condition": "and",
+		"scope": [
+			{
+				"attributeName": "isActive",
+				"keyword": true
+			}
+		],
+		"sortByField": "apiName",
+		"sortOrder": "ASC"
+	}`
+	apis := &Apis{}
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+		"Content-Type":  "application/json",
+	}
+
+	request := coreapi.Request{
+		Method:  coreapi.POST,
+		URL:     url,
+		Headers: headers,
+		Body:    []byte(requestStr),
+	}
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response.Body, apis)
+	if err != nil {
+		return nil, err
+	}
+	return apis, nil
 }
 
 // ListAPIs lists webmethods  APIM apis.
@@ -581,7 +623,8 @@ func (c *WebMethodClient) ListOauth2Servers() (*OauthServers, error) {
 			"id",
 			"name",
 			"type",
-			"description"
+			"description",
+			"scopes"
 		],
 		"condition": "or",
 		"sortByField": "name"

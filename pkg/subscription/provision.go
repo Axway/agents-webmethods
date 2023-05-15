@@ -25,6 +25,7 @@ const (
 	// ClientTypeField -
 	ClientTypeField = "clientType"
 	AudienceField   = "audience"
+	OauthScopes     = "oauthScopes"
 )
 
 type provisioner struct {
