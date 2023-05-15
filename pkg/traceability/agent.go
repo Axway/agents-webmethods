@@ -2,7 +2,6 @@ package traceability
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,7 +18,6 @@ import (
 )
 
 func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
-	fmt.Println("beater")
 	err := validateInput(cfg)
 	if err != nil {
 		return nil, localerrors.ErrInvalidInputConfig.FormatError(err.Error())

@@ -60,56 +60,56 @@ func (d *discovery) Loop() {
 
 // discoverAPIs Finds APIs from exchange
 func (d *discovery) discoverAPIs() {
-	apis, err := d.client.ListAPIs()
+	apis, err := d.client.SearchAPIs()
+	log.Infof("%v", apis)
 	if err != nil {
 		log.Errorf("Unable to list Apis :%v", err)
 		return
 	}
 
-	for _, api := range apis {
-		go func(api webmethods.ListApiResponse) {
-			if api.ResponseStatus == "SUCCESS" {
-				apiResponse, err := d.client.GetApiDetails(api.WebmethodsApi.Id)
-				if err != nil {
-					log.Errorf("Unable to get API Details : %v", err)
-					return
-				}
-
-				if !d.client.IsAllowedTags(apiResponse.Api.ApiDefinition.Tags) {
-					log.Infof("API matched with filtered tags : %v, hence ignoring for discovery", err)
-					return
-				}
-
-				if apiResponse.Api.MaturityState == d.maturityState {
-					var specification []byte
-					if api.WebmethodsApi.ApiType == "REST" {
-						specification, err = d.client.GetApiSpec(api.WebmethodsApi.Id)
-					} else if api.WebmethodsApi.ApiType == "SOAP" {
-						specification, err = d.client.GetWsdl(apiResponse.GatewayEndPoints[0])
-					}
-					if err != nil {
-						log.Error("Unable to read API specification : ", err)
-						return
-					}
-					amplifyApi := webmethods.AmplifyAPI{
-						ID:          api.WebmethodsApi.Id,
-						Name:        api.WebmethodsApi.ApiName,
-						Description: api.WebmethodsApi.ApiDescription,
-						Version:     api.WebmethodsApi.ApiVersion,
-						// append endpoint url
-						Url:           apiResponse.GatewayEndPoints[0],
-						Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
-						ApiSpec:       specification,
-						ApiType:       api.WebmethodsApi.ApiType,
-					}
-					svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
-					if svcDetail != nil {
-						d.apiChan <- svcDetail
-					}
-				} else {
-					log.Infof("Ignoring API %s with MaturityState %s", api.WebmethodsApi.ApiName, apiResponse.Api.MaturityState)
-				}
+	for _, api := range apis.WebmethodsApi {
+		go func(api webmethods.WebmethodsApi) {
+			apiResponse, err := d.client.GetApiDetails(api.Id)
+			if err != nil {
+				log.Errorf("Unable to get API Details : %v", err)
+				return
 			}
+
+			if !d.client.IsAllowedTags(apiResponse.Api.ApiDefinition.Tags) {
+				log.Infof("API not matched with filtered tags : %v, hence ignoring for discovery", err)
+				return
+			}
+
+			if apiResponse.Api.MaturityState == d.maturityState {
+				var specification []byte
+				if api.ApiType == "REST" {
+					specification, err = d.client.GetApiSpec(api.Id)
+				} else if api.ApiType == "SOAP" {
+					specification, err = d.client.GetWsdl(apiResponse.GatewayEndPoints[0])
+				}
+				if err != nil {
+					log.Errorf("Unable to read API specification : %v", err)
+					return
+				}
+				amplifyApi := webmethods.AmplifyAPI{
+					ID:          api.Id,
+					Name:        api.ApiName,
+					Description: api.ApiDescription,
+					Version:     api.ApiVersion,
+					// append endpoint url
+					Url:           apiResponse.GatewayEndPoints[0],
+					Documentation: []byte(apiResponse.Api.ApiDefinition.Info.Description),
+					ApiSpec:       specification,
+					ApiType:       api.ApiType,
+				}
+				svcDetail := d.serviceHandler.ToServiceDetail(&amplifyApi)
+				if svcDetail != nil {
+					d.apiChan <- svcDetail
+				}
+			} else {
+				log.Infof("Ignoring API %s with MaturityState %s", api.ApiName, apiResponse.Api.MaturityState)
+			}
+
 		}(api)
 	}
 }

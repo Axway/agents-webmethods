@@ -1,8 +1,6 @@
 package traceability
 
 import (
-	"fmt"
-
 	corecmd "github.com/Axway/agent-sdk/pkg/cmd"
 	"github.com/Axway/agent-sdk/pkg/cmd/service"
 	corecfg "github.com/Axway/agent-sdk/pkg/config"
@@ -17,7 +15,6 @@ var RootCmd corecmd.AgentRootCmd
 var beatCmd *libcmd.BeatsRootCmd
 
 func init() {
-	fmt.Println("initanliing root")
 	name := "webmethods_traceability_agent"
 	settings := instance.Settings{
 		Name:            name,
@@ -44,8 +41,6 @@ func init() {
 
 // Callback that agent will call to process the execution
 func run() error {
-	fmt.Println("initanliing root")
-
 	return beatCmd.Execute()
 }
 
