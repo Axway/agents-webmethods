@@ -1,5 +1,19 @@
 ################### Beat Configuration #########################
 webmethods_traceability_agent:
+  inputs:
+    - type: log
+      enabled: ${EVENT_LOG_INPUT:true}
+      paths: ${EVENT_LOG_PATHS:/Integration Server_directory/instances/instance_name/logs/APIGateway/AGW_EVENT_TXN_*.log}
+      include_lines: 
+        - '^#AGW_EVENT_TXN'
+      ignore_older: 1h
+      close_inactive: 10m
+      clean_inactive: 2h
+      close_removed: true
+      clean_removed: true
+  registry:
+    path: /Users/rnatarajan/Amplify/agents-softwareag/agents-webmethods/filebeat
+
   # Settings for connecting to Amplify Central
   central:
     url: ${CENTRAL_URL:https://apicentral.axway.com}
@@ -8,7 +22,7 @@ webmethods_traceability_agent:
     deployment: ${CENTRAL_DEPLOYMENT:prod}
     environment: ${CENTRAL_ENVIRONMENT:""}
     environmentID: ${CENTRAL_ENVIRONMENTID} # only required when CENTRAL_USAGEREPORTING_OFFLINE=true
-    agentName: ${CENTRAL_AGENTNAME:""}
+    agentName: ${CENTRAL_AGENTNAME:"webmethods-agent-traceability"}
     platformURL: ${CENTRAL_PLATFORMURL:https://platform.axway.com}
     reportActivityFrequency: ${CENTRAL_REPORTACTIVITYFREQUENCY:5m}
     versionChecker: ${CENTRAL_VERSIONCHECKER:true}
@@ -23,8 +37,8 @@ webmethods_traceability_agent:
       url: ${CENTRAL_AUTH_URL:https://login.axway.com/auth}
       realm: ${CENTRAL_AUTH_REALM:Broker}
       clientId: ${CENTRAL_AUTH_CLIENTID:""}
-      privateKey: ${CENTRAL_AUTH_PRIVATEKEY:/keys/private_key.pem}
-      publicKey: ${CENTRAL_AUTH_PUBLICKEY:/keys/public_key.pem}
+      privateKey: ${CENTRAL_AUTH_PRIVATEKEY:keys/private_key.pem}
+      publicKey: ${CENTRAL_AUTH_PUBLICKEY:keys/public_key.pem}
       keyPassword: ${CENTRAL_AUTH_KEYPASSWORD:""}
       timeout: 10s
     ssl:
@@ -39,15 +53,6 @@ webmethods_traceability_agent:
       port: ${CENTRAL_GRPC_PORT}
     proxyUrl: ${CENTRAL_PROXYURL:""}
     clientTimeout: ${CENTRAL_CLIENTTIMEOUT:60s}
-  # Settings for connecting to API Gateway
-  webmethods:
-    # TODO: Add config for webmethods API Gateway here
-    logFile: ./logs/traffic.log
-    pollInterval: 30s
-    config_key_1: "value-1"
-    config_key_2: "value-2"
-    config_key_3: "value-3"
-
   agentFeatures:
     persistCache: ${AGENTFEATURES_PERSISTCACHE}
     marketplaceProvisioning: ${AGENTFEATURES_MARKETPLACEPROVISIONING}
@@ -60,7 +65,7 @@ webmethods_traceability_agent:
     healthCheckInterval: ${STATUS_HEALTHCHECKINTERVAL:30s}
   log:
     level: ${LOG_LEVEL:info}
-    format: ${LOG_FORMAT:json}
+    format: ${LOG_FORMAT:line}
     output: ${LOG_OUTPUT:stdout}
 
 # Send output to Central Database
