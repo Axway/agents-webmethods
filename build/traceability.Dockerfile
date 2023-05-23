@@ -28,6 +28,7 @@ RUN export time=`date +%Y%m%d%H%M%S` && \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=webMethodsTraceabilityAgent'" \
   -a -o ${APP_HOME}/bin/webmethods_traceability_agent ${AGENT}/main.go
 
+
 # Create non-root user
 RUN addgroup -g 2500 $APP_USER && adduser -u 2500 -D -G $APP_USER $APP_USER
 RUN chown -R $APP_USER:$APP_USER  ${APP_HOME}/bin/webmethods_traceability_agent

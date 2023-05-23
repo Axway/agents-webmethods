@@ -2,7 +2,7 @@
 webmethods_traceability_agent:
   inputs:
     - type: log
-      enabled: ${EVENT_LOG_INPUT:true}
+      enabled: true
       paths: ${EVENT_LOG_PATHS:/Integration Server_directory/instances/instance_name/logs/APIGateway/AGW_EVENT_TXN_*.log}
       include_lines: 
         - '^#AGW_EVENT_TXN'
@@ -11,8 +11,6 @@ webmethods_traceability_agent:
       clean_inactive: 2h
       close_removed: true
       clean_removed: true
-  registry:
-    path: /Users/rnatarajan/Amplify/agents-softwareag/agents-webmethods/filebeat
 
   # Settings for connecting to Amplify Central
   central:
