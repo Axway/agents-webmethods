@@ -1,5 +1,17 @@
 ################### Beat Configuration #########################
 webmethods_traceability_agent:
+  inputs:
+    - type: log
+      enabled: true
+      paths: ${EVENT_LOG_PATHS:/Integration Server_directory/instances/instance_name/logs/APIGateway/AGW_EVENT_TXN_*.log}
+      include_lines: 
+        - '^#AGW_EVENT_TXN'
+      ignore_older: 1h
+      close_inactive: 10m
+      clean_inactive: 2h
+      close_removed: true
+      clean_removed: true
+
   # Settings for connecting to Amplify Central
   central:
     url: ${CENTRAL_URL:https://apicentral.axway.com}
@@ -39,15 +51,6 @@ webmethods_traceability_agent:
       port: ${CENTRAL_GRPC_PORT}
     proxyUrl: ${CENTRAL_PROXYURL:""}
     clientTimeout: ${CENTRAL_CLIENTTIMEOUT:60s}
-  # Settings for connecting to API Gateway
-  webmethods:
-    # TODO: Add config for webmethods API Gateway here
-    logFile: ./logs/traffic.log
-    pollInterval: 30s
-    config_key_1: "value-1"
-    config_key_2: "value-2"
-    config_key_3: "value-3"
-
   agentFeatures:
     persistCache: ${AGENTFEATURES_PERSISTCACHE}
     marketplaceProvisioning: ${AGENTFEATURES_MARKETPLACEPROVISIONING}

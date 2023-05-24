@@ -81,6 +81,7 @@ func initConfig(centralConfig corecfg.CentralConfig) (interface{}, error) {
 	}
 
 	// filter oauth authz server based on config
+	//if conf.WebMethodConfig.Oauth2AuthzServerAlias != "" {
 	if slices.Contains(servers, conf.WebMethodConfig.Oauth2AuthzServerAlias) {
 		servers = []string{conf.WebMethodConfig.Oauth2AuthzServerAlias}
 	} else {

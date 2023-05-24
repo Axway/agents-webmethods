@@ -47,22 +47,6 @@ type EventProcessor struct {
 	appIDToManApp  map[string]string
 }
 
-// func NewEventProcessor(
-// 	gateway *AgentConfigTraceability,
-// 	eventGenerator transaction.EventGenerator,
-// 	mapper *EventMapper,
-// ) *EventProcessor {
-// 	ep := &EventProcessor{
-// 		cfg:            gateway,
-// 		eventGenerator: eventGenerator,
-// 		eventMapper:    mapper,
-// 		cacheManager:   agent.GetCacheManager(),
-// 		appIDToManApp:  make(map[string]string),
-// 		//tenantID:       agentConfig.Central.GetTenantID(),
-// 	}
-// 	return ep
-// }
-
 func NewEventProcessor(
 	gateway *AgentConfigTraceability,
 	maxRetries int,
@@ -166,8 +150,6 @@ func (p *EventProcessor) ProcessEvent(newEvents []publisher.Event, event publish
 }
 
 func (p *EventProcessor) getApplicationByName(appId string, appName string) (string, string) {
-	// Add the V7 Application ID, with prefix, and Name to the event
-
 	// find the manged application in the cache
 	manAppName := p.getManagedApplicationNameByID(appId)
 	if manAppName != "" {
@@ -321,7 +303,7 @@ func (ep *EventProcessor) createSummaryEvent(eventTime int64, txID string, gatew
 		SetProxy(transutil.FormatProxyID(gatewayTrafficLogEntry.ApiId), gatewayTrafficLogEntry.ApiName, 0)
 
 	if gatewayTrafficLogEntry.ApplicationName != "Unknown" && gatewayTrafficLogEntry.ApplicationId != "Unknown" {
-		builder.SetApplication(gatewayTrafficLogEntry.ApplicationId, gatewayTrafficLogEntry.ApplicationName)
+		builder.SetApplication(transutil.FormatApplicationID(gatewayTrafficLogEntry.ApplicationId), gatewayTrafficLogEntry.ApplicationName)
 	}
 	return builder.Build()
 }
