@@ -51,6 +51,7 @@ func (p *publisher) publish(serviceDetail *ServiceDetail) {
 		log.WithError(err).Error("error building service body")
 		return
 	}
+	serviceBody.CreatedBy = "WebmethodsDiscoveryAgent"
 	err = p.publishAPI(serviceBody)
 	if err != nil {
 		log.WithError(err).Error("error publishing to Amplify Central")
