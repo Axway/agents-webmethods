@@ -111,18 +111,27 @@ type WebmethodsEvent struct {
 	CorrelationID string `json:"correlationID"`
 	CustomFields  struct {
 	} `json:"customFields"`
-	ErrorOrigin           string      `json:"errorOrigin"`
-	NativeRequestHeaders  HttpHeaders `json:"nativeRequestHeaders"`
-	NativeReqPayload      string      `json:"nativeReqPayload"`
-	NativeResponseHeaders HttpHeaders `json:"nativeResponseHeaders"`
-	NativeResPayload      string      `json:"nativeResPayload"`
-	NativeHTTPMethod      string      `json:"nativeHttpMethod"`
-	NativeURL             string      `json:"nativeURL"`
-	ServerID              string      `json:"serverID"`
-	ExternalCalls         []any       `json:"externalCalls"`
-	SourceGatewayNode     string      `json:"sourceGatewayNode"`
-	CallbackRequest       bool        `json:"callbackRequest"`
+	ErrorOrigin           string        `json:"errorOrigin"`
+	NativeRequestHeaders  HttpHeaders   `json:"nativeRequestHeaders"`
+	NativeReqPayload      string        `json:"nativeReqPayload"`
+	NativeResponseHeaders HttpHeaders   `json:"nativeResponseHeaders"`
+	NativeResPayload      string        `json:"nativeResPayload"`
+	NativeHTTPMethod      string        `json:"nativeHttpMethod"`
+	NativeURL             string        `json:"nativeURL"`
+	ServerID              string        `json:"serverID"`
+	ExternalCalls         []BackendCall `json:"externalCalls"`
+	SourceGatewayNode     string        `json:"sourceGatewayNode"`
+	CallbackRequest       bool          `json:"callbackRequest"`
 }
 
 type HttpHeaders struct {
+}
+
+type BackendCall struct {
+	ExternalCallType string `json:"externalCallType"`
+	ExternalURL      string `json:"externalURL"`
+	CallStartTime    int64  `json:"callStartTime"`
+	CallEndTime      int64  `json:"callEndTime"`
+	CallDuration     int    `json:"callDuration"`
+	ResponseCode     string `json:"responseCode"`
 }

@@ -1,22 +1,36 @@
 package traceability
 
 import (
+	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Axway/agent-sdk/pkg/agent"
+	v1 "github.com/Axway/agent-sdk/pkg/apic/apiserver/models/api/v1"
 	"github.com/Axway/agent-sdk/pkg/transaction"
 	transutil "github.com/Axway/agent-sdk/pkg/transaction/util"
+	"github.com/Axway/agent-sdk/pkg/util"
+	"github.com/Axway/agent-sdk/pkg/util/log"
 	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/sirupsen/logrus"
 
 	"github.com/elastic/beats/v7/libbeat/beat"
 )
 
+const Client = "Client"
+const WebmethodsProxy = "Webmethods.APIProxy"
+
 type Processor interface {
 	ProcessRaw(webmethodsEvent WebmethodsEvent) []beat.Event
+}
+
+type cacheManager interface {
+	GetManagedApplicationCacheKeys() []string
+	GetManagedApplication(id string) *v1.ResourceInstance
 }
 
 // EventProcessor - represents the processor for received event for Amplify Central
@@ -31,6 +45,8 @@ type Processor interface {
 type ApiEventProcessor struct {
 	cfg            *config.AgentConfig
 	eventGenerator transaction.EventGenerator
+	cacheManager   cacheManager
+	appIDToManApp  map[string]string
 }
 
 func NewApiEventProcessor(
@@ -40,6 +56,8 @@ func NewApiEventProcessor(
 	ep := &ApiEventProcessor{
 		cfg:            gateway,
 		eventGenerator: eventGenerator,
+		cacheManager:   agent.GetCacheManager(),
+		appIDToManApp:  make(map[string]string),
 	}
 	return ep
 }
@@ -72,7 +90,13 @@ func (aep *ApiEventProcessor) processMapping(webmethodsEvent WebmethodsEvent) (*
 	//eventTime := time.Now().UTC().Format(gatewayTrafficLogEntry.EventTimestamp)
 	txID := webmethodsEvent.SessionId
 	txEventID := webmethodsEvent.CorrelationID
-	transInboundLogEventLeg, err := aep.createTransactionEvent(eventTime, txID, webmethodsEvent, txEventID, "Inbound")
+	leg0ID := FormatLeg0(txEventID)
+	leg1ID := FormatLeg1(txEventID)
+	transInboundLogEventLeg, err := aep.createTransactionEvent(eventTime, txID, webmethodsEvent, leg0ID, leg1ID, "inbound")
+	if err != nil {
+		return nil, nil, err
+	}
+	transOutboundLogEventLeg, err := aep.createOutboundTransactionEvent(txID, webmethodsEvent, leg0ID, "", "outbound")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -82,7 +106,15 @@ func (aep *ApiEventProcessor) processMapping(webmethodsEvent WebmethodsEvent) (*
 		return nil, nil, err
 	}
 
+	logrus.Infof("outbound leg %v", transOutboundLogEventLeg)
+	if transOutboundLogEventLeg == nil {
+		return transSummaryLogEvent, []transaction.LogEvent{
+			*transInboundLogEventLeg,
+		}, nil
+	}
+
 	return transSummaryLogEvent, []transaction.LogEvent{
+		*transOutboundLogEventLeg,
 		*transInboundLogEventLeg,
 	}, nil
 }
@@ -106,7 +138,7 @@ func (aep *ApiEventProcessor) getTransactionSummaryStatus(statusCode int) transa
 	return transSummaryStatus
 }
 
-func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID string, webmethodsEvent WebmethodsEvent, eventID, direction string) (*transaction.LogEvent, error) {
+func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID string, webmethodsEvent WebmethodsEvent, eventID, parentId, direction string) (*transaction.LogEvent, error) {
 
 	httpStatus, _ := strconv.Atoi(webmethodsEvent.ResponseCode)
 	host := webmethodsEvent.ServerID
@@ -115,9 +147,7 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 		uris := strings.Split(host, ":")
 		host = uris[0]
 		port, _ = strconv.Atoi(uris[1])
-
 	}
-
 	httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
 		SetURI(webmethodsEvent.OperationName).
 		SetMethod(webmethodsEvent.HTTPMethod).
@@ -133,11 +163,68 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 		SetTimestamp(eventTime).
 		SetTransactionID(txID).
 		SetID(eventID).
-		SetSource(webmethodsEvent.SourceGatewayNode).
+		SetParentID(parentId).
+		SetSource(WebmethodsProxy).
+		SetDirection(webmethodsEvent.SourceGatewayNode).
 		SetDirection(direction).
 		SetStatus(aep.getTransactionEventStatus(httpStatus)).
 		SetProtocolDetail(httpProtocolDetails).
 		Build()
+}
+
+func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmethodsEvent WebmethodsEvent, eventID, parentId, direction string) (*transaction.LogEvent, error) {
+
+	backendCall := webmethodsEvent.ExternalCalls
+	log.Infof("BAckend call - %v", backendCall)
+	if len(backendCall) > 0 {
+		logrus.Info("Processing outbound calls")
+		httpStatus, _ := strconv.Atoi(backendCall[0].ResponseCode)
+		httpUrl, err := url.Parse(backendCall[0].ExternalURL)
+		if err != nil {
+			logrus.Error("Unable to parse URL", err)
+			return nil, nil
+		}
+		var host, port string
+		scheme := httpUrl.Scheme
+		if strings.Index(httpUrl.Host, ":") != -1 {
+			host, port, _ = net.SplitHostPort(httpUrl.Host)
+		} else {
+			host = httpUrl.Host
+			if scheme == "https" {
+				port = "443"
+			} else {
+				port = "80"
+			}
+		}
+		portInt, _ := strconv.Atoi(port)
+		httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
+			SetURI(webmethodsEvent.OperationName).
+			SetMethod(webmethodsEvent.HTTPMethod).
+			SetStatus(httpStatus, http.StatusText(httpStatus)).
+			SetHost(host).
+			SetLocalAddress(host, portInt).
+			Build()
+		if err != nil {
+			return nil, err
+		}
+		eventTimestamp := time.UnixMilli(backendCall[0].CallStartTime)
+		eventTime := eventTimestamp.UTC().UnixNano() / int64(time.Millisecond)
+		logrus.Info("Outbound object created")
+		return transaction.NewTransactionEventBuilder().
+			SetTimestamp(eventTime).
+			SetTransactionID(txID).
+			SetID(eventID).
+			SetParentID(parentId).
+			SetSource(Client).
+			SetDestination(WebmethodsProxy).
+			SetDirection(direction).
+			SetDuration(backendCall[0].CallDuration).
+			SetStatus(aep.getTransactionEventStatus(httpStatus)).
+			SetProtocolDetail(httpProtocolDetails).
+			Build()
+
+	}
+	return nil, nil
 }
 
 func (aep *ApiEventProcessor) createSummaryEvent(eventTime int64, txID string, webmethodsEvent WebmethodsEvent, teamID string) (*transaction.LogEvent, error) {
@@ -156,11 +243,44 @@ func (aep *ApiEventProcessor) createSummaryEvent(eventTime int64, txID string, w
 		// If the API is published to Central as unified catalog item/API service, se the Proxy details with the API definition
 		// The Proxy.Name represents the name of the API
 		// The Proxy.ID should be of format "remoteApiId_<ID Of the API on remote gateway>". Use transaction.FormatProxyID(<ID Of the API on remote gateway>) to get the formatted value.
-		SetProxy(transutil.FormatProxyID(webmethodsEvent.ApiName), webmethodsEvent.ApiName, 0)
+		SetProxy(transutil.FormatProxyID(webmethodsEvent.ApiId), webmethodsEvent.ApiName, 0)
 
 	if webmethodsEvent.ApplicationName != "Unknown" && webmethodsEvent.ApplicationId != "Unknown" {
-		builder.SetApplication(webmethodsEvent.ApplicationId, webmethodsEvent.ApplicationName)
+		builder.SetApplication(transutil.FormatApplicationID(webmethodsEvent.ApplicationId), webmethodsEvent.ApplicationName)
 	}
 	return builder.Build()
 
+}
+
+func (aep *ApiEventProcessor) getApplicationByName(appId string, appName string) (string, string) {
+	// find the manged application in the cache
+	manAppName := aep.getManagedApplicationNameByID(appId)
+	if manAppName != "" {
+		return appId, manAppName
+	}
+	return appId, appName
+
+}
+
+func (aep *ApiEventProcessor) getManagedApplicationNameByID(appID string) string {
+	if name, ok := aep.appIDToManApp[appID]; ok {
+		return name
+	}
+	for _, key := range aep.cacheManager.GetManagedApplicationCacheKeys() {
+		ri := aep.cacheManager.GetManagedApplication(key)
+		val, _ := util.GetAgentDetailsValue(ri, "webmethodsApplicationId")
+		if val == appID {
+			aep.appIDToManApp[appID] = ri.Name
+			return ri.Name
+		}
+	}
+	return ""
+}
+
+func FormatLeg0(id string) string {
+	return fmt.Sprintf("%s-leg0", id)
+}
+
+func FormatLeg1(id string) string {
+	return fmt.Sprintf("%s-leg1", id)
 }

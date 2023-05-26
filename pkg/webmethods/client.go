@@ -658,8 +658,7 @@ func (c *WebMethodClient) ListOauth2Servers() (*OauthServers, error) {
 
 func (c *WebMethodClient) GetTransactionsWindow(startDate, endDate string) ([]byte, error) {
 	query := map[string]string{
-		"eventType": "json",
-		"duration":  "1d",
+		"eventType": "transactionalEvents",
 		"startDate": startDate,
 		"endDate":   endDate,
 	}
