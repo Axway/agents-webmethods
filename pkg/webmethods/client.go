@@ -47,6 +47,8 @@ type Client interface {
 	DeleteApplicationAccessTokens(applicationId string) error
 	UnsubscribeApplication(applicationId string, apiId string) error
 	ListOauth2Servers() (*OauthServers, error)
+	GetTransactionsWindow(startDate, endDate string) ([]byte, error)
+	Healthcheck(name string) (status *hc.Status)
 }
 
 // WebMethodClient is the client for interacting with Webmethods APIM.
@@ -64,7 +66,7 @@ func NewClient(webMethodConfig *config.WebMethodConfig, httpClient coreapi.Clien
 	client := &WebMethodClient{}
 	client.httpClient = httpClient
 	err := client.OnConfigChange(webMethodConfig)
-	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.healthcheck)
+	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.Healthcheck)
 	return client, err
 }
 
@@ -84,7 +86,7 @@ func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig
 	return nil
 }
 
-func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {
+func (c *WebMethodClient) Healthcheck(name string) (status *hc.Status) {
 	url := c.url + "/rest/apigateway/health"
 	status = &hc.Status{
 		Result: hc.OK,
@@ -99,14 +101,14 @@ func (c *WebMethodClient) healthcheck(name string) (status *hc.Status) {
 	if err != nil {
 		status = &hc.Status{
 			Result:  hc.FAIL,
-			Details: fmt.Sprintf("%s Failed. Unable to connect to Boomi, check Boomi configuration. %s", name, err.Error()),
+			Details: fmt.Sprintf("%s Failed. Unable to connect to Webmethods, check Webmethods configuration. %s", name, err.Error()),
 		}
 	}
 
 	if response.Code != http.StatusOK {
 		status = &hc.Status{
 			Result:  hc.FAIL,
-			Details: fmt.Sprintf("%s Failed. Unable to connect to Boomi, check Boomi configuration.", name),
+			Details: fmt.Sprintf("%s Failed. Unable to connect to Webmethods, check Boomi configuration.", name),
 		}
 	}
 
@@ -652,6 +654,30 @@ func (c *WebMethodClient) ListOauth2Servers() (*OauthServers, error) {
 		return nil, err
 	}
 	return oauthServers, nil
+}
+
+func (c *WebMethodClient) GetTransactionsWindow(startDate, endDate string) ([]byte, error) {
+	query := map[string]string{
+		"eventType": "json",
+		"duration":  "1d",
+		"startDate": startDate,
+		"endDate":   endDate,
+	}
+	headers := map[string]string{
+		"Authorization": c.createAuthToken(),
+	}
+	url := fmt.Sprintf("%s/rest/apigateway/apitransactions", c.url)
+	request := coreapi.Request{
+		Method:      coreapi.GET,
+		URL:         url,
+		Headers:     headers,
+		QueryParams: query,
+	}
+	response, err := c.httpClient.Send(request)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
 }
 
 func (c *WebMethodClient) createAuthToken() string {

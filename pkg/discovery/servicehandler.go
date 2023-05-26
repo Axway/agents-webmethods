@@ -117,9 +117,11 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		//AuthPolicy:              api.AuthPolicy,
 		Description: api.Description,
 		// Use the Asset ID for the externalAPIID so that apis linked to the asset are created as a revision
-		ID:                api.ID,
-		ResourceType:      specType,
-		ServiceAttributes: map[string]string{},
+		ID:           api.ID,
+		ResourceType: specType,
+		ServiceAttributes: map[string]string{
+			"GatewayType": "webMethods",
+		},
 		AgentDetails: map[string]string{
 			common.AttrAPIID:    api.ID,
 			common.AttrChecksum: checksum,
@@ -127,6 +129,7 @@ func (s *serviceHandler) getServiceDetail(api *webmethods.AmplifyAPI) (*ServiceD
 		Title:   api.Name,
 		Version: api.Version,
 		Status:  apic.PublishedStatus,
+		Stage:   config.GetConfig().WebMethodConfig.MaturityState,
 	}, nil
 }
 
