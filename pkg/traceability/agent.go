@@ -1,91 +1,109 @@
 package traceability
 
 import (
-	"errors"
 	"os"
-	"path/filepath"
-	"strings"
+	"os/signal"
+	"syscall"
 
-	"github.com/elastic/beats/v7/filebeat/beater"
-	fbcfg "github.com/elastic/beats/v7/filebeat/config"
-	v2 "github.com/elastic/beats/v7/filebeat/input/v2"
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
-	"github.com/elastic/beats/v7/libbeat/logp"
 
-	"github.com/Axway/agent-sdk/pkg/traceability"
+	coreagent "github.com/Axway/agent-sdk/pkg/agent"
+	coreapi "github.com/Axway/agent-sdk/pkg/api"
+	"github.com/Axway/agent-sdk/pkg/transaction"
+	"github.com/Axway/agents-webmethods/pkg/config"
 	localerrors "github.com/Axway/agents-webmethods/pkg/errors"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 )
 
-func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
-	err := validateInput(cfg)
-	if err != nil {
-		return nil, localerrors.ErrInvalidInputConfig.FormatError(err.Error())
-	}
+// Agent - mulesoft Beater configuration. Implements the beat.Beater interface.
+type Agent struct {
+	client         beat.Client
+	doneCh         chan struct{}
+	eventChannel   chan WebmethodsEvent
+	eventProcessor Processor
+	webmethods     Emitter
+}
 
-	agentCfg := GetConfig()
+func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
+
+	agentCfg := config.GetConfig()
 	if agentCfg == nil {
 		return nil, localerrors.ErrConfigFile
 	}
-	eventProcessor := NewEventProcessor(agentCfg, traceability.GetMaxRetries())
-	traceability.SetOutputEventProcessor(eventProcessor)
+	generator := transaction.NewEventGenerator()
+	httpClient := coreapi.NewClient(agentCfg.WebMethodConfig.TLS, agentCfg.WebMethodConfig.ProxyURL)
 
-	factory := func(beat.Info, *logp.Logger, beater.StateStore) []v2.Plugin {
-		return []v2.Plugin{}
+	client, err := webmethods.NewClient(agentCfg.WebMethodConfig, httpClient)
+	if err != nil {
+		return nil, err
 	}
-
-	// Initialize the filebeat to read events
-	creator := beater.New(factory)
-	return creator(b, cfg)
+	processor := NewApiEventProcessor(agentCfg, generator)
+	eventChannel := make(chan WebmethodsEvent)
+	emitter := NewWebmethodsEventEmitter(agentCfg.WebMethodConfig.CachePath, agentCfg.WebMethodConfig.PollInterval, eventChannel, client)
+	emitterJob, err := NewMuleEventEmitterJob(emitter, agentCfg.WebMethodConfig.PollInterval, client)
+	if err != nil {
+		return nil, err
+	}
+	return newAgent(processor, emitterJob, eventChannel)
 }
 
-func validateInput(cfg *common.Config) error {
-	filebeatConfig := fbcfg.DefaultConfig
-	err := cfg.Unpack(&filebeatConfig)
+func newAgent(
+	processor Processor,
+	emitter Emitter,
+	eventChannel chan WebmethodsEvent,
+) (*Agent, error) {
+	a := &Agent{
+		doneCh:         make(chan struct{}),
+		eventChannel:   eventChannel,
+		eventProcessor: processor,
+		webmethods:     emitter,
+	}
+
+	// Validate that all necessary services are up and running. If not, return error
+	// if hc.RunChecks() != hc.OK {
+	// 	return nil, agenterrors.ErrInitServicesNotReady
+	// }
+
+	return a, nil
+}
+
+// Run starts the Mulesoft traceability agent.
+func (a *Agent) Run(b *beat.Beat) error {
+	coreagent.OnConfigChange(a.onConfigChange)
+
+	var err error
+	a.client, err = b.Publisher.Connect()
 	if err != nil {
+		coreagent.UpdateStatus(coreagent.AgentFailed, err.Error())
 		return err
 	}
 
-	if len(filebeatConfig.Inputs) == 0 {
-		return errors.New("no inputs configured")
-	}
+	go a.webmethods.Start()
 
-	inputsEnabled := 0
-	for _, input := range filebeatConfig.Inputs {
-		inputConfig := struct {
-			Enabled bool     `config:"enabled"`
-			Paths   []string `config:"paths"`
-		}{}
-		input.Unpack(&inputConfig)
-		if inputConfig.Enabled {
-			inputsEnabled++
-			err = validateInputPaths(inputConfig.Paths)
-			if err != nil {
-				return err
-			}
+	gracefulStop := make(chan os.Signal, 1)
+	signal.Notify(gracefulStop, syscall.SIGTERM, os.Interrupt)
+
+	for {
+		select {
+		case <-a.doneCh:
+			return a.client.Close()
+		case <-gracefulStop:
+			return a.client.Close()
+		case event := <-a.eventChannel:
+			eventsToPublish := a.eventProcessor.ProcessRaw(event)
+			a.client.PublishAll(eventsToPublish)
 		}
 	}
-	return nil
 }
 
-func validateInputPaths(paths []string) error {
-	foundPath := false
-	for _, path := range paths {
-		path = strings.TrimSpace(path)
-		if path != "" {
-			parentDir := filepath.Dir(path)
-			fileInfo, err := os.Stat(parentDir)
-			if err != nil {
-				return err
-			}
-			if !fileInfo.IsDir() {
-				return errors.New("invalid path " + path)
-			}
-			foundPath = true
-		}
-	}
-	if !foundPath {
-		return errors.New("no paths were defined for input processing")
-	}
-	return nil
+// onConfigChange apply configuration changes
+func (a *Agent) onConfigChange() {
+	cfg := config.GetConfig()
+	a.webmethods.OnConfigChange(cfg)
+}
+
+// Stop stops the agent.
+func (a *Agent) Stop() {
+	a.doneCh <- struct{}{}
 }

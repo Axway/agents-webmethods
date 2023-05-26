@@ -15,10 +15,8 @@ import (
 var config *AgentConfig
 
 const (
-	pathPollInterval   = "webmethods.pollInterval"
-	pathFilter         = "webmethods.filter"
-	pathLogFile        = "webmethods.logFile"
-	pathProcessOnInput = "webmethods.processOnInput"
+	pathPollInterval = "webmethods.pollInterval"
+	pathFilter       = "webmethods.filter"
 
 	pathWebmethodsApimUrl = "webmethods.url"
 	pathAuthUsername      = "webmethods.auth.username"
@@ -57,11 +55,9 @@ type WebMethodConfig struct {
 	AgentType              corecfg.AgentType
 	Filter                 string            `config:"filter"`
 	PollInterval           time.Duration     `config:"pollInterval"`
-	LogFile                string            `config:"logFile"`
 	ProcessOnInput         bool              `config:"processOnInput"`
 	CachePath              string            `config:"cachePath"`
 	WebmethodsApimUrl      string            `config:"url"`
-	Environment            string            `config:"environment"`
 	Username               string            `config:"auth.username"`
 	Password               string            `config:"auth.password"`
 	MaturityState          string            `config:"maturityState"`
@@ -101,21 +97,13 @@ func (c *WebMethodConfig) ValidateCfg() (err error) {
 		return fmt.Errorf("invalid  Webmethods APIM cache path: path does not exist: %s", c.CachePath)
 	}
 	c.CachePath = filepath.Clean(c.CachePath)
-
-	if c.AgentType == corecfg.TraceabilityAgent && c.LogFile != "" {
-		if _, err := os.Stat(c.LogFile); os.IsNotExist(err) {
-			return fmt.Errorf("invalid  Webmethods APIM log path: path does not exist: %s", c.LogFile)
-		}
-	}
 	return
 }
 
 // AddConfigProperties - Adds the command properties needed for Webmethods agent
 func AddConfigProperties(props properties.Properties) {
 	props.AddDurationProperty(pathPollInterval, 30*time.Second, "Poll interval for read spec discovery/traffic log")
-	props.AddStringProperty(pathLogFile, "./logs/traffic.log", "Sample log file with traffic event from gateway")
-	props.AddBoolProperty(pathProcessOnInput, true, "Flag to process received event on input or by output before publishing the event by transport")
-	props.AddStringProperty(pathWebmethodsApimUrl, "https://api.webmethod.com", "Webmethods APIM URL.")
+	props.AddStringProperty(pathWebmethodsApimUrl, "", "Webmethods APIM URL.")
 	props.AddStringProperty(pathAuthUsername, "", "Webmethods APIM username.")
 	props.AddStringProperty(pathAuthPassword, "", "Webmethods APIM password.")
 	props.AddStringProperty(pathMaturityState, "Beta", "Webmethods APIM Maturity State.")
@@ -136,8 +124,6 @@ func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentTyp
 		AgentType:              agentType,
 		PollInterval:           props.DurationPropertyValue(pathPollInterval),
 		Filter:                 props.StringPropertyValue(pathFilter),
-		LogFile:                props.StringPropertyValue(pathLogFile),
-		ProcessOnInput:         props.BoolPropertyValue(pathProcessOnInput),
 		WebmethodsApimUrl:      props.StringPropertyValue(pathWebmethodsApimUrl),
 		CachePath:              props.StringPropertyValue(pathCachePath),
 		Password:               props.StringPropertyValue(pathAuthPassword),

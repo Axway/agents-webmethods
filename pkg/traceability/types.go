@@ -83,3 +83,46 @@ type GwTrafficLogEntry struct {
 	ExternalCalls         string
 	SourceGatewayNode     string
 }
+
+type WebmethodsEvent struct {
+	EventType       string      `json:"eventType"`
+	SourceGateway   string      `json:"sourceGateway"`
+	CreationDate    int64       `json:"creationDate"`
+	ApiName         string      `json:"apiName"`
+	ApiVersion      string      `json:"apiVersion"`
+	ApiId           string      `json:"apiId"`
+	TotalTime       int         `json:"totalTime"`
+	SessionId       string      `json:"sessionId"`
+	GatewayTime     int         `json:"gatewayTime"`
+	ApplicationName string      `json:"applicationName"`
+	ApplicationIp   string      `json:"applicationIp"`
+	ApplicationId   string      `json:"applicationId"`
+	Status          string      `json:"status"`
+	ReqPayload      string      `json:"reqPayload"`
+	ResPayload      string      `json:"resPayload"`
+	TotalDataSize   int         `json:"totalDataSize"`
+	ResponseCode    string      `json:"responseCode"`
+	OperationName   string      `json:"operationName"`
+	HTTPMethod      string      `json:"httpMethod"`
+	RequestHeaders  HttpHeaders `json:"requestHeaders"`
+	ResponseHeaders HttpHeaders `json:"responseHeaders"`
+	QueryParameters struct {
+	} `json:"queryParameters"`
+	CorrelationID string `json:"correlationID"`
+	CustomFields  struct {
+	} `json:"customFields"`
+	ErrorOrigin           string      `json:"errorOrigin"`
+	NativeRequestHeaders  HttpHeaders `json:"nativeRequestHeaders"`
+	NativeReqPayload      string      `json:"nativeReqPayload"`
+	NativeResponseHeaders HttpHeaders `json:"nativeResponseHeaders"`
+	NativeResPayload      string      `json:"nativeResPayload"`
+	NativeHTTPMethod      string      `json:"nativeHttpMethod"`
+	NativeURL             string      `json:"nativeURL"`
+	ServerID              string      `json:"serverID"`
+	ExternalCalls         []any       `json:"externalCalls"`
+	SourceGatewayNode     string      `json:"sourceGatewayNode"`
+	CallbackRequest       bool        `json:"callbackRequest"`
+}
+
+type HttpHeaders struct {
+}

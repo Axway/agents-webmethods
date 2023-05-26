@@ -47,13 +47,13 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder $APP_HOME/build/webmethods_traceability_agent.yml /webmethods_traceability_agent.yml
 COPY --from=builder ${APP_HOME}/bin/webmethods_traceability_agent /webmethods_traceability_agent
 
-RUN mkdir /keys /data /events && \
-  chown -R axway /keys /data /events && \
+RUN mkdir /keys /data && \
+  chown -R axway /keys /data && \
   apk --no-cache add openssl libssl libcrypto musl musl-utils libc6-compat busybox curl && \
   find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 
 USER $APP_USER
-VOLUME ["/keys","/events", "/data"]
+VOLUME ["/keys", "/data"]
 HEALTHCHECK --retries=1 CMD curl --fail http://localhost:${STATUS_PORT:-8989}/status || exit 1
 ENTRYPOINT ["/webmethods_traceability_agent"]
