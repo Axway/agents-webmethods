@@ -109,7 +109,6 @@ func (aep *ApiEventProcessor) processMapping(webmethodsEvent WebmethodsEvent) (*
 		return nil, nil, err
 	}
 
-	logrus.Infof("outbound leg %v", transOutboundLogEventLeg)
 	if transOutboundLogEventLeg == nil {
 		return transSummaryLogEvent, []transaction.LogEvent{
 			*transInboundLogEventLeg,
@@ -143,14 +142,14 @@ func (aep *ApiEventProcessor) getTransactionSummaryStatus(statusCode int) transa
 
 func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID string, webmethodsEvent WebmethodsEvent, eventID, parentId, direction string) (*transaction.LogEvent, error) {
 
-	req := map[string]string{
-		"User-AgentName": "test",
-		"Request-ID":     eventID,
-	}
-	res := map[string]string{
+	// req := map[string]string{
+	// 	"User-AgentName": "test",
+	// 	"Request-ID":     eventID,
+	// }
+	// res := map[string]string{
 
-		"Response-Time": "20",
-	}
+	// 	"Response-Time": "20",
+	// }
 
 	httpStatus, _ := strconv.Atoi(webmethodsEvent.ResponseCode)
 	host := webmethodsEvent.ServerID
@@ -161,11 +160,13 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 		port, _ = strconv.Atoi(uris[1])
 	}
 	httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
-		SetByteLength(100, 100).
-		SetRemoteAddress("test", "localhost", 443).
+		SetByteLength(webmethodsEvent.TotalDataSize, webmethodsEvent.TotalDataSize).
+		//SetRemoteAddress("test", "localhost", 443).
 		SetURI(webmethodsEvent.OperationName).
 		SetMethod(webmethodsEvent.HTTPMethod).
-		SetHeaders(buildHeaders(req), buildHeaders(res)).
+		//SetArgs() to setup query string
+		//SetArgsMap() to setup query string
+		//SetHeaders(buildHeaders(req), buildHeaders(res)).
 		SetStatus(httpStatus, http.StatusText(httpStatus)).
 		SetHost(host).
 		SetLocalAddress(host, port).
@@ -174,29 +175,27 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 		return nil, err
 	}
 
+	source := webmethodsEvent.ApplicationName
+
+	if source == "Unknown" {
+		source = Client
+	}
+
 	return transaction.NewTransactionEventBuilder().
 		SetTimestamp(eventTime).
 		SetTransactionID(txID).
 		SetID(eventID).
 		SetParentID(parentId).
-		SetSource(WebmethodsProxy).
-		SetDestination(webmethodsEvent.SourceGatewayNode).
+		SetSource(source).
+		SetDestination(WebmethodsProxy).
 		SetDirection(direction).
 		SetStatus(aep.getTransactionEventStatus(httpStatus)).
 		SetProtocolDetail(httpProtocolDetails).
+		SetDuration(webmethodsEvent.TotalTime).
 		Build()
 }
 
 func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmethodsEvent WebmethodsEvent, eventID, parentId, direction string) (*transaction.LogEvent, error) {
-
-	req := map[string]string{
-		"User-AgentName": "test",
-		"Request-ID":     eventID,
-	}
-	res := map[string]string{
-
-		"Response-Time": "20",
-	}
 	backendCall := webmethodsEvent.ExternalCalls
 	log.Infof("BAckend call - %v", backendCall)
 	if len(backendCall) > 0 {
@@ -221,11 +220,12 @@ func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmet
 		}
 		portInt, _ := strconv.Atoi(port)
 		httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
-			SetByteLength(100, 100).
-			SetRemoteAddress("test", "localhost", 443).
+			SetByteLength(webmethodsEvent.TotalDataSize, webmethodsEvent.TotalDataSize).
+			//SetRemoteAddress("test", "localhost", 443).
 			SetURI(webmethodsEvent.OperationName).
 			SetMethod(webmethodsEvent.HTTPMethod).
-			SetHeaders(buildHeaders(req), buildHeaders(res)).
+			// SetRequestHeaders(req).
+			// SetResponseHeaders(res).
 			SetStatus(httpStatus, http.StatusText(httpStatus)).
 			SetHost(host).
 			SetLocalAddress(host, portInt).
@@ -241,8 +241,8 @@ func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmet
 			SetTransactionID(txID).
 			SetID(eventID).
 			SetParentID(parentId).
-			SetSource(Client).
-			SetDestination(WebmethodsProxy).
+			SetSource(WebmethodsProxy).
+			SetDestination(host).
 			SetDirection(direction).
 			SetDuration(backendCall[0].CallDuration).
 			SetStatus(aep.getTransactionEventStatus(httpStatus)).
