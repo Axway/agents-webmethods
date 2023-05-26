@@ -1,6 +1,7 @@
 package traceability
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -92,11 +93,13 @@ func (aep *ApiEventProcessor) processMapping(webmethodsEvent WebmethodsEvent) (*
 	txEventID := webmethodsEvent.CorrelationID
 	leg0ID := FormatLeg0(txEventID)
 	leg1ID := FormatLeg1(txEventID)
-	transInboundLogEventLeg, err := aep.createTransactionEvent(eventTime, txID, webmethodsEvent, leg0ID, leg1ID, "inbound")
+
+	transInboundLogEventLeg, err := aep.createTransactionEvent(eventTime, txID, webmethodsEvent, leg0ID, "", "Inbound")
 	if err != nil {
 		return nil, nil, err
+
 	}
-	transOutboundLogEventLeg, err := aep.createOutboundTransactionEvent(txID, webmethodsEvent, leg0ID, "", "outbound")
+	transOutboundLogEventLeg, err := aep.createOutboundTransactionEvent(txID, webmethodsEvent, leg1ID, leg0ID, "Outbound")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -140,6 +143,15 @@ func (aep *ApiEventProcessor) getTransactionSummaryStatus(statusCode int) transa
 
 func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID string, webmethodsEvent WebmethodsEvent, eventID, parentId, direction string) (*transaction.LogEvent, error) {
 
+	req := map[string]string{
+		"User-AgentName": "test",
+		"Request-ID":     eventID,
+	}
+	res := map[string]string{
+
+		"Response-Time": "20",
+	}
+
 	httpStatus, _ := strconv.Atoi(webmethodsEvent.ResponseCode)
 	host := webmethodsEvent.ServerID
 	port := 443
@@ -149,8 +161,11 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 		port, _ = strconv.Atoi(uris[1])
 	}
 	httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
+		SetByteLength(100, 100).
+		SetRemoteAddress("test", "localhost", 443).
 		SetURI(webmethodsEvent.OperationName).
 		SetMethod(webmethodsEvent.HTTPMethod).
+		SetHeaders(buildHeaders(req), buildHeaders(res)).
 		SetStatus(httpStatus, http.StatusText(httpStatus)).
 		SetHost(host).
 		SetLocalAddress(host, port).
@@ -165,7 +180,7 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 		SetID(eventID).
 		SetParentID(parentId).
 		SetSource(WebmethodsProxy).
-		SetDirection(webmethodsEvent.SourceGatewayNode).
+		SetDestination(webmethodsEvent.SourceGatewayNode).
 		SetDirection(direction).
 		SetStatus(aep.getTransactionEventStatus(httpStatus)).
 		SetProtocolDetail(httpProtocolDetails).
@@ -174,6 +189,14 @@ func (aep *ApiEventProcessor) createTransactionEvent(eventTime int64, txID strin
 
 func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmethodsEvent WebmethodsEvent, eventID, parentId, direction string) (*transaction.LogEvent, error) {
 
+	req := map[string]string{
+		"User-AgentName": "test",
+		"Request-ID":     eventID,
+	}
+	res := map[string]string{
+
+		"Response-Time": "20",
+	}
 	backendCall := webmethodsEvent.ExternalCalls
 	log.Infof("BAckend call - %v", backendCall)
 	if len(backendCall) > 0 {
@@ -198,8 +221,11 @@ func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmet
 		}
 		portInt, _ := strconv.Atoi(port)
 		httpProtocolDetails, err := transaction.NewHTTPProtocolBuilder().
+			SetByteLength(100, 100).
+			SetRemoteAddress("test", "localhost", 443).
 			SetURI(webmethodsEvent.OperationName).
 			SetMethod(webmethodsEvent.HTTPMethod).
+			SetHeaders(buildHeaders(req), buildHeaders(res)).
 			SetStatus(httpStatus, http.StatusText(httpStatus)).
 			SetHost(host).
 			SetLocalAddress(host, portInt).
@@ -222,7 +248,6 @@ func (aep *ApiEventProcessor) createOutboundTransactionEvent(txID string, webmet
 			SetStatus(aep.getTransactionEventStatus(httpStatus)).
 			SetProtocolDetail(httpProtocolDetails).
 			Build()
-
 	}
 	return nil, nil
 }
@@ -283,4 +308,13 @@ func FormatLeg0(id string) string {
 
 func FormatLeg1(id string) string {
 	return fmt.Sprintf("%s-leg1", id)
+}
+
+func buildHeaders(headers map[string]string) string {
+	jsonHeader, err := json.Marshal(headers)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+	return string(jsonHeader)
 }
