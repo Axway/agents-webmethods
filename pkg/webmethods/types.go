@@ -17,6 +17,10 @@ type ListApi struct {
 	ListApiResponse []ListApiResponse `json:"apiResponse"`
 }
 
+type Apis struct {
+	WebmethodsApi []WebmethodsApi `json:"api"`
+}
+
 type ListApiResponse struct {
 	WebmethodsApi  WebmethodsApi `json:"api"`
 	ResponseStatus string        `json:"responseStatus"`

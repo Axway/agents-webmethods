@@ -5,41 +5,53 @@ import (
 	"os/signal"
 	"syscall"
 
-	coreagent "github.com/Axway/agent-sdk/pkg/agent"
-	"github.com/Axway/agent-sdk/pkg/transaction"
-	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
-	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
-	"github.com/Axway/agents-webmethods/pkg/config"
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
+
+	coreagent "github.com/Axway/agent-sdk/pkg/agent"
+	coreapi "github.com/Axway/agent-sdk/pkg/api"
+	"github.com/Axway/agent-sdk/pkg/transaction"
+	"github.com/Axway/agents-webmethods/pkg/config"
+	localerrors "github.com/Axway/agents-webmethods/pkg/errors"
+	"github.com/Axway/agents-webmethods/pkg/webmethods"
 )
 
-// Agent - Webmethods Beater configuration. Implements the beat.Beater interface.
+// Agent - mulesoft Beater configuration. Implements the beat.Beater interface.
 type Agent struct {
 	client         beat.Client
 	doneCh         chan struct{}
-	eventChannel   chan string
+	eventChannel   chan WebmethodsEvent
 	eventProcessor Processor
 	webmethods     Emitter
 }
 
-// NewBeater creates an instance of webmethods_traceability_agent.
-func NewBeater(_ *beat.Beat, _ *common.Config) (beat.Beater, error) {
-	eventChannel := make(chan string)
-	agentConfig := config.GetConfig()
+func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 
+	agentCfg := config.GetConfig()
+	if agentCfg == nil {
+		return nil, localerrors.ErrConfigFile
+	}
 	generator := transaction.NewEventGenerator()
-	mapper := &EventMapper{}
-	processor := NewEventProcessor(agentConfig, generator, mapper)
-	emitter := NewWebmethodsEventEmitter(agentConfig.WebMethodConfig.LogFile, eventChannel)
+	httpClient := coreapi.NewClient(agentCfg.WebMethodConfig.TLS, agentCfg.WebMethodConfig.ProxyURL)
 
-	return newAgent(processor, emitter, eventChannel)
+	client, err := webmethods.NewClient(agentCfg.WebMethodConfig, httpClient)
+	if err != nil {
+		return nil, err
+	}
+	processor := NewApiEventProcessor(agentCfg, generator)
+	eventChannel := make(chan WebmethodsEvent)
+	emitter := NewWebmethodsEventEmitter(agentCfg.WebMethodConfig.CachePath, agentCfg.WebMethodConfig.PollInterval, eventChannel, client)
+	emitterJob, err := NewMuleEventEmitterJob(emitter, agentCfg.WebMethodConfig.PollInterval, client)
+	if err != nil {
+		return nil, err
+	}
+	return newAgent(processor, emitterJob, eventChannel)
 }
 
 func newAgent(
 	processor Processor,
 	emitter Emitter,
-	eventChannel chan string,
+	eventChannel chan WebmethodsEvent,
 ) (*Agent, error) {
 	a := &Agent{
 		doneCh:         make(chan struct{}),
@@ -49,14 +61,14 @@ func newAgent(
 	}
 
 	// Validate that all necessary services are up and running. If not, return error
-	if hc.RunChecks() != hc.OK {
-		return nil, agenterrors.ErrInitServicesNotReady
-	}
+	// if hc.RunChecks() != hc.OK {
+	// 	return nil, agenterrors.ErrInitServicesNotReady
+	// }
 
 	return a, nil
 }
 
-// Run starts the webmethods traceability agent.
+// Run starts the Mulesoft traceability agent.
 func (a *Agent) Run(b *beat.Beat) error {
 	coreagent.OnConfigChange(a.onConfigChange)
 
@@ -79,7 +91,7 @@ func (a *Agent) Run(b *beat.Beat) error {
 		case <-gracefulStop:
 			return a.client.Close()
 		case event := <-a.eventChannel:
-			eventsToPublish := a.eventProcessor.ProcessRaw([]byte(event))
+			eventsToPublish := a.eventProcessor.ProcessRaw(event)
 			a.client.PublishAll(eventsToPublish)
 		}
 	}
@@ -87,6 +99,8 @@ func (a *Agent) Run(b *beat.Beat) error {
 
 // onConfigChange apply configuration changes
 func (a *Agent) onConfigChange() {
+	cfg := config.GetConfig()
+	a.webmethods.OnConfigChange(cfg)
 }
 
 // Stop stops the agent.

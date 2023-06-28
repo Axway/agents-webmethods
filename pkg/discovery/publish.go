@@ -51,6 +51,7 @@ func (p *publisher) publish(serviceDetail *ServiceDetail) {
 		log.WithError(err).Error("error building service body")
 		return
 	}
+	//serviceBody.CreatedBy = "WebmethodsDiscoveryAgent" - It will be read from  -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=webMethodsDiscoveryAgent'"
 	err = p.publishAPI(serviceBody)
 	if err != nil {
 		log.WithError(err).Error("error publishing to Amplify Central")

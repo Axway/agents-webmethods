@@ -1,0 +1,242 @@
+time="2023-05-15T11:28:25-07:00" level=info message="creating agent resource" component=agentResourceManager kind=DiscoveryAgent name=webmethods-agent package=sdk.agent scope="{ Environment webmethodstest }"
+time="2023-05-15T11:28:27-07:00" level=info message="Available scopes from IDP [local-get local-add profile address phone openid email offline_access device_sso]"
+time="2023-05-15T11:28:34-07:00" level=info message="Starting Webmethods Discovery Agent version -, Amplify Agents SDK version "
+time="2023-05-15T11:28:34-07:00" level=info message="connecting to watch service" component=watchManager host=apicentral.axway.com package=sdk.watchmanager port=443
+time="2023-05-15T11:28:35-07:00" level=info message="registered watch client" component=watchManager id=4d8510be-f34e-11ed-af52-46f345f875ba package=sdk.watchmanager watchtopic=/management/v1alpha1/watchtopics/webmethodstest-discoveryagents
+time="2023-05-15T11:28:40-07:00" level=info message="Starting poller for Webmethods APIM"
+time="2023-05-15T11:30:42-07:00" level=info message="Stopping agent" component=agent package=sdk.agent
+time="2023-05-15T11:31:29-07:00" level=debug message="no password, assuming unencrypted key"
+time="2023-05-15T11:31:31-07:00" level=debug message="Starting interval" component=baseJob job-id=ae3b58f3-cf95-4e7f-8471-94eb32146f8c job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="Starting detached interval" component=baseJob job-id=22a56b6c-fce4-4a15-8f46-56d8a0d4fdea job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="waiting for job to be ready: Access Control List" component=baseJob job-id=ae3b58f3-cf95-4e7f-8471-94eb32146f8c job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="waiting for job to be ready: Periodic Health Check" component=baseJob job-id=22a56b6c-fce4-4a15-8f46-56d8a0d4fdea job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="job is ready" component=baseJob job-id=22a56b6c-fce4-4a15-8f46-56d8a0d4fdea job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="job is ready" component=baseJob job-id=ae3b58f3-cf95-4e7f-8471-94eb32146f8c job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="Starting interval" component=baseJob job-id=9d2b57d0-9326-4317-bbae-5148550522f4 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="waiting for job to be ready: Team Cache" component=baseJob job-id=9d2b57d0-9326-4317-bbae-5148550522f4 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:31:31-07:00" level=debug message="job is ready" component=baseJob job-id=9d2b57d0-9326-4317-bbae-5148550522f4 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:31:32-07:00" level=info message="Available scopes from IDP [local-get local-add profile address phone openid email offline_access device_sso]"
+time="2023-05-15T11:31:35-07:00" level=debug message="executing discovery cache" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function DiscoveryAgent to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function Category to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function APIService to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function APIServiceInstance to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function AccessControlList to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function Credential to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function AccessRequest to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function ManagedApplication to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function CredentialRequestDefinition to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:35-07:00" level=debug message="adding function AccessRequestDefinition to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:37-07:00" level=debug message="cache has been updated" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:31:37-07:00" level=info message="Starting Webmethods Discovery Agent version -, Amplify Agents SDK version "
+time="2023-05-15T11:31:37-07:00" level=debug message="Starting interval" component=baseJob job-id=d341b4be-06bf-4046-abe3-e998facf124a job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="waiting for job to be ready: Central Health Check" component=baseJob job-id=d341b4be-06bf-4046-abe3-e998facf124a job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="job is ready" component=baseJob job-id=d341b4be-06bf-4046-abe3-e998facf124a job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="Starting detached channel" component=baseJob job-id=1312f574-fc70-475d-a73d-5b5055816f0b job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="waiting for job to be ready: Stream Client" component=baseJob job-id=1312f574-fc70-475d-a73d-5b5055816f0b job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="job is ready" component=baseJob job-id=1312f574-fc70-475d-a73d-5b5055816f0b job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="Starting interval" component=baseJob job-id=e9a94265-cceb-4a9e-8dca-fe8d5a3e69cc job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="waiting for job to be ready: API service instance validator" component=baseJob job-id=e9a94265-cceb-4a9e-8dca-fe8d5a3e69cc job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=debug message="job is ready" component=baseJob job-id=e9a94265-cceb-4a9e-8dca-fe8d5a3e69cc job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:31:37-07:00" level=info message="connecting to watch service" component=watchManager host=apicentral.axway.com package=sdk.watchmanager port=443
+time="2023-05-15T11:31:38-07:00" level=debug message="finished client streaming call" grpc.code=OK grpc.duration=450.408167ms grpc.method=subscribe grpc.service=central.events.v1.watch span.kind=client system=grpc
+time="2023-05-15T11:31:38-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217415 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:31:39-07:00" level=info message="registered watch client" component=watchManager id=ba95d620-f34e-11ed-8880-46f345f875ba package=sdk.watchmanager watchtopic=/management/v1alpha1/watchtopics/webmethodstest-discoveryagents
+time="2023-05-15T11:31:43-07:00" level=debug message="Starting interval" component=baseJob job-id=418b6ef0-0545-4f2d-bbe0-f9856dd0977b job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:31:43-07:00" level=debug message="Starting detached interval" component=baseJob job-id=0983bd62-a0f6-48c1-88e4-e250ecaff644 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:31:43-07:00" level=debug message="waiting for job to be ready: Status Update" component=baseJob job-id=418b6ef0-0545-4f2d-bbe0-f9856dd0977b job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:31:43-07:00" level=debug message="waiting for job to be ready: Immediate Status Update" component=baseJob job-id=0983bd62-a0f6-48c1-88e4-e250ecaff644 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:31:43-07:00" level=debug message="job is ready" component=baseJob job-id=418b6ef0-0545-4f2d-bbe0-f9856dd0977b job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:31:43-07:00" level=debug message="job is ready" component=baseJob job-id=0983bd62-a0f6-48c1-88e4-e250ecaff644 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:31:43-07:00" level=debug message="periodic status change -- Last activity updated" component=agentStatusUpdate new-status=running new-status-detail="" package=sdk.agent previous-status="" previous-status-detail="" status-check="periodic status change" status-update-id=bd78cc58-f34e-11ed-8880-46f345f875ba
+time="2023-05-15T11:31:43-07:00" level=info message="Starting poller for Webmethods APIM"
+time="2023-05-15T11:31:44-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217462 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:32:52-07:00" level=debug message="stopping discovery loop"
+time="2023-05-15T11:32:52-07:00" level=info message="Stopping agent" component=agent package=sdk.agent
+time="2023-05-15T11:32:52-07:00" level=debug message="stopping publish listener"
+time="2023-05-15T11:32:52-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217519 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:33:56-07:00" level=debug message="no password, assuming unencrypted key"
+time="2023-05-15T11:33:58-07:00" level=debug message="Starting interval" component=baseJob job-id=e8e651fe-bde5-4ae3-8e1e-e10ccdc5f347 job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:33:58-07:00" level=debug message="Starting detached interval" component=baseJob job-id=fa339a34-e68b-4154-8de7-81379fa8517a job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="waiting for job to be ready: Access Control List" component=baseJob job-id=e8e651fe-bde5-4ae3-8e1e-e10ccdc5f347 job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="waiting for job to be ready: Periodic Health Check" component=baseJob job-id=fa339a34-e68b-4154-8de7-81379fa8517a job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="job is ready" component=baseJob job-id=fa339a34-e68b-4154-8de7-81379fa8517a job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="job is ready" component=baseJob job-id=e8e651fe-bde5-4ae3-8e1e-e10ccdc5f347 job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="Starting interval" component=baseJob job-id=1e654590-d701-448c-b658-7d0b64227bb5 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="waiting for job to be ready: Team Cache" component=baseJob job-id=1e654590-d701-448c-b658-7d0b64227bb5 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:33:59-07:00" level=debug message="job is ready" component=baseJob job-id=1e654590-d701-448c-b658-7d0b64227bb5 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:34:00-07:00" level=info message="Available scopes from IDP [local-get local-add profile address phone openid email offline_access device_sso]"
+time="2023-05-15T11:34:03-07:00" level=debug message="executing discovery cache" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function DiscoveryAgent to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function Category to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function APIService to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function APIServiceInstance to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function AccessControlList to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function Credential to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function AccessRequest to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function ManagedApplication to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function CredentialRequestDefinition to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:03-07:00" level=debug message="adding function AccessRequestDefinition to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:05-07:00" level=debug message="cache has been updated" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:34:05-07:00" level=info message="Starting Webmethods Discovery Agent version -, Amplify Agents SDK version "
+time="2023-05-15T11:34:05-07:00" level=debug message="Starting interval" component=baseJob job-id=fa560307-7028-4278-85a0-d50c66579857 job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="waiting for job to be ready: API service instance validator" component=baseJob job-id=fa560307-7028-4278-85a0-d50c66579857 job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="job is ready" component=baseJob job-id=fa560307-7028-4278-85a0-d50c66579857 job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="Starting detached channel" component=baseJob job-id=82fc610e-7039-4730-8cff-67c91427af2e job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="waiting for job to be ready: Stream Client" component=baseJob job-id=82fc610e-7039-4730-8cff-67c91427af2e job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="job is ready" component=baseJob job-id=82fc610e-7039-4730-8cff-67c91427af2e job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="Starting interval" component=baseJob job-id=fd87892d-8051-4634-9a1c-69f36506f6a4 job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="waiting for job to be ready: Central Health Check" component=baseJob job-id=fd87892d-8051-4634-9a1c-69f36506f6a4 job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=debug message="job is ready" component=baseJob job-id=fd87892d-8051-4634-9a1c-69f36506f6a4 job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:34:05-07:00" level=info message="connecting to watch service" component=watchManager host=apicentral.axway.com package=sdk.watchmanager port=443
+time="2023-05-15T11:34:05-07:00" level=debug message="finished client streaming call" grpc.code=OK grpc.duration=430.336542ms grpc.method=subscribe grpc.service=central.events.v1.watch span.kind=client system=grpc
+time="2023-05-15T11:34:05-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217520 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:34:06-07:00" level=info message="registered watch client" component=watchManager id=127064be-f34f-11ed-b50c-46f345f875ba package=sdk.watchmanager watchtopic=/management/v1alpha1/watchtopics/webmethodstest-discoveryagents
+time="2023-05-15T11:34:10-07:00" level=debug message="Starting interval" component=baseJob job-id=66e443cc-1f9c-4c70-b848-d49cd499a8ef job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:34:10-07:00" level=debug message="Starting detached interval" component=baseJob job-id=6429130d-b6b0-40e6-9fda-6341e2a09b32 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:34:10-07:00" level=debug message="waiting for job to be ready: Immediate Status Update" component=baseJob job-id=6429130d-b6b0-40e6-9fda-6341e2a09b32 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:34:10-07:00" level=debug message="waiting for job to be ready: Status Update" component=baseJob job-id=66e443cc-1f9c-4c70-b848-d49cd499a8ef job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:34:10-07:00" level=debug message="job is ready" component=baseJob job-id=6429130d-b6b0-40e6-9fda-6341e2a09b32 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:34:10-07:00" level=debug message="job is ready" component=baseJob job-id=66e443cc-1f9c-4c70-b848-d49cd499a8ef job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:34:10-07:00" level=debug message="periodic status change -- Last activity updated" component=agentStatusUpdate new-status=running new-status-detail="" package=sdk.agent previous-status="" previous-status-detail="" status-check="periodic status change" status-update-id=15500b76-f34f-11ed-b50c-46f345f875ba
+time="2023-05-15T11:34:10-07:00" level=info message="&{[]}"
+time="2023-05-15T11:34:10-07:00" level=info message="Starting poller for Webmethods APIM"
+time="2023-05-15T11:34:11-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217579 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:34:33-07:00" level=debug message="stopping discovery loop"
+time="2023-05-15T11:34:33-07:00" level=info message="Stopping agent" component=agent package=sdk.agent
+time="2023-05-15T11:34:33-07:00" level=debug message="stopping publish listener"
+time="2023-05-15T11:34:34-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217597 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:35:56-07:00" level=debug message="no password, assuming unencrypted key"
+time="2023-05-15T11:35:59-07:00" level=debug message="Starting detached interval" component=baseJob job-id=c736b63b-7bc6-4750-8dd8-c1c79c952d90 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="Starting interval" component=baseJob job-id=cd380693-7bd6-4c57-be26-de818c71e99d job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="waiting for job to be ready: Periodic Health Check" component=baseJob job-id=c736b63b-7bc6-4750-8dd8-c1c79c952d90 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="job is ready" component=baseJob job-id=c736b63b-7bc6-4750-8dd8-c1c79c952d90 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="waiting for job to be ready: Access Control List" component=baseJob job-id=cd380693-7bd6-4c57-be26-de818c71e99d job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="job is ready" component=baseJob job-id=cd380693-7bd6-4c57-be26-de818c71e99d job-name="Access Control List" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="Starting interval" component=baseJob job-id=cd036dbd-f15a-48c0-946f-d789cefb6ec6 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="waiting for job to be ready: Team Cache" component=baseJob job-id=cd036dbd-f15a-48c0-946f-d789cefb6ec6 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:35:59-07:00" level=debug message="job is ready" component=baseJob job-id=cd036dbd-f15a-48c0-946f-d789cefb6ec6 job-name="Team Cache" package=sdk.jobs
+time="2023-05-15T11:36:00-07:00" level=info message="Available scopes from IDP [local-get local-add profile address phone openid email offline_access device_sso]"
+time="2023-05-15T11:36:03-07:00" level=debug message="executing discovery cache" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function DiscoveryAgent to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function Category to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function APIService to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function APIServiceInstance to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function AccessControlList to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function Credential to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function AccessRequest to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function ManagedApplication to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function CredentialRequestDefinition to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:03-07:00" level=debug message="adding function AccessRequestDefinition to be executed" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:05-07:00" level=debug message="cache has been updated" component=discoveryCache package=sdk.agent
+time="2023-05-15T11:36:05-07:00" level=info message="Starting Webmethods Discovery Agent version -, Amplify Agents SDK version "
+time="2023-05-15T11:36:05-07:00" level=debug message="Starting interval" component=baseJob job-id=b6cd53c1-8759-4f85-a8e5-0d723bed5a04 job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="waiting for job to be ready: Central Health Check" component=baseJob job-id=b6cd53c1-8759-4f85-a8e5-0d723bed5a04 job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="job is ready" component=baseJob job-id=b6cd53c1-8759-4f85-a8e5-0d723bed5a04 job-name="Central Health Check" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="Starting interval" component=baseJob job-id=14058fc9-5897-4319-b319-1093f450549c job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="waiting for job to be ready: API service instance validator" component=baseJob job-id=14058fc9-5897-4319-b319-1093f450549c job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="job is ready" component=baseJob job-id=14058fc9-5897-4319-b319-1093f450549c job-name="API service instance validator" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="Starting detached channel" component=baseJob job-id=9738f4f5-4add-4120-81d8-c78e9342adb1 job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="waiting for job to be ready: Stream Client" component=baseJob job-id=9738f4f5-4add-4120-81d8-c78e9342adb1 job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=debug message="job is ready" component=baseJob job-id=9738f4f5-4add-4120-81d8-c78e9342adb1 job-name="Stream Client" package=sdk.jobs
+time="2023-05-15T11:36:05-07:00" level=info message="connecting to watch service" component=watchManager host=apicentral.axway.com package=sdk.watchmanager port=443
+time="2023-05-15T11:36:05-07:00" level=debug message="finished client streaming call" grpc.code=OK grpc.duration=405.090667ms grpc.method=subscribe grpc.service=central.events.v1.watch span.kind=client system=grpc
+time="2023-05-15T11:36:06-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217598 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:07-07:00" level=info message="registered watch client" component=watchManager id=5a219a30-f34f-11ed-975f-46f345f875ba package=sdk.watchmanager watchtopic=/management/v1alpha1/watchtopics/webmethodstest-discoveryagents
+time="2023-05-15T11:36:10-07:00" level=debug message="Starting detached interval" component=baseJob job-id=c302240b-114f-4c92-9705-b414a3089041 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:36:10-07:00" level=debug message="waiting for job to be ready: Immediate Status Update" component=baseJob job-id=c302240b-114f-4c92-9705-b414a3089041 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:36:10-07:00" level=debug message="job is ready" component=baseJob job-id=c302240b-114f-4c92-9705-b414a3089041 job-name="Immediate Status Update" package=sdk.jobs
+time="2023-05-15T11:36:10-07:00" level=debug message="Starting interval" component=baseJob job-id=421915d1-31c5-419a-8ad3-c3d68983a996 job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:36:10-07:00" level=debug message="status is changing" component=agentStatusUpdate new-status=running new-status-detail="" package=sdk.agent previous-status="" previous-status-detail="" status-check="immediate status change" status-update-id=5d04ca60-f34f-11ed-975f-46f345f875ba
+time="2023-05-15T11:36:10-07:00" level=debug message="waiting for job to be ready: Status Update" component=baseJob job-id=421915d1-31c5-419a-8ad3-c3d68983a996 job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:36:10-07:00" level=debug message="job is ready" component=baseJob job-id=421915d1-31c5-419a-8ad3-c3d68983a996 job-name="Status Update" package=sdk.jobs
+time="2023-05-15T11:36:11-07:00" level=info message="&{[{Calculator 1  true SOAP false [] 1 1178fcb2-faae-4fe4-94fa-f5efb0316285} {petstore 1.0.17 This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!\nYou can now help us improve the API whether it's by making changes to the definition itself or to the code.\nThat way, with time, we can improve the API in general, and expose some of the new features in OAS3.\n\nSome useful links:\n- [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)\n- [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml) true REST false [f03df5ce-9542-4161-ad49-c6c76f08f8ee] 1 2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2} {TODO 1.0  true REST false [] 1 41d41c3b-6675-454e-80c4-a4af3d6b517f} {watchlist 1.0 Stock Watch List API true REST false [] 1 9bf61a62-20f7-47f5-bd10-806d98330622}]}"
+time="2023-05-15T11:36:11-07:00" level=info message="Starting poller for Webmethods APIM"
+time="2023-05-15T11:36:11-07:00" level=debug message="periodic status change -- Last activity updated" component=agentStatusUpdate new-status=running new-status-detail="" package=sdk.agent previous-status=running previous-status-detail="" status-check="periodic status change" status-update-id=5d05bff6-f34f-11ed-975f-46f345f875ba
+time="2023-05-15T11:36:11-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217685 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:12-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217688 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:13-07:00" level=info message="Processing Spec type :wsdl" id=1178fcb2-faae-4fe4-94fa-f5efb0316285 name=Calculator
+time="2023-05-15T11:36:13-07:00" level=info message="Ignoring authentication" id=1178fcb2-faae-4fe4-94fa-f5efb0316285 name=Calculator
+time="2023-05-15T11:36:13-07:00" level=info message="Publishing to Amplify Central" id=1178fcb2-faae-4fe4-94fa-f5efb0316285 name=Calculator stage="" version=1
+time="2023-05-15T11:36:13-07:00" level=info message="Processing Spec type :oas3" id=41d41c3b-6675-454e-80c4-a4af3d6b517f name=TODO
+time="2023-05-15T11:36:13-07:00" level=info message="Processing Spec type :oas3" id=9bf61a62-20f7-47f5-bd10-806d98330622 name=watchlist
+time="2023-05-15T11:36:13-07:00" level=info message="API Authentication Type verify-oauth-token" id=41d41c3b-6675-454e-80c4-a4af3d6b517f name=TODO
+time="2023-05-15T11:36:13-07:00" level=info message="API Authentication Type verify-oauth-token" id=9bf61a62-20f7-47f5-bd10-806d98330622 name=watchlist
+time="2023-05-15T11:36:13-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=calculator package=sdk.agent.events sequence=16217690 type=CREATED
+time="2023-05-15T11:36:13-07:00" level=info message="Processing Spec type :oas3" id=2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2 name=petstore
+time="2023-05-15T11:36:13-07:00" level=info message="API Authentication Type verify-api-key" id=2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2 name=petstore
+time="2023-05-15T11:36:13-07:00" level=info message="Creating API Service revision for Calculator-1 in environment webmethodstest"
+time="2023-05-15T11:36:14-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=calculator package=sdk.agent.events sequence=16217691 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:14-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=calculator package=sdk.agent.events sequence=16217692 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:15-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=calculator package=sdk.agent.events sequence=16217693 type=CREATED
+time="2023-05-15T11:36:15-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=calculator package=sdk.agent.events sequence=16217694 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:16-07:00" level=info message="Published API Calculator-1 in environment webmethodstest"
+time="2023-05-15T11:36:16-07:00" level=info message="Published API to Amplify Central" id=1178fcb2-faae-4fe4-94fa-f5efb0316285 name=Calculator stage="" version=1
+time="2023-05-15T11:36:16-07:00" level=info message="Publishing to Amplify Central" id=41d41c3b-6675-454e-80c4-a4af3d6b517f name=TODO stage="" version=1.0
+time="2023-05-15T11:36:16-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=calculator package=sdk.agent.events sequence=16217695 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:16-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=calculator package=sdk.agent.events sequence=16217698 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:17-07:00" level=debug message="processing watch event" component=EventListener kind=AccessRequestDefinition name=4504407274164797012 package=sdk.agent.events sequence=16217700 type=CREATED
+time="2023-05-15T11:36:17-07:00" level=debug message="Error while retrieving ResourceInstance: [Error Code 1120] - error making a request to Amplify: status - 400, title - Validation error, detail - 'query' parameter 'metadata.references.id==' is not a valid rsql filter."
+time="2023-05-15T11:36:17-07:00" level=debug message="processing watch event" component=EventListener kind=AccessRequestDefinition name=4504407274164797012 package=sdk.agent.events sequence=16217702 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:18-07:00" level=debug message="updated x-agent-details with marketplace-migration: completed"
+time="2023-05-15T11:36:18-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=todo package=sdk.agent.events sequence=16217705 type=CREATED
+time="2023-05-15T11:36:19-07:00" level=info message="Creating API Service revision for TODO-1.0 in environment webmethodstest"
+time="2023-05-15T11:36:19-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=todo package=sdk.agent.events sequence=16217706 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:19-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=todo package=sdk.agent.events sequence=16217707 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:20-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=todo package=sdk.agent.events sequence=16217708 type=CREATED
+time="2023-05-15T11:36:21-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=todo package=sdk.agent.events sequence=16217709 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:21-07:00" level=info message="Published API TODO-1.0 in environment webmethodstest"
+time="2023-05-15T11:36:21-07:00" level=info message="Published API to Amplify Central" id=41d41c3b-6675-454e-80c4-a4af3d6b517f name=TODO stage="" version=1.0
+time="2023-05-15T11:36:21-07:00" level=info message="Publishing to Amplify Central" id=9bf61a62-20f7-47f5-bd10-806d98330622 name=watchlist stage="" version=1.0
+time="2023-05-15T11:36:21-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=todo package=sdk.agent.events sequence=16217710 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:22-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=todo package=sdk.agent.events sequence=16217711 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:22-07:00" level=info message="Creating API Service revision for watchlist-1.0 in environment webmethodstest"
+time="2023-05-15T11:36:22-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=watchlist package=sdk.agent.events sequence=16217712 type=CREATED
+time="2023-05-15T11:36:22-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=watchlist package=sdk.agent.events sequence=16217713 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:23-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=watchlist package=sdk.agent.events sequence=16217715 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:23-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=watchlist package=sdk.agent.events sequence=16217718 type=CREATED
+time="2023-05-15T11:36:24-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=watchlist package=sdk.agent.events sequence=16217719 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:24-07:00" level=info message="Published API watchlist-1.0 in environment webmethodstest"
+time="2023-05-15T11:36:24-07:00" level=info message="Published API to Amplify Central" id=9bf61a62-20f7-47f5-bd10-806d98330622 name=watchlist stage="" version=1.0
+time="2023-05-15T11:36:24-07:00" level=info message="Publishing to Amplify Central" id=2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2 name=petstore stage="" version=1.0.17
+time="2023-05-15T11:36:24-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=watchlist package=sdk.agent.events sequence=16217722 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:25-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=watchlist package=sdk.agent.events sequence=16217723 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:25-07:00" level=info message="Creating API Service revision for petstore-1.0.17 in environment webmethodstest"
+time="2023-05-15T11:36:25-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=petstore package=sdk.agent.events sequence=16217724 type=CREATED
+time="2023-05-15T11:36:26-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=petstore package=sdk.agent.events sequence=16217726 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:26-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=petstore package=sdk.agent.events sequence=16217727 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:27-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=petstore package=sdk.agent.events sequence=16217728 type=CREATED
+time="2023-05-15T11:36:27-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=petstore package=sdk.agent.events sequence=16217729 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:28-07:00" level=info message="Published API petstore-1.0.17 in environment webmethodstest"
+time="2023-05-15T11:36:28-07:00" level=info message="Published API to Amplify Central" id=2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2 name=petstore stage="" version=1.0.17
+time="2023-05-15T11:36:28-07:00" level=debug message="processing watch event" component=EventListener kind=APIServiceInstance name=petstore package=sdk.agent.events sequence=16217730 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:28-07:00" level=debug message="processing watch event" component=EventListener kind=APIService name=petstore package=sdk.agent.events sequence=16217731 type=SUBRESOURCEUPDATED
+time="2023-05-15T11:36:41-07:00" level=info message="&{[{Calculator 1  true SOAP false [] 1 1178fcb2-faae-4fe4-94fa-f5efb0316285} {petstore 1.0.17 This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!\nYou can now help us improve the API whether it's by making changes to the definition itself or to the code.\nThat way, with time, we can improve the API in general, and expose some of the new features in OAS3.\n\nSome useful links:\n- [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)\n- [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml) true REST false [f03df5ce-9542-4161-ad49-c6c76f08f8ee] 1 2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2} {TODO 1.0  true REST false [] 1 41d41c3b-6675-454e-80c4-a4af3d6b517f} {watchlist 1.0 Stock Watch List API true REST false [] 1 9bf61a62-20f7-47f5-bd10-806d98330622}]}"
+time="2023-05-15T11:36:42-07:00" level=debug message="api is already published" id=1178fcb2-faae-4fe4-94fa-f5efb0316285 name=Calculator
+time="2023-05-15T11:36:42-07:00" level=debug message="api is already published" id=41d41c3b-6675-454e-80c4-a4af3d6b517f name=TODO
+time="2023-05-15T11:36:42-07:00" level=debug message="api is already published" id=9bf61a62-20f7-47f5-bd10-806d98330622 name=watchlist
+time="2023-05-15T11:36:43-07:00" level=debug message="api is already published" id=2b598e47-3e0c-4b0f-8a72-da7fdf6c5ea2 name=petstore
+time="2023-05-15T11:36:53-07:00" level=debug message="stopping discovery loop"
+time="2023-05-15T11:36:53-07:00" level=debug message="stopping publish listener"
+time="2023-05-15T11:36:53-07:00" level=info message="Stopping agent" component=agent package=sdk.agent
+time="2023-05-15T11:36:53-07:00" level=debug message="processing watch event" component=EventListener kind=DiscoveryAgent name=webmethods-agent package=sdk.agent.events sequence=16217752 type=SUBRESOURCEUPDATED
+time="2023-05-24T14:58:37-07:00" level=debug message="no password, assuming unencrypted key"
+time="2023-05-24T14:58:40-07:00" level=debug message="Starting interval" component=baseJob job-id=91b30ea3-f234-4b4b-b191-464a353c782d job-name="Access Control List" package=sdk.jobs
+time="2023-05-24T14:58:40-07:00" level=debug message="Starting detached interval" component=baseJob job-id=64fdf485-2054-4e41-8037-4a0471f70d15 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-24T14:58:40-07:00" level=debug message="waiting for job to be ready: Access Control List" component=baseJob job-id=91b30ea3-f234-4b4b-b191-464a353c782d job-name="Access Control List" package=sdk.jobs
+time="2023-05-24T14:58:40-07:00" level=debug message="waiting for job to be ready: Periodic Health Check" component=baseJob job-id=64fdf485-2054-4e41-8037-4a0471f70d15 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-24T14:58:40-07:00" level=debug message="job is ready" component=baseJob job-id=64fdf485-2054-4e41-8037-4a0471f70d15 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-24T14:58:40-07:00" level=debug message="job is ready" component=baseJob job-id=91b30ea3-f234-4b4b-b191-464a353c782d job-name="Access Control List" package=sdk.jobs
+time="2023-05-24T14:58:41-07:00" level=debug message="Starting interval" component=baseJob job-id=df34cc10-3bff-477a-832a-1c89f26b6daa job-name="Team Cache" package=sdk.jobs
+time="2023-05-24T14:58:41-07:00" level=debug message="waiting for job to be ready: Team Cache" component=baseJob job-id=df34cc10-3bff-477a-832a-1c89f26b6daa job-name="Team Cache" package=sdk.jobs
+time="2023-05-24T14:58:41-07:00" level=debug message="job is ready" component=baseJob job-id=df34cc10-3bff-477a-832a-1c89f26b6daa job-name="Team Cache" package=sdk.jobs
+time="2023-05-24T14:59:34-07:00" level=debug message="no password, assuming unencrypted key"
+time="2023-05-24T14:59:37-07:00" level=debug message="Starting detached interval" component=baseJob job-id=488f57c9-70f6-49f4-b334-627bc8316fc6 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="waiting for job to be ready: Periodic Health Check" component=baseJob job-id=488f57c9-70f6-49f4-b334-627bc8316fc6 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="job is ready" component=baseJob job-id=488f57c9-70f6-49f4-b334-627bc8316fc6 job-name="Periodic Health Check" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="Starting interval" component=baseJob job-id=14f7f2ee-220c-48ad-893d-65265dd63b48 job-name="Access Control List" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="waiting for job to be ready: Access Control List" component=baseJob job-id=14f7f2ee-220c-48ad-893d-65265dd63b48 job-name="Access Control List" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="job is ready" component=baseJob job-id=14f7f2ee-220c-48ad-893d-65265dd63b48 job-name="Access Control List" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="Starting interval" component=baseJob job-id=38daf0d7-8933-4eba-beef-c0bea96fa2db job-name="Team Cache" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="waiting for job to be ready: Team Cache" component=baseJob job-id=38daf0d7-8933-4eba-beef-c0bea96fa2db job-name="Team Cache" package=sdk.jobs
+time="2023-05-24T14:59:37-07:00" level=debug message="job is ready" component=baseJob job-id=38daf0d7-8933-4eba-beef-c0bea96fa2db job-name="Team Cache" package=sdk.jobs
