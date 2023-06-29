@@ -2,6 +2,10 @@
 
 WORKSPACE ?= $$(pwd)
 GO_PKG_LIST := $(shell go list ./...)
+SDK_VERSION := $(shell go list -m github.com/Axway/agent-sdk | cut -d ' ' -f 2 | cut -c 2-)
+VERSION := $(shell git tag -l --sort="version:refname" | grep -Eo "[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,3}" | tail -1)
+COMMIT_ID := $(shell git rev-parse --short HEAD)
+
 export GOFLAGS := -mod=mod
 export GOPRIVATE := git.ecd.axway.org
 

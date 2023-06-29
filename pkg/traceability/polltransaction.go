@@ -127,12 +127,10 @@ func (we *WebmethodsEventEmitter) Start() error {
 	}
 	// Add 1 second to the last time stamp if we found records from this pull.
 	// This will prevent duplicate records from being retrieved
-	if len(events) > 0 {
-		we.saveLastRun(lastTime.Add(time.Second * 1).Format(dateFormat))
-	}
+	we.saveLastRun(lastTime.Add(time.Second * 1).Format(dateFormat))
 	return nil
-
 }
+
 func (we *WebmethodsEventEmitter) getLastRun() (string, string) {
 	tStamp, _ := we.cache.Get(CacheKeyTimeStamp)
 	//tNow := fmt.Sprintf("%d-%02d-%d %d:%d:%d", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute(), now.Second())
