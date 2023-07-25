@@ -1,8 +1,6 @@
 # Build image
 # golang:1.20.6-alpine3.18 linux/amd64 
 FROM docker.io/golang@sha256:6f592e0689192b7e477313264bb190024d654ef0a08fb1732af4f4b498a2e8ad AS builder
- AS builder
-
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 ENV AGENT=${APP_HOME}/cmd/traceability
