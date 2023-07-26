@@ -34,13 +34,13 @@ jobs:
           images: ghcr.io/${{ env.ORG_NAME }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: build/discovery.Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.tags }}
-            COMMMIT_ID=${{ env.commitId }}
+          build-args:
+              VERSION=${{ github.ref_name }}
+              COMMMIT_ID=${{ env.commitId }}
