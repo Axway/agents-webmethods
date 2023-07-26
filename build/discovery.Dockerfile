@@ -2,6 +2,9 @@
 # golang:6-alpine3.18 linux/amd64 
 FROM docker.io/golang@sha256:6f592e0689192b7e477313264bb190024d654ef0a08fb1732af4f4b498a2e8ad AS builder
 
+ARG VERSION
+ARG COMMIT_ID
+
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 ENV AGENT=${APP_HOME}/cmd/discovery
@@ -14,8 +17,8 @@ WORKDIR $APP_HOME
 COPY . .
 
 RUN export time=`date +%Y%m%d%H%M%S` && \
-  export commit_id=`git rev-parse --short HEAD` && \
-  export version=`git tag -l --sort='version:refname' | grep -Eo '[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,3}$' | tail -1` && \
+  export commit_id=${COMMIT_ID} && \
+  export version=${VERSION} && \
   export sdk_version=`go list -m github.com/Axway/agent-sdk | awk '{print $2}' | awk -F'-' '{print substr($1, 2)}'` && \
   export GOOS=linux && \
   export CGO_ENABLED=0 && \
