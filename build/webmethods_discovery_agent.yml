@@ -1,3 +1,6 @@
+agentFeatures:
+  versionChecker: false
+  marketplaceProvisioning: true
 central:
   agentName:
   organizationID:
