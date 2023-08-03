@@ -6,7 +6,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/Axway/agent-sdk/pkg/util/log"
+	"io"
 	"time"
 
 	"github.com/Axway/agent-sdk/pkg/cache"
@@ -18,7 +19,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
-	"github.com/Axway/agent-sdk/pkg/util/log"
 )
 
 const (
@@ -38,11 +38,12 @@ type healthChecker func(name, endpoint string, check hc.CheckStatus) (string, er
 
 // WebmethodsEventEmitter - Gathers analytics data for publishing to Central.
 type WebmethodsEventEmitter struct {
-	client       webmethods.Client
-	eventChannel chan WebmethodsEvent
-	pollInterval time.Duration
-	cache        cache.Cache
-	cachePath    string
+	client           webmethods.Client
+	eventChannel     chan WebmethodsEvent
+	pollInterval     time.Duration
+	cache            cache.Cache
+	cachePath        string
+	timezoneLocation time.Location
 }
 
 // WebmethodsEmitterJob wraps an Emitter and implements the Job interface so that it can be executed by the sdk.
@@ -55,15 +56,16 @@ type WebmethodsEmitterJob struct {
 }
 
 // NewWebmethodsEventEmitter - Creates a client to poll for events.
-func NewWebmethodsEventEmitter(cachePath string, pollInterval time.Duration, eventChannel chan WebmethodsEvent, client webmethods.Client) *WebmethodsEventEmitter {
-	me := &WebmethodsEventEmitter{
-		eventChannel: eventChannel,
-		client:       client,
-		pollInterval: pollInterval,
+func NewWebmethodsEventEmitter(cachePath string, pollInterval time.Duration, eventChannel chan WebmethodsEvent, client webmethods.Client, timezoneLocation time.Location) *WebmethodsEventEmitter {
+	we := &WebmethodsEventEmitter{
+		eventChannel:     eventChannel,
+		client:           client,
+		pollInterval:     pollInterval,
+		timezoneLocation: timezoneLocation,
 	}
-	me.cachePath = formatCachePath(cachePath)
-	me.cache = cache.Load(me.cachePath)
-	return me
+	we.cachePath = formatCachePath(cachePath)
+	we.cache = cache.Load(we.cachePath)
+	return we
 }
 
 func (we *WebmethodsEventEmitter) unzipFile(body []byte) ([]byte, error) {
@@ -89,13 +91,19 @@ func readZipFile(zf *zip.File) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	return ioutil.ReadAll(f)
+	defer func(f io.ReadCloser) {
+		err := f.Close()
+		if err != nil {
+			fmt.Printf("Error closing zip file %s", err)
+		}
+	}(f)
+	return io.ReadAll(f)
 }
 
-// Start retrieves analytics data from anypoint and sends them on the event channel for processing.
+// Start retrieves analytics data from webmethods and sends them on the event channel for processing.
 func (we *WebmethodsEventEmitter) Start() error {
 	strStartTime, strEndTime := we.getLastRun()
+	logrus.Infof("Start time : %s End time :%s", strStartTime, strEndTime)
 	data, err := we.client.GetTransactionsWindow(strStartTime, strEndTime)
 	eventsBytes, err := we.unzipFile(data)
 
@@ -114,7 +122,6 @@ func (we *WebmethodsEventEmitter) Start() error {
 		events = append(events, *event)
 	}
 	logrus.Infof("Total number of events retrieved  from Webmethods : %d", len(events))
-	lastTime, err := time.Parse(dateFormat, strEndTime)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"strStartTime": strStartTime}).Warn("Unable to Parse Last Time")
 	}
@@ -125,9 +132,7 @@ func (we *WebmethodsEventEmitter) Start() error {
 		}
 		we.eventChannel <- event
 	}
-	// Add 1 second to the last time stamp if we found records from this pull.
-	// This will prevent duplicate records from being retrieved
-	we.saveLastRun(lastTime.Add(time.Second * 1).Format(dateFormat))
+	we.saveLastRun(strEndTime)
 	return nil
 }
 
@@ -136,30 +141,34 @@ func (we *WebmethodsEventEmitter) getLastRun() (string, string) {
 	//tNow := fmt.Sprintf("%d-%02d-%d %d:%d:%d", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute(), now.Second())
 	//tNow := now.Format(dateFormat)
 	var tNow string
+	now := time.Now()
+	now = now.In(&we.timezoneLocation)
 	if tStamp == nil {
-		now := time.Now()
-		endTime := now.Add(we.pollInterval).Format(dateFormat)
-		we.saveLastRun(endTime)
-		tStamp = now.Format(dateFormat)
-		tNow = endTime
+		tStamp = now.Add(-time.Second * 30).Format(dateFormat)
+		tNow = now.Format(dateFormat)
 	} else {
-		lastTime, err := time.Parse(dateFormat, tStamp.(string))
-		if err != nil {
-			logrus.WithFields(logrus.Fields{"cacheLastTime": lastTime}).Warn("Unable to Parse Last Time")
-		}
-		tNow = lastTime.Add(we.pollInterval).Format(dateFormat)
+		tNow = now.Format(dateFormat)
 	}
 	return tStamp.(string), tNow
 }
 func (we *WebmethodsEventEmitter) saveLastRun(lastTime string) {
-	we.cache.Set(CacheKeyTimeStamp, lastTime)
-	we.cache.Save(we.cachePath)
+	err := we.cache.Set(CacheKeyTimeStamp, lastTime)
+	if err != nil {
+		log.Error("Failed to set value to cache")
+	}
+	err = we.cache.Save(we.cachePath)
+	if err != nil {
+		log.Error("Failed to save value to cache")
+	}
 }
 
 // OnConfigChange passes the new config to the client to handle config changes
 // since the MuleEventEmitter only has cache config value references and should not be changed
 func (we *WebmethodsEventEmitter) OnConfigChange(gatewayCfg *config.AgentConfig) {
-	we.client.OnConfigChange(gatewayCfg.WebMethodConfig)
+	err := we.client.OnConfigChange(gatewayCfg.WebMethodConfig)
+	if err != nil {
+		return
+	}
 }
 
 // NewMuleEventEmitterJob creates a struct that implements the Emitter and Job interfaces.
@@ -177,33 +186,34 @@ func NewMuleEventEmitterJob(
 }
 
 // Start registers the job with the sdk.
-func (m *WebmethodsEmitterJob) Start() error {
-	jobID, err := jobs.RegisterIntervalJob(m, m.pollInterval)
-	m.jobID = jobID
+func (w *WebmethodsEmitterJob) Start() error {
+	jobID, err := jobs.RegisterIntervalJob(w, w.pollInterval)
+	logrus.Trace("starting job")
+	w.jobID = jobID
 	return err
 }
 
 // OnConfigChange updates the MuleEventEmitterJob with any config changes, and calls OnConfigChange on the Emitter
-func (m *WebmethodsEmitterJob) OnConfigChange(gatewayCfg *config.AgentConfig) {
-	m.pollInterval = gatewayCfg.WebMethodConfig.PollInterval
-	m.Emitter.OnConfigChange(gatewayCfg)
+func (w *WebmethodsEmitterJob) OnConfigChange(gatewayCfg *config.AgentConfig) {
+	w.pollInterval = gatewayCfg.WebMethodConfig.PollInterval
+	w.Emitter.OnConfigChange(gatewayCfg)
 }
 
 // Execute called by the sdk on each interval.
-func (m *WebmethodsEmitterJob) Execute() error {
-	return m.Emitter.Start()
+func (w *WebmethodsEmitterJob) Execute() error {
+	return w.Emitter.Start()
 }
 
 // Status Performs a health check for this job before it is executed.
-func (m *WebmethodsEmitterJob) Status() error {
+func (w *WebmethodsEmitterJob) Status() error {
 	max := 3
-	status := m.client.Healthcheck("health")
+	status := w.client.Healthcheck("health")
 	if status.Result == hc.OK {
-		m.consecutiveErrors = 0
+		w.consecutiveErrors = 0
 	} else {
-		m.consecutiveErrors++
+		w.consecutiveErrors++
 	}
-	if m.consecutiveErrors >= max {
+	if w.consecutiveErrors >= max {
 		// If the job fails 3 times return an error
 		return fmt.Errorf("failed to start the Traceability agent %d times in a row", max)
 	}
@@ -211,8 +221,8 @@ func (m *WebmethodsEmitterJob) Status() error {
 }
 
 // Ready determines if the job is ready to run.
-func (m *WebmethodsEmitterJob) Ready() bool {
-	status := m.client.Healthcheck("health")
+func (w *WebmethodsEmitterJob) Ready() bool {
+	status := w.client.Healthcheck("health")
 	if status.Result == hc.OK {
 		return true
 	}

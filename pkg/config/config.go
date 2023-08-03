@@ -23,6 +23,8 @@ const (
 	pathAuthPassword      = "webmethods.auth.password"
 	pathMaturityState     = "webmethods.maturityState"
 
+	pathTimezone = "webmethods.timezone"
+
 	pathSSLNextProtos          = "webmethods.ssl.nextProtos"
 	pathSSLInsecureSkipVerify  = "webmethods.ssl.insecureSkipVerify"
 	pathSSLCipherSuites        = "webmethods.ssl.cipherSuites"
@@ -62,6 +64,7 @@ type WebMethodConfig struct {
 	Password               string            `config:"auth.password"`
 	MaturityState          string            `config:"maturityState"`
 	Oauth2AuthzServerAlias string            `config:"oauth2AuthzServerAlias"`
+	Timezone               string            `config:"timezone"`
 	ProxyURL               string            `config:"proxyUrl"`
 	TLS                    corecfg.TLSConfig `config:"ssl"`
 }
@@ -109,6 +112,7 @@ func AddConfigProperties(props properties.Properties) {
 	props.AddStringProperty(pathMaturityState, "Beta", "Webmethods APIM Maturity State.")
 	props.AddStringProperty(pathFilter, "", "Webmethods Tag filter.")
 	props.AddStringProperty(pathOauth2AuthzServerAlias, "", "Webmethods Oauth2 Authorization Server alias name.")
+	props.AddStringProperty(pathTimezone, "", "Webmethods API Gateway timezone")
 	props.AddStringProperty(pathCachePath, "/tmp", "Webmethods Cache Path")
 	// ssl properties and command flags
 	props.AddStringSliceProperty(pathSSLNextProtos, []string{}, "List of supported application level protocols, comma separated.")
@@ -131,6 +135,7 @@ func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentTyp
 		Username:               props.StringPropertyValue(pathAuthUsername),
 		MaturityState:          props.StringPropertyValue(pathMaturityState),
 		Oauth2AuthzServerAlias: props.StringPropertyValue(pathOauth2AuthzServerAlias),
+		Timezone:               props.StringPropertyValue(pathTimezone),
 		TLS: &corecfg.TLSConfiguration{
 			NextProtos:         props.StringSlicePropertyValue(pathSSLNextProtos),
 			InsecureSkipVerify: props.BoolPropertyValue(pathSSLInsecureSkipVerify),

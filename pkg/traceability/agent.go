@@ -1,9 +1,13 @@
 package traceability
 
 import (
+	"fmt"
+	hc "github.com/Axway/agent-sdk/pkg/util/healthcheck"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+	_ "time/tzdata"
 
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
@@ -11,6 +15,8 @@ import (
 	coreagent "github.com/Axway/agent-sdk/pkg/agent"
 	coreapi "github.com/Axway/agent-sdk/pkg/api"
 	"github.com/Axway/agent-sdk/pkg/transaction"
+	"github.com/Axway/agent-sdk/pkg/util/errors"
+	agenterrors "github.com/Axway/agent-sdk/pkg/util/errors"
 	"github.com/Axway/agents-webmethods/pkg/config"
 	localerrors "github.com/Axway/agents-webmethods/pkg/errors"
 	"github.com/Axway/agents-webmethods/pkg/webmethods"
@@ -33,14 +39,21 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	}
 	generator := transaction.NewEventGenerator()
 	httpClient := coreapi.NewClient(agentCfg.WebMethodConfig.TLS, agentCfg.WebMethodConfig.ProxyURL)
-
 	client, err := webmethods.NewClient(agentCfg.WebMethodConfig, httpClient)
 	if err != nil {
 		return nil, err
 	}
+	webmethodsAPIGatewayTimezone := agentCfg.WebMethodConfig.Timezone
+	timezoneLocation, err := time.LoadLocation("UTC")
+	if webmethodsAPIGatewayTimezone != "" {
+		timezoneLocation, err = time.LoadLocation(webmethodsAPIGatewayTimezone)
+		if err != nil {
+			return nil, errors.Newf(4001, "invalid timestamp %s")
+		}
+	}
 	processor := NewApiEventProcessor(agentCfg, generator)
 	eventChannel := make(chan WebmethodsEvent)
-	emitter := NewWebmethodsEventEmitter(agentCfg.WebMethodConfig.CachePath, agentCfg.WebMethodConfig.PollInterval, eventChannel, client)
+	emitter := NewWebmethodsEventEmitter(agentCfg.WebMethodConfig.CachePath, agentCfg.WebMethodConfig.PollInterval, eventChannel, client, *timezoneLocation)
 	emitterJob, err := NewMuleEventEmitterJob(emitter, agentCfg.WebMethodConfig.PollInterval, client)
 	if err != nil {
 		return nil, err
@@ -60,10 +73,10 @@ func newAgent(
 		webmethods:     emitter,
 	}
 
-	// Validate that all necessary services are up and running. If not, return error
-	// if hc.RunChecks() != hc.OK {
-	// 	return nil, agenterrors.ErrInitServicesNotReady
-	// }
+	//Validate that all necessary services are up and running. If not, return error
+	if hc.RunChecks() != hc.OK {
+		return nil, agenterrors.ErrInitServicesNotReady
+	}
 
 	return a, nil
 }
@@ -79,7 +92,12 @@ func (a *Agent) Run(b *beat.Beat) error {
 		return err
 	}
 
-	go a.webmethods.Start()
+	go func() {
+		err := a.webmethods.Start()
+		if err != nil {
+			fmt.Printf("Unable to start :%s", err)
+		}
+	}()
 
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, os.Interrupt)

@@ -23,6 +23,10 @@ type Page struct {
 	PageSize int
 }
 
+var (
+	token string
+)
+
 // Client interface to gateway
 type Client interface {
 	createAuthToken() string
@@ -77,11 +81,11 @@ func (c *WebMethodClient) OnConfigChange(webMethodConfig *config.WebMethodConfig
 	c.discoveryFilter = nil
 	if strings.TrimSpace(webMethodConfig.Filter) != "" {
 
-		filter, err := filter.NewFilter(webMethodConfig.Filter)
+		newFilter, err := filter.NewFilter(webMethodConfig.Filter)
 		if err != nil {
 			return err
 		}
-		c.discoveryFilter = filter
+		c.discoveryFilter = newFilter
 	}
 	return nil
 }
@@ -97,23 +101,20 @@ func (c *WebMethodClient) Healthcheck(name string) (status *hc.Status) {
 		URL:    url,
 	}
 	response, err := c.httpClient.Send(request)
-
 	if err != nil {
 		status = &hc.Status{
 			Result:  hc.FAIL,
 			Details: fmt.Sprintf("%s Failed. Unable to connect to Webmethods, check Webmethods configuration. %s", name, err.Error()),
 		}
+		return status
 	}
-
 	if response.Code != http.StatusOK {
 		status = &hc.Status{
 			Result:  hc.FAIL,
 			Details: fmt.Sprintf("%s Failed. Unable to connect to Webmethods, check Boomi configuration.", name),
 		}
 	}
-
 	return status
-
 }
 
 // ListAPIs lists webmethods  APIM apis.
@@ -186,7 +187,7 @@ func (c *WebMethodClient) SearchAPIs() (*Apis, error) {
 	return apis, nil
 }
 
-// ListAPIs lists webmethods  APIM apis.
+// GetApiDetails ListAPIs lists webmethods  APIM apis.
 func (c *WebMethodClient) GetApiDetails(id string) (*ApiResponse, error) {
 	getApiDetails := &GetApiDetails{}
 	url := fmt.Sprintf("%s/rest/apigateway/apis/%s", c.url, id)
@@ -224,7 +225,7 @@ func (c *WebMethodClient) IsAllowedTags(tags []Tag) bool {
 	return true
 }
 
-// GetAPI gets a single api by id
+// GetApiSpec  gets a single api by id
 func (c *WebMethodClient) GetApiSpec(id string) ([]byte, error) {
 
 	url := fmt.Sprintf("%s/rest/apigateway/apis/%s", c.url, id)
@@ -680,6 +681,9 @@ func (c *WebMethodClient) GetTransactionsWindow(startDate, endDate string) ([]by
 }
 
 func (c *WebMethodClient) createAuthToken() string {
-	credential := c.username + ":" + c.password
-	return "Basic :" + base64.StdEncoding.EncodeToString([]byte(credential))
+	if token == "" {
+		credential := c.username + ":" + c.password
+		token = "Basic :" + base64.StdEncoding.EncodeToString([]byte(credential))
+	}
+	return token
 }

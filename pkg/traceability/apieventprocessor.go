@@ -1,7 +1,6 @@
 package traceability
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -34,7 +33,7 @@ type cacheManager interface {
 	GetManagedApplication(id string) *v1.ResourceInstance
 }
 
-// EventProcessor - represents the processor for received event for Amplify Central
+// ApiEventProcessor  - represents the processor for received event for Amplify Central
 // The event processing can be done either when the beat input receives the log entry or before the beat transport
 // publishes the event to transport.
 // When processing the received log entry on input, the log entry is mapped to structure expected for Amplify Central Observer
@@ -72,15 +71,13 @@ func (aep *ApiEventProcessor) ProcessRaw(webmethodsEvent WebmethodsEvent) []beat
 		logrus.Error(err.Error())
 		return nil
 	}
-	// Generates the beat.Event with attributes by Amplify ingestion service
+	//Generates the beat.Event with attributes by Amplify ingestion service
 	events, err := aep.eventGenerator.CreateEvents(*summaryEvent, logEvents, time.Now(), nil, nil, nil)
 	if err != nil {
 		logrus.Error(err.Error())
 		return nil
 	}
 	return events
-	//return nil
-
 }
 
 func (aep *ApiEventProcessor) processMapping(webmethodsEvent WebmethodsEvent) (*transaction.LogEvent, []transaction.LogEvent, error) {
@@ -310,11 +307,11 @@ func FormatLeg1(id string) string {
 	return fmt.Sprintf("%s-leg1", id)
 }
 
-func buildHeaders(headers map[string]string) string {
-	jsonHeader, err := json.Marshal(headers)
-	if err != nil {
-		log.Error(err.Error())
-		return ""
-	}
-	return string(jsonHeader)
-}
+//func buildHeaders(headers map[string]string) string {
+//	jsonHeader, err := json.Marshal(headers)
+//	if err != nil {
+//		log.Error(err.Error())
+//		return ""
+//	}
+//	return string(jsonHeader)
+//}
