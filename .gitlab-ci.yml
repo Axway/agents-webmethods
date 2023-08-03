@@ -110,10 +110,10 @@ whitesource:on-schedule:
     - echo "Checking out ${GIT_TAG_PREFIX}${LATEST_TAG}"
     - git checkout ${GIT_TAG_PREFIX}${LATEST_TAG}
 
-# overridden from csrjobs.yml because mirror repos like this one don't get merge events
+# overridden from csrjobs.yml because mirror repos like this one don't get merge events 
 fortify:
   rules:
-    - !reference [.mirror-default-branch-csr-rules, rules]
+    - !reference [.mirror-branch-csr-rules, rules]
 
 fetch-fortify:
   rules:
