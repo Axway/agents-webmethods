@@ -70,10 +70,7 @@ func NewClient(webMethodConfig *config.WebMethodConfig, httpClient coreapi.Clien
 	client := &WebMethodClient{}
 	client.httpClient = httpClient
 	err := client.OnConfigChange(webMethodConfig)
-	_, err = hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.Healthcheck)
-	if err != nil {
-		return nil, err
-	}
+	hc.RegisterHealthcheck("Webmethods API Gateway", HealthCheckEndpoint, client.Healthcheck)
 	return client, err
 }
 
