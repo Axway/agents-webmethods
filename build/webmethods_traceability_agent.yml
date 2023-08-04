@@ -5,6 +5,7 @@ webmethods_traceability_agent:
     pollInterval: ${WEBMETHODS_POLLINTERVAL:30s}
     cachePath: ${WEBMETHODS_CACHEPATH:/data}/data
     url: ${WEBMETHODS_URL:""}
+    timezone: ${WEBMETHODS_TIMEZONE:"America/Phoenix"}
     auth: 
       username: ${WEBMETHODS_AUTH_USERNAME:""}
       password: ${WEBMETHODS_AUTH_PASSWORD:""}
