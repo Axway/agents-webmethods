@@ -51,7 +51,7 @@ COPY --from=builder ${APP_HOME}/bin/webmethods_discovery_agent /webmethods_disco
 
 RUN mkdir /keys && \
   chown -R axway /keys && \
-  apk --no-cache add openssl libssl libcrypto musl musl-utils libc6-compat busybox curl && \
+  apk --no-cache add openssl libssl3 libcrypto3 musl musl-utils libc6-compat busybox curl && \
   find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 

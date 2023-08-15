@@ -51,7 +51,7 @@ COPY --from=builder ${APP_HOME}/bin/webmethods_traceability_agent /webmethods_tr
 
 RUN mkdir /keys /data && \
   chown -R axway /keys /data && \
-  apk --no-cache add openssl libssl libcrypto musl musl-utils libc6-compat busybox curl && \
+  apk --no-cache add openssl libssl3 libcrypto3 musl musl-utils libc6-compat busybox curl && \
   find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 
