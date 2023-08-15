@@ -1,6 +1,6 @@
 # Build image
-# golang:6-alpine3.18 linux/amd64 
-FROM docker.io/golang@sha256:6f592e0689192b7e477313264bb190024d654ef0a08fb1732af4f4b498a2e8ad AS builder
+# golang:1.21.0-alpine3.18 linux/amd64 
+FROM docker.io/golang@sha256:dd8888bb7f1b0b05e1e625aa29483f50f38a9b64073a4db00b04076cec52b71c AS builder
 
 ARG VERSION
 ARG COMMIT_ID
@@ -51,7 +51,7 @@ COPY --from=builder ${APP_HOME}/bin/webmethods_discovery_agent /webmethods_disco
 
 RUN mkdir /keys && \
   chown -R axway /keys && \
-  apk --no-cache add openssl libssl libcrypto musl musl-utils libc6-compat busybox curl && \
+  apk --no-cache add openssl libssl3 libcrypto3 musl musl-utils libc6-compat busybox curl && \
   find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 
