@@ -23,7 +23,8 @@ const (
 	pathAuthPassword      = "webmethods.auth.password"
 	pathMaturityState     = "webmethods.maturityState"
 
-	pathTimezone = "webmethods.timezone"
+	pathTimezone       = "webmethods.timezone"
+	pathAnalyticsDelay = "webmethods.AnalyticsDelay"
 
 	pathSSLNextProtos          = "webmethods.ssl.nextProtos"
 	pathSSLInsecureSkipVerify  = "webmethods.ssl.insecureSkipVerify"
@@ -65,6 +66,7 @@ type WebMethodConfig struct {
 	MaturityState          string            `config:"maturityState"`
 	Oauth2AuthzServerAlias string            `config:"oauth2AuthzServerAlias"`
 	Timezone               string            `config:"timezone"`
+	AnalyticsDelay         time.Duration     `config:"analyticsDelay"`
 	ProxyURL               string            `config:"proxyUrl"`
 	TLS                    corecfg.TLSConfig `config:"ssl"`
 }
@@ -113,6 +115,8 @@ func AddConfigProperties(props properties.Properties) {
 	props.AddStringProperty(pathFilter, "", "Webmethods Tag filter.")
 	props.AddStringProperty(pathOauth2AuthzServerAlias, "", "Webmethods Oauth2 Authorization Server alias name.")
 	props.AddStringProperty(pathTimezone, "", "Webmethods API Gateway timezone")
+	props.AddDurationProperty(pathAnalyticsDelay, 60*time.Second, "Webmethods API Gateway timezone")
+
 	props.AddStringProperty(pathCachePath, "/tmp", "Webmethods Cache Path")
 	// ssl properties and command flags
 	props.AddStringSliceProperty(pathSSLNextProtos, []string{}, "List of supported application level protocols, comma separated.")
@@ -136,6 +140,7 @@ func NewWebmothodsConfig(props properties.Properties, agentType corecfg.AgentTyp
 		MaturityState:          props.StringPropertyValue(pathMaturityState),
 		Oauth2AuthzServerAlias: props.StringPropertyValue(pathOauth2AuthzServerAlias),
 		Timezone:               props.StringPropertyValue(pathTimezone),
+		AnalyticsDelay:         props.DurationPropertyValue(pathAnalyticsDelay),
 		TLS: &corecfg.TLSConfiguration{
 			NextProtos:         props.StringSlicePropertyValue(pathSSLNextProtos),
 			InsecureSkipVerify: props.BoolPropertyValue(pathSSLInsecureSkipVerify),

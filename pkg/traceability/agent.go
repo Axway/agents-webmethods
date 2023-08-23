@@ -53,7 +53,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	}
 	processor := NewApiEventProcessor(agentCfg, generator)
 	eventChannel := make(chan WebmethodsEvent)
-	emitter := NewWebmethodsEventEmitter(agentCfg.WebMethodConfig.CachePath, agentCfg.WebMethodConfig.PollInterval, eventChannel, client, *timezoneLocation)
+	emitter := NewWebmethodsEventEmitter(*agentCfg, eventChannel, client, *timezoneLocation)
 	emitterJob, err := NewMuleEventEmitterJob(emitter, agentCfg.WebMethodConfig.PollInterval, client)
 	if err != nil {
 		return nil, err
