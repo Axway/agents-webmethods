@@ -34,8 +34,6 @@ type Emitter interface {
 	OnConfigChange(gatewayCfg *config.AgentConfig)
 }
 
-type healthChecker func(name, endpoint string, check hc.CheckStatus) (string, error)
-
 // WebmethodsEventEmitter - Gathers analytics data for publishing to Central.
 type WebmethodsEventEmitter struct {
 	client           webmethods.Client
@@ -44,6 +42,7 @@ type WebmethodsEventEmitter struct {
 	cache            cache.Cache
 	cachePath        string
 	timezoneLocation time.Location
+	analyticsDelay   time.Duration
 }
 
 // WebmethodsEmitterJob wraps an Emitter and implements the Job interface so that it can be executed by the sdk.
@@ -56,14 +55,15 @@ type WebmethodsEmitterJob struct {
 }
 
 // NewWebmethodsEventEmitter - Creates a client to poll for events.
-func NewWebmethodsEventEmitter(cachePath string, pollInterval time.Duration, eventChannel chan WebmethodsEvent, client webmethods.Client, timezoneLocation time.Location) *WebmethodsEventEmitter {
+func NewWebmethodsEventEmitter(agentConfig config.AgentConfig, eventChannel chan WebmethodsEvent, client webmethods.Client, timezoneLocation time.Location) *WebmethodsEventEmitter {
 	we := &WebmethodsEventEmitter{
 		eventChannel:     eventChannel,
 		client:           client,
-		pollInterval:     pollInterval,
+		pollInterval:     agentConfig.WebMethodConfig.PollInterval,
 		timezoneLocation: timezoneLocation,
+		analyticsDelay:   agentConfig.WebMethodConfig.AnalyticsDelay,
 	}
-	we.cachePath = formatCachePath(cachePath)
+	we.cachePath = formatCachePath(agentConfig.WebMethodConfig.CachePath)
 	we.cache = cache.Load(we.cachePath)
 	return we
 }
@@ -144,10 +144,10 @@ func (we *WebmethodsEventEmitter) getLastRun() (string, string) {
 	now := time.Now()
 	now = now.In(&we.timezoneLocation)
 	if tStamp == nil {
-		tStamp = now.Add(-time.Second * 30).Format(dateFormat)
-		tNow = now.Format(dateFormat)
+		tStamp = now.Add(-we.analyticsDelay * 2).Format(dateFormat)
+		tNow = now.Add(-we.analyticsDelay).Format(dateFormat)
 	} else {
-		tNow = now.Format(dateFormat)
+		tNow = now.Add(-we.analyticsDelay).Format(dateFormat)
 	}
 	return tStamp.(string), tNow
 }
@@ -206,16 +206,16 @@ func (w *WebmethodsEmitterJob) Execute() error {
 
 // Status Performs a health check for this job before it is executed.
 func (w *WebmethodsEmitterJob) Status() error {
-	max := 3
+	maxRetry := 3
 	status := w.client.Healthcheck("health")
 	if status.Result == hc.OK {
 		w.consecutiveErrors = 0
 	} else {
 		w.consecutiveErrors++
 	}
-	if w.consecutiveErrors >= max {
+	if w.consecutiveErrors >= maxRetry {
 		// If the job fails 3 times return an error
-		return fmt.Errorf("failed to start the Traceability agent %d times in a row", max)
+		return fmt.Errorf("failed to start the Traceability agent %d times in a row", maxRetry)
 	}
 	return nil
 }
