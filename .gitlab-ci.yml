@@ -14,8 +14,6 @@ variables:
   WS_PROJECT_ID: "agents-webmethods"
   WS_CONFIG_FILE: "whitesource.config"
 
-  GIT_TAG_PREFIX: v
-
   # just to be sure we don't do vendoring
   GOFLAGS: "-mod=mod"
 
@@ -82,10 +80,9 @@ twistlock-discovery:on-schedule:
     - !reference [.mirror-schedule-csr-rules, rules]
   dependencies: []
   before_script:
-    - set -x
     - apk --no-cache update && apk add git
     - *get-latest-tag
-    - export IMAGE_NAME=ghcr.io/axway/webmethods_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+    - export IMAGE_NAME=ghcr.io/axway/webmethods_discovery_agent:${LATEST_TAG}
     - docker pull ${IMAGE_NAME}
 
 # twistlock-traceability:on-schedule:
@@ -96,7 +93,7 @@ twistlock-discovery:on-schedule:
 #   before_script:
 #     - apk --no-cache update && apk add git
 #     - *get-latest-tag
-#     - export IMAGE_NAME=ghcr.io/axway/webmethods_traceability_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
+#     - export IMAGE_NAME=ghcr.io/axway/webmethods_traceability_agent:${LATEST_TAG}
 #     - docker pull ${IMAGE_NAME}
 
 whitesource:on-schedule:
@@ -108,8 +105,8 @@ whitesource:on-schedule:
     - git config --global url."ssh://git@git.ecd.axway.org".insteadOf "https://git.ecd.axway.org"''
     - git fetch
     - *get-latest-tag
-    - echo "Checking out ${GIT_TAG_PREFIX}${LATEST_TAG}"
-    - git checkout ${GIT_TAG_PREFIX}${LATEST_TAG}
+    - echo "Checking out ${LATEST_TAG}"
+    - git checkout ${LATEST_TAG}
 
 # overridden from csrjobs.yml because mirror repos like this one don't get merge events 
 fortify:
