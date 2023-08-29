@@ -82,6 +82,7 @@ twistlock-discovery:on-schedule:
     - !reference [.mirror-schedule-csr-rules, rules]
   dependencies: []
   before_script:
+    - set -x
     - apk --no-cache update && apk add git
     - *get-latest-tag
     - export IMAGE_NAME=ghcr.io/axway/webmethods_discovery_agent:${GIT_TAG_PREFIX}${LATEST_TAG}
