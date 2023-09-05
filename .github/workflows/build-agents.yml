@@ -1,4 +1,4 @@
-name: Build Webmethods Discovery Agent
+name: Build Webmethods Discovery and Traceability Agents
 
 on:
   push:
