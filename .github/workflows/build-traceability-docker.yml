@@ -6,7 +6,7 @@ on:
       - "*"
 
 jobs:
-  buildDiscoveryAgentDocker:
+  buildTraceabilityAgentDocker:
     env:
       GOFLAGS: "-mod=mod"
       GOWORK: "off"
