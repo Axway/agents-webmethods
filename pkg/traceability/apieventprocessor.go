@@ -265,7 +265,7 @@ func (aep *ApiEventProcessor) createSummaryEvent(eventTime int64, txID string, w
 		// If the API is published to Central as unified catalog item/API service, se the Proxy details with the API definition
 		// The Proxy.Name represents the name of the API
 		// The Proxy.ID should be of format "remoteApiId_<ID Of the API on remote gateway>". Use transaction.FormatProxyID(<ID Of the API on remote gateway>) to get the formatted value.
-		SetProxy(transutil.FormatProxyID(webmethodsEvent.ApiId), webmethodsEvent.ApiName, 0)
+		SetProxyWithStageVersion(transutil.FormatProxyID(webmethodsEvent.ApiId), webmethodsEvent.ApiName, config.GetConfig().WebMethodConfig.MaturityState, webmethodsEvent.ApiVersion, 0)
 
 	if webmethodsEvent.ApplicationName != "Unknown" && webmethodsEvent.ApplicationId != "Unknown" {
 		builder.SetApplication(transutil.FormatApplicationID(webmethodsEvent.ApplicationId), webmethodsEvent.ApplicationName)
