@@ -7,6 +7,7 @@ webmethods_traceability_agent:
     url: ${WEBMETHODS_URL:""}
     timezone: ${WEBMETHODS_TIMEZONE:"America/Phoenix"}
     analyticsDelay: ${WEBMETHODS_ANALYTICSDELAY:60s}
+    maturityState: ${WEBMETHODS_MATURITYSTATE:""}
     auth: 
       username: ${WEBMETHODS_AUTH_USERNAME:""}
       password: ${WEBMETHODS_AUTH_PASSWORD:""}
