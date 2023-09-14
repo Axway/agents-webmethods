@@ -1,6 +1,6 @@
 # Build image
-# golang:1.21.0-alpine3.18 linux/amd64 
-FROM docker.io/golang@sha256:dd8888bb7f1b0b05e1e625aa29483f50f38a9b64073a4db00b04076cec52b71c AS builder
+# golang:1.21.1-alpine3.18 linux/amd64 
+FROM docker.io/golang@sha256:0c860c7ceba62231d0f99fb92e9d7c1577f26fea794a12c75756a8f64b146e45 AS builder
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 ENV AGENT=${APP_HOME}/cmd/traceability
@@ -37,8 +37,8 @@ RUN chown -R $APP_USER:$APP_USER  ${APP_HOME}/bin/webmethods_traceability_agent
 
 USER $APP_USER
 
-# alpine 3.18.2
-FROM docker.io/alpine@sha256:25fad2a32ad1f6f510e528448ae1ec69a28ef81916a004d3629874104f8a7f70
+# alpine 3.18.3
+FROM docker.io/alpine@sha256:c5c5fda71656f28e49ac9c5416b3643eaa6a108a8093151d6d1afc9463be8e33
 
 ENV APP_USER axway
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
