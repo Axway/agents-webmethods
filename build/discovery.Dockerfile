@@ -37,8 +37,8 @@ RUN chown -R $APP_USER:$APP_USER  ${APP_HOME}/bin/webmethods_discovery_agent
 
 USER $APP_USER
 
-# alpine 3.18.2
-FROM docker.io/alpine@sha256:25fad2a32ad1f6f510e528448ae1ec69a28ef81916a004d3629874104f8a7f70
+# alpine 3.18.3
+FROM docker.io/alpine@sha256:c5c5fda71656f28e49ac9c5416b3643eaa6a108a8093151d6d1afc9463be8e33
 
 ENV APP_USER axway
 ENV APP_HOME /go/src/github.com/Axway/agents-webmethods
