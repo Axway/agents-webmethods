@@ -1,0 +1,95 @@
+name: Release webMethods Agents
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  buildDiscoveryAgent:
+    env:
+      GOFLAGS: "-mod=mod"
+      GOWORK: "off"
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/discovery
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.21
+
+      - name: Build discovery agent
+        working-directory: discovery
+        run: |
+          git rev-parse --short HEAD > commit_id
+          echo "${{ github.ref_name }}" > version
+          make build
+
+      - name: Upload release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: discovery/bin/webmethods_discovery_agent
+          asset_name: webmethods_discovery_agent
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "webMethods Discovery Agent - ${{ github.ref }}"
+
+  buildTraceabilityAgent:
+    env:
+      GOFLAGS: "-mod=mod"
+      GOWORK: "off"
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/traceability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Build traceability agent
+        working-directory: traceability
+        run: |
+          git rev-parse --short HEAD > commit_id
+          echo "${{ github.ref_name }}" > version
+          make build
+
+      - name: Upload release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: traceability/bin/webmethods_traceability_agent
+          asset_name: webmethods_traceability_agent
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "webMethods Traceability Agent - ${{ github.ref }}"
+
+      - name: Upload release yaml
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: traceability/webmethods_traceability_agent.yml
+          asset_name: webmethods_traceability_agent.yml
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "webMethods Traceability Agent YAML - ${{ github.ref }}"
+
+  notifyTeamsChannel:
+    needs: [buildDiscoveryAgent, buildTraceabilityAgent]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Notify Teams channel
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          TAG: ${{ github.ref_name }}
+        run: ./release.sh
