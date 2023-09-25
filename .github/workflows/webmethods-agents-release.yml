@@ -27,7 +27,7 @@ jobs:
         run: |
           git rev-parse --short HEAD > commit_id
           echo "${{ github.ref_name }}" > version
-          make build
+          make build-discovery
 
       - name: Upload release
         uses: svenstaro/upload-release-action@v2
@@ -53,14 +53,14 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.21
 
       - name: Build traceability agent
         working-directory: .
         run: |
           git rev-parse --short HEAD > commit_id
           echo "${{ github.ref_name }}" > version
-          make build
+          make build-trace
 
       - name: Upload release
         uses: svenstaro/upload-release-action@v2
