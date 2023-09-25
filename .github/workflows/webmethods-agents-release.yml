@@ -33,7 +33,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: discovery/bin/webmethods_discovery_agent
+          file: bin/webmethods_discovery_agent
           asset_name: webmethods_discovery_agent
           tag: ${{ github.ref }}
           overwrite: true
@@ -66,7 +66,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: traceability/bin/webmethods_traceability_agent
+          file: bin/webmethods_traceability_agent
           asset_name: webmethods_traceability_agent
           tag: ${{ github.ref }}
           overwrite: true
