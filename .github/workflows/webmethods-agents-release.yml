@@ -84,14 +84,14 @@ jobs:
           overwrite: true
           body: "webMethods Traceability Agent YAML - ${{ github.ref }}"
 
-  notifyTeamsChannel:
-    needs: [buildDiscoveryAgent, buildTraceabilityAgent]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  # notifyTeamsChannel:
+  #   needs: [buildDiscoveryAgent, buildTraceabilityAgent]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Notify Teams channel
-        env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-          TAG: ${{ github.ref_name }}
-        run: ./release.sh
+  #     - name: Notify Teams channel
+  #       env:
+  #         TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+  #         TAG: ${{ github.ref_name }}
+  #       run: ./release.sh
