@@ -6,7 +6,6 @@
  # .csr-profile.json requires SPOC approval for any modifications
 .csr-profile.json @scurity/amplify_spocs @dfeldick @jcollins @vchauhan
 renovate.json @dfeldick
-whitesource.config @dfeldick
 
 [CICD]
 # cicd-related files

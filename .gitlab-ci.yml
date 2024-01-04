@@ -10,10 +10,6 @@ variables:
   FORTIFY_INCLUDE: "**/*.go"
   FORTIFY_EXCLUDE: "**/*_test.go"
 
-  # Whitesource
-  WS_PROJECT_ID: "agents-webmethods"
-  WS_CONFIG_FILE: "whitesource.config"
-
   # Blackduck
   BLACKDUCK_PROJECT_NAME: "Amplify - APIC webMethods Agents"
 
@@ -43,10 +39,9 @@ include:
       - "/gitlabci/restrictions.yml"
       - "/gitlabci/jobs.yml"
   - project: "scurity/gitlabci"
-    ref: $SCURITY_V2
+    ref: $SCURITY_LATEST
     file:
       - "/.gitlab-ci-fortify.yml"
-      - "/.gitlab-ci-whitesource.yml"
       - "/.gitlab-ci-blackduck.yml"
       - "/.gitlab-ci-iriusrisk.yml"
       - "/.gitlab-ci-twistlock.yml"
@@ -104,20 +99,7 @@ twistlock-discovery:on-schedule:
 #     - export IMAGE_NAME=ghcr.io/axway/webmethods_traceability_agent:${LATEST_TAG}
 #     - docker pull ${IMAGE_NAME}
 
-whitesource:on-schedule:
-  extends: .whitesource
-  rules:
-    - !reference [.mirror-schedule-csr-rules, rules]
-  before_script:
-    - git config --global http.sslVerify false
-    - git config --global url."ssh://git@git.ecd.axway.org".insteadOf "https://git.ecd.axway.org"''
-    - git fetch
-    - *get-latest-tag
-    - echo "Checking out ${LATEST_TAG}"
-    - git checkout ${LATEST_TAG}
-
 blackduck:on-schedule:
-  extends: .blackduck
   rules:
     - !reference [.mirror-schedule-csr-rules, rules]
   before_script:
@@ -137,13 +119,7 @@ fetch-fortify:
   rules:
     - !reference [.mirror-branch-csr-rules, rules]
 
-whitesource:
-  rules:
-    - !reference [.mirror-branch-csr-rules, rules]
-  before_script:
-    - export GOWORK=off
-
-blackduck:
+blackduck-rapid:
   rules:
     - !reference [.mirror-branch-csr-rules, rules]
 
