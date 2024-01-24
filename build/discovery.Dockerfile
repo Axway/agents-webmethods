@@ -1,6 +1,6 @@
 # Build image
 # golang:1.21.6-alpine3.19 linux/amd64
-FROM dockerhub.artifactory-phx.ecd.axway.int/golang@sha256:2523a6f68a0f515fe251aad40b18545155135ca6a5b2e61da8254df9153e3648 AS builder
+FROM docker.io/golang@sha256:2523a6f68a0f515fe251aad40b18545155135ca6a5b2e61da8254df9153e3648 AS builder
 
 ARG VERSION
 ARG COMMIT_ID
