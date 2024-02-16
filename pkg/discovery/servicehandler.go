@@ -33,6 +33,7 @@ type serviceHandler struct {
 }
 
 func (s *serviceHandler) OnConfigChange(cfg *config.WebMethodConfig) {
+	// nothing to do here. Override if needed in derived classes
 }
 
 // ToServiceDetails gathers the ServiceDetail for a Webmethods APIM.
