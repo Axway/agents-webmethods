@@ -16,6 +16,8 @@ import (
 )
 
 const HealthCheckEndpoint = "health"
+const searchURL = "%s/rest/apigateway/search"
+const getApplicationURL = "%s/rest/apigateway/applications/%s"
 
 // Page describes the page query parameter
 type Page struct {
@@ -148,7 +150,7 @@ func (c *WebMethodClient) ListAPIs() ([]ListApiResponse, error) {
 
 func (c *WebMethodClient) SearchAPIs() (*Apis, error) {
 	//webmethodsApis := make([]WebmethodsApi, 0)
-	url := fmt.Sprintf("%s/rest/apigateway/search", c.url)
+	url := fmt.Sprintf(searchURL, c.url)
 	requestStr := `{
 		"types": [
 			"api"
@@ -278,7 +280,7 @@ func (c *WebMethodClient) FindApplicationByName(applicationName string) (*Search
 	scope.AttributeName = "name"
 	scope.Keyword = applicationName
 	searchRequest.Scope = []Scope{scope}
-	url := fmt.Sprintf("%s/rest/apigateway/search", c.url)
+	url := fmt.Sprintf(searchURL, c.url)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -307,7 +309,7 @@ func (c *WebMethodClient) FindApplicationByName(applicationName string) (*Search
 
 func (c *WebMethodClient) GetApplication(applicationId string) (*ApplicationResponse, error) {
 	applicationResponse := &ApplicationResponse{}
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
+	url := fmt.Sprintf(getApplicationURL, c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Accept":        "application/json",
@@ -358,7 +360,7 @@ func (c *WebMethodClient) CreateApplication(application *Application) (*Applicat
 
 func (c *WebMethodClient) UpdateApplication(application *Application) (*Application, error) {
 	responseApplication := &Application{}
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, application.Id)
+	url := fmt.Sprintf(getApplicationURL, c.url, application.Id)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -440,7 +442,7 @@ func (c *WebMethodClient) GetStrategy(strategyId string) (*StrategyResponse, err
 }
 
 func (c *WebMethodClient) SubscribeApplication(applicationId string, ApplicationApiSubscription *ApplicationApiSubscription) error {
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/apis", c.url, applicationId)
+	url := fmt.Sprintf(getApplicationURL+"/apis", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -467,7 +469,7 @@ func (c *WebMethodClient) SubscribeApplication(applicationId string, Application
 }
 
 func (c *WebMethodClient) RotateApplicationApikey(applicationId string) error {
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/accessTokens", c.url, applicationId)
+	url := fmt.Sprintf(getApplicationURL+"/accessTokens", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -539,7 +541,7 @@ func (c *WebMethodClient) RefereshOauth2Credential(strategyId string) (*Strategy
 }
 
 func (c *WebMethodClient) DeleteApplication(applicationId string) error {
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s", c.url, applicationId)
+	url := fmt.Sprintf(getApplicationURL, c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -561,7 +563,7 @@ func (c *WebMethodClient) DeleteApplication(applicationId string) error {
 }
 
 func (c *WebMethodClient) DeleteApplicationAccessTokens(applicationId string) error {
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/accessTokens", c.url, applicationId)
+	url := fmt.Sprintf(getApplicationURL+"/accessTokens", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -585,7 +587,7 @@ func (c *WebMethodClient) DeleteApplicationAccessTokens(applicationId string) er
 }
 
 func (c *WebMethodClient) UnsubscribeApplication(applicationId string, apiId string) error {
-	url := fmt.Sprintf("%s/rest/apigateway/applications/%s/apis", c.url, applicationId)
+	url := fmt.Sprintf(getApplicationURL+"/apis", c.url, applicationId)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
@@ -633,7 +635,7 @@ func (c *WebMethodClient) ListOauth2Servers() (*OauthServers, error) {
 		"sortByField": "name"
 	}`
 	oauthServers := &OauthServers{}
-	url := fmt.Sprintf("%s/rest/apigateway/search", c.url)
+	url := fmt.Sprintf(searchURL, c.url)
 	headers := map[string]string{
 		"Authorization": c.createAuthToken(),
 		"Content-Type":  "application/json",
