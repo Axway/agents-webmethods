@@ -28,7 +28,6 @@ jobs:
           git rev-parse --short HEAD > commit_id
           echo "${{ github.ref_name }}" > version
           make build-discovery
-          ls -laR
 
       - name: Upload release
         uses: svenstaro/upload-release-action@v2
