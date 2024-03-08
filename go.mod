@@ -16,7 +16,7 @@ replace (
 )
 
 require (
-	github.com/Axway/agent-sdk v1.1.75
+	github.com/Axway/agent-sdk v1.1.76
 	github.com/elastic/beats/v7 v7.17.17
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
