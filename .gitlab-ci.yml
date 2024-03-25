@@ -54,9 +54,9 @@ include:
 
 .get-latest-tag: &get-latest-tag |
   if [ $(git --version | grep -Eo '2.*') ]; then 
-    export LATEST_TAG=$(git tag -l --sort="version:refname" | grep -Eo '^v?[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}(-.*)?$' | grep -ve '-rc\.[0-9]\+$' | grep -ve '-[0-9]\+$' | tail -1)
+    export LAST_TAG_VERSION=$(git tag -l --sort="version:refname" | grep -Eo '^v?[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}(-.*)?$' | grep -ve '-rc\.[0-9]\+$' | grep -ve '-[0-9]\+$' | tail -1)
   else 
-    export LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+    export LAST_TAG_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
   fi
 
 twistlock-discovery:
@@ -85,7 +85,7 @@ twistlock-discovery:on-schedule:
   before_script:
     - apk --no-cache update && apk add git
     - *get-latest-tag
-    - export IMAGE_NAME=ghcr.io/axway/webmethods_discovery_agent:${LATEST_TAG}
+    - export IMAGE_NAME=ghcr.io/axway/webmethods_discovery_agent:${LAST_TAG_VERSION}
     - docker pull ${IMAGE_NAME}
 
 # twistlock-traceability:on-schedule:
@@ -96,7 +96,7 @@ twistlock-discovery:on-schedule:
 #   before_script:
 #     - apk --no-cache update && apk add git
 #     - *get-latest-tag
-#     - export IMAGE_NAME=ghcr.io/axway/webmethods_traceability_agent:${LATEST_TAG}
+#     - export IMAGE_NAME=ghcr.io/axway/webmethods_traceability_agent:${LAST_TAG_VERSION}
 #     - docker pull ${IMAGE_NAME}
 
 blackduck:on-schedule:
@@ -107,8 +107,8 @@ blackduck:on-schedule:
     - git config --global url."ssh://git@git.ecd.axway.org".insteadOf "https://git.ecd.axway.org"''
     - git fetch
     - *get-latest-tag
-    - echo "Checking out ${LATEST_TAG}"
-    - git checkout ${LATEST_TAG}
+    - echo "Checking out ${LAST_TAG_VERSION}"
+    - git checkout ${LAST_TAG_VERSION}
 
 # overridden from csrjobs.yml because mirror repos like this one don't get merge events 
 fortify:
