@@ -39,7 +39,7 @@ include:
       - "/gitlabci/restrictions.yml"
       - "/gitlabci/jobs.yml"
   - project: "scurity/gitlabci"
-    ref: APIGOV-25848
+    ref: $SCURITY_LATEST
     file:
       - "/.gitlab-ci-fortify.yml"
       - "/.gitlab-ci-blackduck.yml"
@@ -47,7 +47,7 @@ include:
       - "/.gitlab-ci-twistlock.yml"
       - "/.gitlab-ci-csr.yml"
   - project: "apigov/beano_cicd"
-    ref: APIGOV-25848
+    ref: $BEANO_CICD_LATEST
     # this one MUST be after the scurity jobs in order for overrides to work correctly!
     file:
       - "/gitlabci/csrjobs.yml"
@@ -55,8 +55,7 @@ include:
 twistlock-discovery:
   extends: .twistlock
   rules:
-    - when: always
-    # - !reference [.mirror-branch-csr-rules, rules]
+    - !reference [.mirror-branch-csr-rules, rules]
   before_script:
     - apk --no-cache update && apk add make
     - make docker-build-discovery 
@@ -74,8 +73,7 @@ twistlock-discovery:
 twistlock-discovery:on-schedule:
   extends: .twistlock
   rules:
-    - when: always
-    # - !reference [.mirror-schedule-csr-rules, rules]
+    - !reference [.mirror-schedule-csr-rules, rules]
   dependencies: []
   before_script:
     - !reference [.csr-get-last-git-tag, gettag]
@@ -96,7 +94,6 @@ twistlock-discovery:on-schedule:
 
 blackduck:on-schedule:
   rules:
-    - when: always
     - !reference [.mirror-schedule-csr-rules, rules]
   before_script:
     - !reference [.csr-get-last-git-tag, gettag]
