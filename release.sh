@@ -28,7 +28,7 @@ check_required_variables() {
 
     # don't post if this is a pre-release tag
     pat='[0-9]+\.[0-9]+\.[0-9]-'
-    if [[ ${TAG} =~ ]]; then
+    if [[ ${TAG} =~ $pat ]]; then
       echo "This is an interim release... post to Teams skipped"
       return 0
     fi
