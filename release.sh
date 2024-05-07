@@ -20,14 +20,14 @@ check_required_variables() {
     [ -z "${TAG}" ] && echo "TAG variable not set" && exit 1
     [ -z "${SDK}" ] && echo "SDK variable not set" && exit 1
 
-    pat='[0-9]+\.[0-9]+\.[0-9]'
+    pat='[0-9]+\.[0-9]+\.[0-9]+'
     if [[ ! ${TAG} =~ $pat ]]; then
         echo "TAG variable must be of the form X.X.X"
         exit 1
     fi
 
     # don't post if this is a pre-release tag
-    pat='[0-9]+\.[0-9]+\.[0-9]-'
+    pat='[0-9]+\.[0-9]+\.[0-9]+-'
     if [[ ${TAG} =~ $pat ]]; then
       echo "This is an interim release... post to Teams skipped"
       return 0
