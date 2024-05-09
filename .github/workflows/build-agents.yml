@@ -1,25 +1,29 @@
-name: Build Webmethods Discovery and Traceability Agents
+name: Build agents
 
 on:
   push:
     branches: [main, '*']
 
 jobs:
-  test:
-    env:
-      GOFLAGS: "-mod=mod"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.21
-      - name: Test
-        working-directory: .
-        run: |
-          make test
-  build:
+  testAgents:
+    uses: ./.github/workflows/run-tests.yml
+
+  # test:
+  #   env:
+  #     GOFLAGS: "-mod=mod"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version: 1.21
+  #     - name: Test
+  #       working-directory: .
+  #       run: |
+  #         make test
+
+  buildAgents:
     env:
       GOFLAGS: "-mod=mod"
       VERSION: ${{ github.ref_name }}

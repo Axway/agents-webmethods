@@ -1,4 +1,4 @@
-name: Discovery Agent Docker
+name: Build docker images
 
 on:
   push:
@@ -6,7 +6,11 @@ on:
       - "*"
 
 jobs:
+  testAgents:
+    uses: ./.github/workflows/run-tests.yml
+
   buildDiscoveryAgentDocker:
+    needs: testAgents
     env:
       GOFLAGS: "-mod=mod"
       GOWORK: "off"
@@ -48,6 +52,7 @@ jobs:
               COMMIT_ID=${{ env.commitId }}
 
   buildTraceabilityAgentDocker:
+    needs: testAgents
     env:
       GOFLAGS: "-mod=mod"
       GOWORK: "off"
@@ -92,6 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [buildDiscoveryAgentDocker, buildTraceabilityAgentDocker]
     steps:
+      - uses: actions/checkout@v4
       - name: Notify Teams channel
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
