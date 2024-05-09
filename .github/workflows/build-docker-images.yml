@@ -13,6 +13,9 @@ jobs:
       IMAGE_NAME: webmethods_discovery_agent
       ORG_NAME: Axway
     runs-on: ubuntu-latest
+    steps:
+      - run: echo "foo"
+
   #   steps:
   #     - uses: actions/checkout@v4
   #     - name: Create commit_id & version environment variables
@@ -52,6 +55,9 @@ jobs:
       IMAGE_NAME: webmethods_traceability_agent
       ORG_NAME: Axway
     runs-on: ubuntu-latest
+    steps:
+      - run: echo "bar"
+
   #   steps:
   #     - uses: actions/checkout@v4
   #     - name: Create commit_id & version environment variables
