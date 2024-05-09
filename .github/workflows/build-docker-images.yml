@@ -21,10 +21,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create commit_id & version environment variables
+      - name: Set outputs
+        id: vars
         run: |
-          commitId=$(git rev-parse --short HEAD)
-          echo "commitId=$commitId" >> $GITHUB_ENV
+          echo "date=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+          echo "tag=${{github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "sdkversion=$(grep github.com/Axway/agent-sdk go.mod |  awk '{print $2}')" >> $GITHUB_OUTPUT
+          echo "commit=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
       
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -49,54 +52,64 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-              VERSION=${{ github.ref_name }}
-              COMMIT_ID=${{ env.commitId }}
+            time=${{ steps.vars.outputs.date }}
+            CGO_ENABLED=0
+            version=${{ steps.vars.outputs.tag }}
+            sdk_version=${{ steps.vars.outputs.sdkversion }}
+            commit_id=${{ steps.vars.outputs.commit }}
 
-  buildTraceabilityAgentDocker:
-    needs: testAgents
-    env:
-      GOFLAGS: "-mod=mod"
-      GOWORK: "off"
-      IMAGE_NAME: webmethods_traceability_agent
-      ORG_NAME: Axway
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  # buildTraceabilityAgentDocker:
+  #   needs: testAgents
+  #   env:
+  #     GOFLAGS: "-mod=mod"
+  #     GOWORK: "off"
+  #     IMAGE_NAME: webmethods_traceability_agent
+  #     ORG_NAME: Axway
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
       
-      - name: Create commit_id & version environment variables
-        run: |
-          commitId=$(git rev-parse --short HEAD)
-          echo "commitId=$commitId" >> $GITHUB_ENV
+  #     - name: Set outputs
+  #       id: vars
+  #       run: |
+  #         echo "date=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+  #         echo "tag=${{github.ref_name }}" >> $GITHUB_OUTPUT
+  #         echo "sdkversion=$(grep github.com/Axway/agent-sdk go.mod |  awk '{print $2}')" >> $GITHUB_OUTPUT
+  #         echo "commit=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
       
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Log in to the Container registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          flavor: latest=false
-          images: ghcr.io/${{ env.ORG_NAME }}/${{ env.IMAGE_NAME }}
+  #     - name: Extract metadata (tags, labels) for Docker
+  #       id: meta
+  #       uses: docker/metadata-action@v5
+  #       with:
+  #         flavor: latest=false
+  #         images: ghcr.io/${{ env.ORG_NAME }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: build/traceability.Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: | 
-              VERSION=${{ github.ref_name }}
-              COMMIT_ID=${{ env.commitId }}
+  #     - name: Build and push Docker image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: build/traceability.Dockerfile
+  #         push: true
+  #         tags: ${{ steps.meta.outputs.tags }}
+  #         labels: ${{ steps.meta.outputs.labels }}
+  #         build-args: | 
+  #           time=${{ steps.vars.outputs.date }}
+  #           CGO_ENABLED=0
+  #           version=${{ steps.vars.outputs.tag }}
+  #           sdk_version=${{ steps.vars.outputs.sdkversion }}
+  #           commit_id=${{ steps.vars.outputs.commit }}
 
   notifyTeamsChannel:
     runs-on: ubuntu-latest
-    needs: [buildDiscoveryAgentDocker, buildTraceabilityAgentDocker]
+    # needs: [buildDiscoveryAgentDocker, buildTraceabilityAgentDocker]
+    needs: [buildDiscoveryAgentDocker]
     steps:
       - uses: actions/checkout@v4
       - name: Notify Teams channel
