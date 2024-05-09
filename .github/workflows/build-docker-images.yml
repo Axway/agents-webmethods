@@ -1,3 +1,4 @@
+# build the docker images when a tag is created
 name: Build docker images
 
 on:

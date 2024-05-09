@@ -1,3 +1,4 @@
+# This action is shared by workflows that want to run the unit tests
 name: Test the agents
 
 on:
