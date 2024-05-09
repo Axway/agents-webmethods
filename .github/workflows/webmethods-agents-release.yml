@@ -1,9 +1,9 @@
-name: Release webMethods Agents
+# this action will upload the assets (name: Upload assets to release
 
 on:
   push:
     tags:
-      - "*"
+      - "xxxx"
 
 jobs:
   buildDiscoveryAgent:
