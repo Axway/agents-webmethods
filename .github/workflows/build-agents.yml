@@ -8,8 +8,7 @@ jobs:
   testAgents:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "foobar"
-    # uses: ./.github/workflows/run-tests.yml
+    uses: ./.github/workflows/run-tests.yml
 
   buildAgents:
     needs: testAgents

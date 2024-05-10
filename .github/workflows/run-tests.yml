@@ -18,5 +18,4 @@ jobs:
       - name: Test
         working-directory: .
         run: |
-          echo "NDAD"
-          # make test
+          make test

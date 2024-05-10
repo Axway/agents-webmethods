@@ -108,8 +108,7 @@ jobs:
 
   notifyTeamsChannel:
     runs-on: ubuntu-latest
-    # needs: [buildDiscoveryAgentDocker, buildTraceabilityAgentDocker]
-    needs: [buildDiscoveryAgentDocker]
+    needs: [buildDiscoveryAgentDocker, buildTraceabilityAgentDocker]
     steps:
       - uses: actions/checkout@v4
       - name: Notify Teams channel
