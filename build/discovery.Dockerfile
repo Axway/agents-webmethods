@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildCommitSha=${commit_id}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.SDKBuildVersion=${sdk_version}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=webMethodsDiscoveryAgent'" \
-  -a -o webmethods_discovery_agent ${BASEPATH}cmd/discovery/main.go
+  -a -o bin/webmethods_discovery_agent ${BASEPATH}cmd/discovery/main.go
 
 # Create non-root user
 RUN addgroup -g 2500 ${APP_USER} && adduser -u 2500 -D -G ${APP_USER} ${APP_USER}
@@ -39,8 +39,8 @@ ENV APP_USER axway
 # Copy binary, user, config file and certs from previous build step
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder ${APP_HOME}/bin/webmethods_discovery_agent /webmethods_discovery_agent
-COPY /webmethods_discovery_agent.yml /webmethods_discovery_agent.yml
+COPY --from=builder bin/webmethods_discovery_agent /webmethods_discovery_agent
+COPY build/webmethods_discovery_agent.yml /webmethods_discovery_agent.yml
 
 RUN mkdir /keys && \
   chown -R axway /keys && \

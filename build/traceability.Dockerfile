@@ -24,11 +24,11 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildCommitSha=${commit_id}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.SDKBuildVersion=${sdk_version}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=webMethodsTraceabilityAgent'" \
-  -a -o $webmethods_traceability_agent ${BASEPATH}/cmd/traceability/main.go
+  -a -o bin/webmethods_traceability_agent ${BASEPATH}/cmd/traceability/main.go
 
 # Create non-root user
 RUN addgroup -g 2500 ${APP_USER} && adduser -u 2500 -D -G ${APP_USER} ${APP_USER}
-RUN chown -R ${APP_USER}:${APP_USER}  /webmethods_traceability_agent
+RUN chown -R ${APP_USER}:${APP_USER}  bin/webmethods_traceability_agent
 USER ${APP_USER}
 
 # alpine 3.18 linux/amd64 
@@ -39,8 +39,8 @@ ENV APP_USER axway
 # Copy binary, user, config file and certs from previous build step
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /webmethods_traceability_agent /webmethods_traceability_agent
-COPY /webmethods_traceability_agent.yml /webmethods_traceability_agent.yml
+COPY --from=builder bin/webmethods_traceability_agent /webmethods_traceability_agent
+COPY build/webmethods_traceability_agent.yml /webmethods_traceability_agent.yml
 
 RUN mkdir /keys /data && \
   chown -R axway /keys /data && \
