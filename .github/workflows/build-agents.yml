@@ -6,7 +6,6 @@ on:
 
 jobs:
   testAgents:
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/run-tests.yml
 
   buildAgents:
