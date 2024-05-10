@@ -24,24 +24,23 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildCommitSha=${commit_id}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.SDKBuildVersion=${sdk_version}' \
   -X 'github.com/Axway/agent-sdk/pkg/cmd.BuildAgentName=webMethodsDiscoveryAgent'" \
-  -a -o bin/webmethods_discovery_agent ${BASEPATH}/cmd/discovery/main.go
+  -a -o ${BASEPATH}/bin/webmethods_discovery_agent ${BASEPATH}/cmd/discovery/main.go
 
 # Create non-root user
 RUN addgroup -g 2500 ${APP_USER} && adduser -u 2500 -D -G ${APP_USER} ${APP_USER}
-RUN chown -R $APP_USER:$APP_USER  bin/webmethods_discovery_agent
-RUN pwd
-RUN ls -laR
+RUN chown -R $APP_USER:$APP_USER ${BASEPATH}/bin/webmethods_discovery_agent
 USER ${APP_USER}
 
 # alpine 3.19 linux/amd64 
 FROM docker.io/alpine@sha256:13b7e62e8df80264dbb747995705a986aa530415763a6c58f84a3ca8af9a5bcd
 
+ENV BASEPATH /go/src/github.com/Axway/agents-webmethods
 ENV APP_USER axway
 
 # Copy binary, user, config file and certs from previous build step
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder bin/webmethods_discovery_agent /webmethods_discovery_agent
+COPY --from=builder ${BASEPATH}/bin/webmethods_discovery_agent /webmethods_discovery_agent
 COPY build/webmethods_discovery_agent.yml /webmethods_discovery_agent.yml
 
 RUN mkdir /keys && \
