@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 # Create non-root user
 RUN addgroup -g 2500 ${APP_USER} && adduser -u 2500 -D -G ${APP_USER} ${APP_USER}
-RUN chown -R $APP_USER:$APP_USER  /webmethods_discovery_agent
+RUN chown -R $APP_USER:$APP_USER  bin/webmethods_discovery_agent
 USER ${APP_USER}
 
 # alpine 3.19 linux/amd64 
