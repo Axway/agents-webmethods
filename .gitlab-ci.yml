@@ -18,6 +18,7 @@ variables:
 
 stages:
   - test
+  - qa-test
   - sonar-preview
   - sonar-publish
   - build
@@ -58,7 +59,7 @@ twistlock-discovery:
     - !reference [.mirror-branch-csr-rules, rules]
   before_script:
     - apk --no-cache update && apk add make
-    - make docker-build-discovery 
+    - make docker-build-discovery
     - export IMAGE_NAME=webmethods_discovery_agent:latest
 
 # twistlock-traceability:
@@ -67,7 +68,7 @@ twistlock-discovery:
   #   - !reference [.mirror-branch-csr-rules, rules]
 #   before_script:
 #     - apk --no-cache update && apk add make
-#     - make docker-build-traceability 
+#     - make docker-build-traceability
 #     - export IMAGE_NAME=webmethods_traceability_agent:latest
 
 twistlock-discovery:on-schedule:
@@ -101,7 +102,7 @@ blackduck:on-schedule:
   before_script:
     - !reference [.get-agent-last-tag, script]
 
-# overridden from csrjobs.yml because mirror repos like this one don't get merge events 
+# overridden from csrjobs.yml because mirror repos like this one don't get merge events
 fortify:
   rules:
     - !reference [.mirror-branch-csr-rules, rules]
