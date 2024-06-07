@@ -5,11 +5,11 @@ on:
   pull_request:
     types:
       - closed
-  
+
 jobs:
-  # only run this job if the merge name is "APIGOV-UpdateSDK", which comes from the automated release
+  # only run this job if the merge name is "APIGOV-UpdateSDKForRelease", which comes from the automated release
   if_SDK_update_merged:
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'APIGOV-UpdateSDK')
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'APIGOV-UpdateSDKForRelease')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,12 +20,12 @@ jobs:
           # by default, this action creates a tag with a 'v' prefix, and bumps the patch version.
           # See https://github.com/mathieudutour/github-tag-action to customize these rules.
           github_token: ${{ secrets.ACTION_ACCESS_TOKEN }}
-      
+
       - name: Show the new tag
         run: |
           echo "previous tag ${{ steps.tag_version.outputs.previous_tag }}
           echo "new tag ${{ steps.tag_version.outputs.new_tag }}
-      
+
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
