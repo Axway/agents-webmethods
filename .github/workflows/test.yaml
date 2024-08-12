@@ -1,12 +1,13 @@
 # this action is triggered by selecting the action in the github UI and then clicking "run workflow"
-name: Fully automated release
+name: testing
 
 on:
     workflow_dispatch:
-        promotiontype:
-            description: Promotion type (major, minor, patch)
-            required: true
-            default": 'patch'
+        inputs:
+            promotiontype:
+                description: Promotion type (major, minor, patch)
+                required: true
+                default: 'patch'
 
 jobs:
     printInputs:
