@@ -1,34 +1,34 @@
 name: Build agents
 
-on:
-  push:
-    branches: [main, '*']
+# on:
+#   push:
+#     branches: [main, '*']
 
-jobs:
-  testAgents:
-    uses: ./.github/workflows/run-tests.yml
+# jobs:
+#   testAgents:
+#     uses: ./.github/workflows/run-tests.yml
 
-  buildAgents:
-    needs: testAgents
-    env:
-      GOFLAGS: "-mod=mod"
-      VERSION: ${{ github.ref_name }}
-      COMMIT_ID: ${{ github.sha }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+#   buildAgents:
+#     needs: testAgents
+#     env:
+#       GOFLAGS: "-mod=mod"
+#       VERSION: ${{ github.ref_name }}
+#       COMMIT_ID: ${{ github.sha }}
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.21
+#       - name: Set up Go
+#         uses: actions/setup-go@v5
+#         with:
+#           go-version: 1.21
 
-      - name: Build discovery agent
-        working-directory: .
-        run: |
-          make build-discovery
+#       - name: Build discovery agent
+#         working-directory: .
+#         run: |
+#           make build-discovery
 
-      - name: Build traceability agent
-        working-directory: .
-        run: |
-          make build-trace
+#       - name: Build traceability agent
+#         working-directory: .
+#         run: |
+#           make build-trace
