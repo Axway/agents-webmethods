@@ -1,7 +1,7 @@
 #!/bin/bash
 shopt -s nocasematch
 
-# you can add variables like this to test locally. Just run ./release.sh. Note that to run on MAC, you must install bash 5.x. 
+# you can add variables like this to test locally. Just run ./release.sh. Note that to run on MAC, you must install bash 5.x.
 # Then, to run the script you must do: /usr/local/bin/bash ./release.sh
 # TEAMS_WEBHOOK_URL="foo.bar"
 # TAG="1.2.3"
@@ -17,6 +17,10 @@ check_required_variables() {
     echo "Validating the required environment variables..."
 
     [ -z "${TEAMS_WEBHOOK_URL}" ] && echo "TEAMS_WEBHOOK_URL variable not set" && exit 1
+    if [[ "$PROMOTION_TYPE" != "patch" && "$PROMOTION_TYPE" != "minor" && "$PROMOTION_TYPE" != "major" ]]; then
+        echo "PROMOTION_TYPE variable must be patch, minor, or major"
+        exit 1
+    fi
     [ -z "${TAG}" ] && echo "TAG variable not set" && exit 1
     [ -z "${SDK}" ] && echo "SDK variable not set" && exit 1
 
@@ -73,7 +77,10 @@ post_to_teams() {
 main() {
     # validate required variables
     get_sdk_version
+    export PROMOTION_TYPE=$1
     check_required_variables
+
+    exit -1
 
     if [ $? -eq 1 ]; then
         echo "No release info being generated."
@@ -85,7 +92,7 @@ main() {
     releaseStats+="- SDK version: ${SDK}\n"
 
     echo -e "Full Release Info:\n"${releaseStats}
-    post_to_teams "${releaseStats}"
+    # post_to_teams "${releaseStats}"
     exit 0
 }
 
