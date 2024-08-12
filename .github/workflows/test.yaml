@@ -1,0 +1,17 @@
+# this action is triggered by selecting the action in the github UI and then clicking "run workflow"
+name: testing
+
+on:
+    workflow_dispatch:
+        inputs:
+            promotiontype:
+                description: Promotion type (major, minor, patch)
+                required: true
+                default: 'patch'
+
+jobs:
+    printInputs:
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                echo "Env: ${{ github.event.inputs.promotiontype }}"
