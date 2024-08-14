@@ -17,10 +17,6 @@ check_required_variables() {
     echo "Validating the required environment variables..."
 
     [ -z "${TEAMS_WEBHOOK_URL}" ] && echo "TEAMS_WEBHOOK_URL variable not set" && exit 1
-    if [[ "$PROMOTION_TYPE" != "patch" && "$PROMOTION_TYPE" != "minor" && "$PROMOTION_TYPE" != "major" ]]; then
-        echo "PROMOTION_TYPE variable must be patch, minor, or major"
-        exit 1
-    fi
     [ -z "${TAG}" ] && echo "TAG variable not set" && exit 1
     [ -z "${SDK}" ] && echo "SDK variable not set" && exit 1
 
@@ -77,7 +73,6 @@ post_to_teams() {
 main() {
     # validate required variables
     get_sdk_version
-    export PROMOTION_TYPE=$1
     check_required_variables
 
     exit -1
@@ -92,7 +87,7 @@ main() {
     releaseStats+="- SDK version: ${SDK}\n"
 
     echo -e "Full Release Info:\n"${releaseStats}
-    # post_to_teams "${releaseStats}"
+    post_to_teams "${releaseStats}"
     exit 0
 }
 
